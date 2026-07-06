@@ -106,6 +106,8 @@ export default function GoLive() {
     console.log(`[go-live] ${status === "ok" ? "✓" : status === "error" ? "✗" : "…"} ${step}`, detail ?? "");
   };
   const [featuredProductId, setFeaturedProductId] = useState<string | null>(null);
+  const [ppvEnabled, setPpvEnabled] = useState(false);
+  const [ppvPrice, setPpvPrice] = useState<number>(9.99);
   const [streamData, setStreamData] = useState<{
     streamId: string;
     streamKey: string;
@@ -161,15 +163,17 @@ export default function GoLive() {
     const id = sessionId || streamData?.streamId || draftSessionId;
     if (!id || !user) return;
 
-    // Try fetching by stream_id first
+    // Try fetching by stream_id first (ppv_access is a virtual stream-access
+    // product managed by the PPV toggle — never listed in the shop)
     const { data } = await supabase
       .from("live_products")
       .select("*")
       .eq("stream_id", id)
       .order("position");
 
-    if (data && data.length > 0) {
-      setLiveProducts(data);
+    const shopItems = (data || []).filter((p: any) => p.type !== "ppv_access");
+    if (shopItems.length > 0) {
+      setLiveProducts(shopItems);
       return;
     }
 
@@ -185,7 +189,7 @@ export default function GoLive() {
         .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
         .order("created_at", { ascending: false })
         .limit(20);
-      setLiveProducts(drafts || []);
+      setLiveProducts((drafts || []).filter((p: any) => p.type !== "ppv_access"));
     } else {
       setLiveProducts([]);
     }
@@ -328,10 +332,42 @@ export default function GoLive() {
         }
       }
 
+      // Pay-per-view: flag the stream and create the virtual access product.
+      // Purchases run through stripe-create-live-purchase (purchase_type
+      // "live_product"), which the existing stripe-webhook finalizes — the
+      // 95/5 split and wallet credit are handled with no webhook changes.
+      const ppvActive = mode === "public" && ppvEnabled && ppvPrice >= 1;
+      if (ppvActive && data?.streamId) {
+        pushStep("enable_ppv", "pending", `$${ppvPrice.toFixed(2)}`);
+        try {
+          const { error: ppvErr } = await (supabase.from("mux_live_streams") as any)
+            .update({ is_ppv: true, ppv_price: ppvPrice })
+            .eq("id", data.streamId);
+          if (ppvErr) throw ppvErr;
+          const { error: prodErr } = await supabase.from("live_products").insert({
+            stream_id: data.streamId,
+            creator_id: user.id,
+            title: `Stream Access — ${title}`,
+            description: "Pay-per-view access to this live stream and its full replay",
+            price: ppvPrice,
+            type: "ppv_access",
+            quantity_total: 1000000,
+            quantity_remaining: 1000000,
+            is_active: false,
+            position: 9999,
+          } as any);
+          if (prodErr) throw prodErr;
+          pushStep("enable_ppv", "ok");
+        } catch (ppvE: any) {
+          pushStep("enable_ppv", "error", ppvE?.message);
+          toast.error("PPV setup failed", { description: "Stream created, but pay-per-view could not be enabled. Viewers can watch free." });
+        }
+      }
+
       setStreamData(data);
       setStreamStatus("idle");
       setStreamStartTime(Date.now());
-      trackEvent("stream_created", { mode, category, orientation, has_featured_product: !!featuredProductId, simulcast: simulcastEnabled, total_ms: ms });
+      trackEvent("stream_created", { mode, category, orientation, has_featured_product: !!featuredProductId, simulcast: simulcastEnabled, ppv: ppvActive, ppv_price: ppvActive ? ppvPrice : 0, total_ms: ms });
       trackEvent("stream_started", { mode, category, orientation, simulcast: simulcastEnabled });
       pushStep("ready", "ok", "Broadcast studio ready");
       toast.success("Stream created!", { description: "Your broadcast studio is ready." });
@@ -487,6 +523,59 @@ export default function GoLive() {
                   </p>
                 )}
               </div>
+
+              {/* Pay-Per-View — public streams only (members-only streams gate by subscription) */}
+              {mode === "public" && (
+                <div className="glass-card p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-sm text-foreground flex items-center gap-2">
+                        🎟️ Pay-Per-View
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary">95% payout</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Charge a one-time fee to watch. Buyers get the live stream and the full replay.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setPpvEnabled(v => !v)}
+                      role="switch"
+                      aria-checked={ppvEnabled}
+                      className={cn(
+                        "relative w-11 h-6 rounded-full transition-colors flex-shrink-0",
+                        ppvEnabled ? "bg-primary" : "bg-secondary"
+                      )}
+                    >
+                      <span className={cn(
+                        "absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform",
+                        ppvEnabled ? "translate-x-[22px]" : "translate-x-0.5"
+                      )} />
+                    </button>
+                  </div>
+                  {ppvEnabled && (
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center bg-secondary/50 border border-border rounded-xl px-3 flex-1">
+                        <span className="text-sm text-muted-foreground mr-1">$</span>
+                        <input
+                          type="number"
+                          min={1}
+                          step={0.01}
+                          value={ppvPrice}
+                          onChange={(e) => setPpvPrice(parseFloat(e.target.value) || 0)}
+                          className="w-full bg-transparent text-sm text-foreground py-3 focus:outline-none"
+                          placeholder="9.99"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground flex-shrink-0">
+                        You earn ${(Math.max(ppvPrice, 0) * 0.95).toFixed(2)} per viewer
+                      </p>
+                    </div>
+                  )}
+                  {ppvEnabled && ppvPrice < 1 && (
+                    <p className="text-xs text-destructive">Minimum price is $1.00</p>
+                  )}
+                </div>
+              )}
 
               {/* Featured Product Selector */}
               <div>

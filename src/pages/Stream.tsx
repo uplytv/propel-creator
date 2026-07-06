@@ -43,6 +43,8 @@ import RecentRecordingsRow from "@/components/live/RecentRecordingsRow";
 import LiveEventBanner from "@/components/live/LiveEventBanner";
 import StickyBuyTicketBar from "@/components/live/StickyBuyTicketBar";
 import StreamEmailCapture from "@/components/live/StreamEmailCapture";
+import PPVPaywall, { useStreamPpvGate } from "@/components/live/PPVPaywall";
+import { useMemberSubscriptionStatus } from "@/hooks/usePaymentReturn";
 
 // Wrapper that fetches real event data for the ticket bar
 function StickyBuyTicketBarWithEvent({ eventId, streamId, fallbackTitle }: { eventId: string; streamId: string; fallbackTitle: string }) {
@@ -70,6 +72,104 @@ function StickyBuyTicketBarWithEvent({ eventId, streamId, fallbackTitle }: { eve
       }}
       streamId={streamId}
     />
+  );
+}
+
+// Cross-sell rail shown to viewers under the stream info: join-community CTA
+// (cheapest active tier) + latest course/classroom CTA with enrollment count.
+function CreatorOfferRow({ creatorId, creatorName }: { creatorId: string; creatorName: string }) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { data: memberSub } = useMemberSubscriptionStatus(creatorId);
+  const isMember = memberSub?.status === "active";
+  const [tier, setTier] = useState<{ price_monthly: number } | null>(null);
+  const [course, setCourse] = useState<any>(null);
+  const [enrollCount, setEnrollCount] = useState<number | null>(null);
+  const [ownsCourse, setOwnsCourse] = useState(false);
+
+  useEffect(() => {
+    if (!creatorId) return;
+    (supabase as any)
+      .from("subscription_tiers")
+      .select("price_monthly")
+      .eq("creator_id", creatorId)
+      .eq("is_active", true)
+      .order("price_monthly", { ascending: true })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }: any) => setTier(data));
+    (supabase as any)
+      .from("products")
+      .select("id, name, price, type")
+      .eq("creator_id", creatorId)
+      .eq("status", "active")
+      .in("type", ["course", "classroom"])
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }: any) => setCourse(data));
+  }, [creatorId]);
+
+  // Classroom head-count + owned state
+  useEffect(() => {
+    if (!course?.id) return;
+    supabase
+      .from("product_purchases")
+      .select("id", { count: "exact", head: true })
+      .eq("product_id", course.id)
+      .then(({ count }) => setEnrollCount(count ?? 0));
+    if (user) {
+      supabase
+        .from("product_purchases")
+        .select("id")
+        .eq("product_id", course.id)
+        .eq("buyer_id", user.id)
+        .limit(1)
+        .maybeSingle()
+        .then(({ data }) => setOwnsCourse(!!data));
+    }
+  }, [course?.id, user?.id]);
+
+  const showCommunity = !!tier && !isMember;
+  if (!showCommunity && !course) return null;
+
+  return (
+    <div className="mt-4 flex flex-col sm:flex-row gap-2">
+      {showCommunity && (
+        <button
+          onClick={() => navigate(`/community/${creatorId}`)}
+          className="flex-1 flex items-center gap-3 p-3 rounded-xl border border-border bg-secondary/30 hover:border-primary/40 transition-colors text-left"
+        >
+          <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-base flex-shrink-0">🤝</div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground truncate">Join {creatorName}'s community</p>
+            <p className="text-xs text-muted-foreground">
+              From ${Number(tier!.price_monthly).toFixed(0)}/month · members-only streams & posts
+            </p>
+          </div>
+          <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-primary-foreground flex-shrink-0">Join →</span>
+        </button>
+      )}
+      {course && (
+        <button
+          onClick={() => navigate(`/community/${creatorId}`, { state: { tab: "classroom" } })}
+          className="flex-1 flex items-center gap-3 p-3 rounded-xl border border-border bg-secondary/30 hover:border-primary/40 transition-colors text-left"
+        >
+          <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-base flex-shrink-0">📚</div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground truncate">{course.name}</p>
+            <p className="text-xs text-muted-foreground">
+              {ownsCourse
+                ? "You're enrolled — continue learning"
+                : `${Number(course.price) > 0 ? `$${course.price}` : "Free"}${enrollCount ? ` · ${enrollCount} enrolled` : ""}`}
+            </p>
+          </div>
+          <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-primary-foreground flex-shrink-0">
+            {ownsCourse ? "Open →" : "View →"}
+          </span>
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -248,6 +348,19 @@ export default function Stream() {
   const giftSub = useGiftSubscription(id || '', dbStream?.user_id || '');
   const liveQuiz = useLiveQuiz(id, false);
   const sentiment = useViewerSentiment(id);
+
+  // PPV gate — access + playback id are server-verified via the
+  // get_stream_playback SECURITY DEFINER RPC. Free streams skip the RPC
+  // entirely (mightBePpv=false) and behave exactly as before. Recordings and
+  // VOD assets always resolve once, since their PPV flag lives on the source
+  // stream (migration 20260706160000_ppv_access.sql).
+  const ppvRefType: 'stream' | 'recording' | 'asset' = dbStream?._isRecording
+    ? 'recording'
+    : dbStream?._isAsset
+      ? 'asset'
+      : 'stream';
+  const ppvMightBe = !!dbStream && (ppvRefType !== 'stream' ? true : !!dbStream.is_ppv);
+  const ppvGate = useStreamPpvGate(dbStream?.id, ppvRefType, ppvMightBe);
 
   useEffect(() => {
     const fetchStream = async () => {
@@ -476,7 +589,7 @@ export default function Stream() {
             .single();
 
           if (asset) {
-            setDbStream(asset);
+            setDbStream({ ...asset, _isAsset: true });
             setIsRealStream(true);
             const { data: prof } = await supabase
               .from('profiles')
@@ -546,7 +659,7 @@ export default function Stream() {
           .single();
 
         if (asset) {
-          setDbStream(asset);
+          setDbStream({ ...asset, _isAsset: true });
           setIsRealStream(true);
 
           const { data: prof } = await supabase
@@ -796,13 +909,27 @@ export default function Stream() {
     const creatorTier = profile?.tier || 1;
     const creatorTierName = profile?.tier_name || 'Starter';
     const TierIcon = tierIcons[creatorTier - 1] || Shield;
-    const playbackId = dbStream.mux_playback_id;
+    // PPV playback ids are vaulted server-side; the RPC hands them out only to
+    // entitled viewers. Free streams keep using the public column.
+    const playbackId = ppvGate.playbackId || dbStream.mux_playback_id;
     const isPrivateStream = dbStream.is_public === false;
     const isOwner = user?.id === dbStream.user_id;
     const subscribed = dbStream.user_id ? isFollowing(dbStream.user_id) : false;
+    const ppvPending = ppvMightBe && !ppvGate.checked;
+    const ppvLocked = ppvGate.checked && ppvGate.isPpv && !ppvGate.allowed && !isOwner;
 
-    // Guard: no playback ID available — try to resolve recording before giving up
-    if (!playbackId) {
+    // PPV access check still in flight — don't flash "unavailable" or paywall
+    if (ppvPending) {
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <Loader2 className="w-8 h-8 text-primary animate-spin" />
+        </div>
+      );
+    }
+
+    // Guard: no playback ID available — try to resolve recording before giving up.
+    // Skipped when PPV-locked: the paywall renders below without a playback id.
+    if (!playbackId && !ppvLocked) {
       // For non-active streams, attempt to find the recording
       if (!isActive && dbStream.id) {
         const tryResolveRecording = async () => {
@@ -951,7 +1078,17 @@ export default function Stream() {
           <div className="flex-1 flex flex-col min-w-0">
             {/* Video player with engagement overlay */}
             <div className="relative">
-              {isVod && (!playbackId || (dbStream._isRecording && dbStream.status !== 'ready' && !playbackId)) ? (
+              {ppvLocked && (isActive || isVod) ? (
+                <PPVPaywall
+                  title={dbStream.title || (isVod ? 'Recording' : 'Live Stream')}
+                  creatorName={creatorName}
+                  price={ppvGate.price}
+                  ppvProductId={ppvGate.ppvProductId}
+                  isLive={isActive}
+                  onRefresh={ppvGate.refresh}
+                  onCheckoutStarted={ppvGate.startUnlockPoll}
+                />
+              ) : isVod && (!playbackId || (dbStream._isRecording && dbStream.status !== 'ready' && !playbackId)) ? (
                 <div className="w-full aspect-video bg-muted/50 flex items-center justify-center border-b border-border">
                   <div className="text-center">
                     <Loader2 className="w-10 h-10 text-primary mx-auto mb-3 animate-spin" />
@@ -1035,8 +1172,8 @@ export default function Stream() {
                 </div>
               )}
 
-              {/* Viewer Engagement Overlay — only on active live streams */}
-              {isActive && id && (
+              {/* Viewer Engagement Overlay — only on active live streams (hidden behind PPV paywall) */}
+              {isActive && id && !ppvLocked && (
                 <>
                   <ViewerEngagementOverlay
                     streamId={id}
@@ -1208,6 +1345,11 @@ export default function Stream() {
                 <p className="text-sm text-muted-foreground mt-3 hidden sm:block">{dbStream.description}</p>
               )}
 
+              {/* Community + course cross-sell — viewers only */}
+              {!isOwner && dbStream.user_id && (
+                <CreatorOfferRow creatorId={dbStream.user_id} creatorName={creatorName} />
+              )}
+
               {/* Featured Product CTA — interactive */}
               {featuredProduct && !isVod && isActive && (
                 <div className="mt-4">
@@ -1293,8 +1435,8 @@ export default function Stream() {
           />
         )}
 
-        {/* Sticky Buy Ticket Bar — event streams (live, VOD, or recording) */}
-        {dbStream.is_event_stream && dbStream.event_id && (
+        {/* Sticky Buy Ticket Bar — event streams (live, VOD, or recording), viewers only */}
+        {dbStream.is_event_stream && dbStream.event_id && !isOwner && (
           <StickyBuyTicketBarWithEvent eventId={dbStream.event_id} streamId={dbStream.id} fallbackTitle={dbStream.title || 'Event'} />
         )}
       </div>

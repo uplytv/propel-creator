@@ -19,6 +19,8 @@ export interface StreamCardData {
   startedAt: string;
   description: string;
   muxPlaybackId?: string | null;
+  isPpv?: boolean;
+  ppvPrice?: number | null;
 }
 
 function formatViewers(n: number) {
@@ -67,6 +69,15 @@ const StreamCardNew = memo(function StreamCardNew({ stream, index = 0 }: { strea
             <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-bold text-white bg-destructive">
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
               LIVE
+            </span>
+          </div>
+        )}
+
+        {/* PPV badge top-right */}
+        {stream.isPpv && (
+          <div className="absolute top-2 right-2">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold text-white" style={{ background: "linear-gradient(135deg, #3D7CFF, #B025FF)" }}>
+              🎟️ {stream.ppvPrice != null ? `$${Number(stream.ppvPrice).toFixed(0)}` : "PPV"}
             </span>
           </div>
         )}

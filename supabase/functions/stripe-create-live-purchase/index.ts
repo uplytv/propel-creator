@@ -28,7 +28,7 @@ serve(async (req) => {
     const userId = userData.user.id;
     const email = userData.user.email;
 
-    const { live_product_id, variant_selected, buyer_message } = await req.json();
+    const { live_product_id, variant_selected, buyer_message, return_url } = await req.json();
     if (!live_product_id) throw new Error("live_product_id required");
 
     // Get product
@@ -38,8 +38,30 @@ serve(async (req) => {
       .eq("id", live_product_id)
       .single();
     if (pErr || !product) throw new Error("Product not found");
-    if (product.is_sold_out) throw new Error("Product is sold out");
-    if (product.quantity_remaining <= 0) throw new Error("No stock remaining");
+
+    // PPV stream access is a virtual product: no stock, one per buyer, valid
+    // for live AND ended streams (VOD replays keep the same purchase path).
+    const isPpv = product.type === "ppv_access";
+
+    if (!isPpv) {
+      if (product.is_sold_out) throw new Error("Product is sold out");
+      if (product.quantity_remaining <= 0) throw new Error("No stock remaining");
+    } else {
+      // Dedupe: if the buyer already owns PPV access, don't charge again.
+      const { data: existing } = await supabase
+        .from("live_purchases")
+        .select("id")
+        .eq("live_product_id", live_product_id)
+        .eq("buyer_id", userId)
+        .eq("status", "completed")
+        .limit(1)
+        .maybeSingle();
+      if (existing) {
+        return new Response(JSON.stringify({ already_owned: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     // Get creator stripe account
     const { data: stripeAccount } = await supabase
@@ -53,6 +75,20 @@ serve(async (req) => {
     const platformFee = Math.round(amount * 0.05); // 5%
 
     const origin = req.headers.get("origin") || "https://uply.tv";
+
+    // Optional exact-return URL from the client (keeps the viewer on the same
+    // stream/recording page after checkout). Only http(s) URLs accepted.
+    let returnBase = `${origin}/stream/${product.stream_id}`;
+    if (typeof return_url === "string" && /^https?:\/\//i.test(return_url)) {
+      // strip any prior purchase params so we don't stack them
+      try {
+        const u = new URL(return_url);
+        u.searchParams.delete("purchase");
+        returnBase = u.toString();
+      } catch { /* keep default */ }
+    }
+    const sep = returnBase.includes("?") ? "&" : "?";
+    const successUrl = `${returnBase}${sep}purchase=${isPpv ? "ppv_success" : "success"}`;
 
     // Create checkout session for one-time purchase
     const sessionParams: any = {
@@ -70,13 +106,14 @@ serve(async (req) => {
       }],
       metadata: {
         purchase_type: "live_product",
+        context: isPpv ? "ppv" : "live_shop",
         live_product_id,
         buyer_id: userId,
         creator_id: product.creator_id,
         stream_id: product.stream_id,
       },
-      success_url: `${origin}/stream/${product.stream_id}?purchase=success`,
-      cancel_url: `${origin}/stream/${product.stream_id}`,
+      success_url: successUrl,
+      cancel_url: returnBase,
     };
 
     // If creator has Stripe Connect, use application fee
@@ -95,8 +132,8 @@ serve(async (req) => {
       sessionParams.customer_email = email;
     }
 
-    // Shipping collection if product has shipping
-    if (product.free_shipping || (product.shipping_price && product.shipping_price > 0)) {
+    // Shipping collection if product has shipping (never for PPV access)
+    if (!isPpv && (product.free_shipping || (product.shipping_price && product.shipping_price > 0))) {
       sessionParams.shipping_address_collection = {
         allowed_countries: ["US", "CA", "GB", "AU", "DE", "FR", "JP"],
       };
@@ -134,12 +171,14 @@ serve(async (req) => {
       total_amount: product.price + (product.shipping_price || 0),
     });
 
-    // Decrement quantity
-    const newQty = product.quantity_remaining - 1;
-    await supabase.from("live_products").update({
-      quantity_remaining: newQty,
-      is_sold_out: newQty <= 0,
-    }).eq("id", live_product_id);
+    // Decrement quantity (physical/shop products only — PPV access is unlimited)
+    if (!isPpv) {
+      const newQty = product.quantity_remaining - 1;
+      await supabase.from("live_products").update({
+        quantity_remaining: newQty,
+        is_sold_out: newQty <= 0,
+      }).eq("id", live_product_id);
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

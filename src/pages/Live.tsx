@@ -278,6 +278,8 @@ export default function Live() {
     startedAt: s.started_at ? getTimeAgo(s.started_at) : 'just now',
     description: s.description || '',
     muxPlaybackId: s.mux_playback_id,
+    isPpv: !!(s as any).is_ppv,
+    ppvPrice: (s as any).ppv_price ?? null,
   });
 
   const hasLiveStreams = liveStreams.length > 0;
@@ -396,6 +398,11 @@ export default function Live() {
                       <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-primary/15 text-primary">
                         {formatViewers(heroStream.viewers)} watching
                       </span>
+                      {(heroStream as any).isPpv && (
+                        <span className="px-2 py-0.5 rounded text-[11px] font-bold text-white" style={{ background: "linear-gradient(135deg, #3D7CFF, #B025FF)" }}>
+                          🎟️ {(heroStream as any).ppvPrice != null ? `$${Number((heroStream as any).ppvPrice).toFixed(0)}` : "PPV"}
+                        </span>
+                      )}
                       <span className="hidden sm:inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-secondary text-muted-foreground">
                         {heroStream.category}
                       </span>

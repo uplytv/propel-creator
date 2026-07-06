@@ -75,7 +75,7 @@ function FlashSaleBanner({ flash, onBuy }: { flash: any; onBuy: () => void }) {
   );
 }
 
-function ProductCard({ product, auction, onBuy, onBid }: { product: LiveProduct; auction?: LiveAuction; onBuy: () => void; onBid: (amount: number) => void }) {
+function ProductCard({ product, auction, owned, onBuy, onBid }: { product: LiveProduct; auction?: LiveAuction; owned?: boolean; onBuy: () => void; onBid: (amount: number) => void }) {
   const [customBidOpen, setCustomBidOpen] = useState(false);
   const [customAmount, setCustomAmount] = useState("");
   const isAuction = product.type === "auction" && auction;
@@ -134,6 +134,10 @@ function ProductCard({ product, auction, onBuy, onBid }: { product: LiveProduct;
                 <button onClick={() => onBid(nextBid)} className="flex-1 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-1" style={{ backgroundColor: "hsl(var(--warning))", color: "hsl(var(--background))" }}>Bid ${nextBid} »</button>
               </div>
             )
+          ) : owned ? (
+            <span className="flex-1 py-2.5 rounded-xl text-sm font-bold text-center" style={{ backgroundColor: "rgba(61,124,255,0.15)", color: "#3D7CFF" }}>
+              ✓ Purchased
+            </span>
           ) : product.is_sold_out ? (
             <span className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-center text-white/30 bg-white/5">Sold Out</span>
           ) : (
@@ -165,7 +169,7 @@ function GiveawayWidget({ giveaway, onEnter, entered }: { giveaway: any; onEnter
 export default function ViewerShopOverlay({ streamId, creatorUserId }: Props) {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { activeProducts, products, auctions, activeGiveaway, giveawayEntered, giveaways, placeBid, buyProduct, enterGiveaway } = useLiveShop(streamId);
+  const { activeProducts, products, auctions, activeGiveaway, giveawayEntered, giveaways, ownedProductIds, placeBid, buyProduct, enterGiveaway } = useLiveShop(streamId);
   const [shopDrawerOpen, setShopDrawerOpen] = useState(false);
   const [winnerOverlay, setWinnerOverlay] = useState<{ username: string; title: string } | null>(null);
   const [flashSale, setFlashSale] = useState<any>(null);
@@ -257,6 +261,7 @@ export default function ViewerShopOverlay({ streamId, creatorUserId }: Props) {
               <ProductCard
                 product={mainProduct}
                 auction={mainAuction}
+                owned={ownedProductIds.has(mainProduct.id)}
                 onBuy={() => buyProduct(mainProduct.id)}
                 onBid={(amount) => placeBid(mainProduct.id, amount)}
               />
@@ -297,7 +302,9 @@ export default function ViewerShopOverlay({ streamId, creatorUserId }: Props) {
                         {auc && ` · Bid $${auc.current_bid}`}
                       </p>
                     </div>
-                    {p.is_active && !p.is_sold_out ? (
+                    {ownedProductIds.has(p.id) ? (
+                      <span className="text-xs font-bold" style={{ color: "#3D7CFF" }}>✓ Purchased</span>
+                    ) : p.is_active && !p.is_sold_out ? (
                       p.type === "auction" && auc ? (
                         <button onClick={() => { setShopDrawerOpen(false); }} className="px-3 py-1.5 rounded-lg text-xs font-bold" style={{ backgroundColor: "hsl(var(--warning))", color: "#0A0A0A" }}>Bid</button>
                       ) : (

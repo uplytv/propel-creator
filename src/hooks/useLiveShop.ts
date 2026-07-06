@@ -93,6 +93,7 @@ export function useLiveShop(streamId: string | undefined) {
   const [flashSales, setFlashSales] = useState<LiveFlashSale[]>([]);
   const [variants, setVariants] = useState<LiveProductVariant[]>([]);
   const [wishlistedIds, setWishlistedIds] = useState<Set<string>>(new Set());
+  const [ownedProductIds, setOwnedProductIds] = useState<Set<string>>(new Set());
   const [giveawayEntered, setGiveawayEntered] = useState(false);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [unitsSold, setUnitsSold] = useState(0);
@@ -109,8 +110,10 @@ export function useLiveShop(streamId: string | undefined) {
       ]);
 
       if (prodRes.data) {
-        setProducts(prodRes.data as unknown as LiveProduct[]);
-        const productIds = (prodRes.data as any[]).map((p) => p.id);
+        // ppv_access is a virtual stream-access product — never show in shop UI
+        const shopProducts = (prodRes.data as any[]).filter((p) => p.type !== "ppv_access");
+        setProducts(shopProducts as unknown as LiveProduct[]);
+        const productIds = shopProducts.map((p) => p.id);
 
         if (productIds.length > 0) {
           const { data: variantData } = await supabase
@@ -130,6 +133,21 @@ export function useLiveShop(streamId: string | undefined) {
             const completed = (purchases as any[]).filter(p => p.status === "completed");
             setTotalRevenue(completed.reduce((s, p) => s + Number(p.amount), 0));
             setUnitsSold(completed.length);
+          }
+
+          // Viewer-side owned state: which of this stream's products has the
+          // current user already bought (pending counts too — checkout started)
+          const { data: myPurchases } = await supabase
+            .from("live_purchases")
+            .select("live_product_id, status")
+            .eq("buyer_id", user.id)
+            .in("live_product_id", productIds);
+          if (myPurchases) {
+            setOwnedProductIds(new Set(
+              (myPurchases as any[])
+                .filter(p => p.status === "completed")
+                .map(p => p.live_product_id)
+            ));
           }
         }
       }
@@ -157,7 +175,8 @@ export function useLiveShop(streamId: string | undefined) {
       .channel(`live-shop-${streamId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "live_products", filter: `stream_id=eq.${streamId}` },
         (payload: any) => {
-          if (payload.eventType === "INSERT") setProducts(prev => [...prev, payload.new as LiveProduct]);
+          if (payload.new?.type === "ppv_access") return; // virtual PPV product — not a shop item
+          if (payload.eventType === "INSERT") setProducts(prev => prev.some(p => p.id === payload.new.id) ? prev : [...prev, payload.new as LiveProduct]);
           else if (payload.eventType === "UPDATE") setProducts(prev => prev.map(p => p.id === payload.new.id ? payload.new as LiveProduct : p));
           else if (payload.eventType === "DELETE") setProducts(prev => prev.filter(p => p.id !== payload.old.id));
         })
@@ -180,6 +199,38 @@ export function useLiveShop(streamId: string | undefined) {
 
     return () => { supabase.removeChannel(channel); };
   }, [streamId]);
+
+  // Realtime owned-state: the stripe-webhook flips live_purchases to
+  // "completed" — reflect that instantly so items show as owned mid-stream.
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel(`live-shop-purchases-${user.id}-${streamId || "none"}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "live_purchases", filter: `buyer_id=eq.${user.id}` },
+        (payload: any) => {
+          if (payload.new?.status === "completed" && payload.new?.live_product_id) {
+            setOwnedProductIds(prev => {
+              if (prev.has(payload.new.live_product_id)) return prev;
+              const next = new Set(prev);
+              next.add(payload.new.live_product_id);
+              return next;
+            });
+          }
+        })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user?.id, streamId]);
+
+  // Post-checkout return: Stripe sends the buyer back with ?purchase=success
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("purchase") === "success") {
+      toast.success("Purchase complete! 🎉", { description: "You're all set — the creator has been notified." });
+      const url = new URL(window.location.href);
+      url.searchParams.delete("purchase");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, []);
 
   const activeProducts = products.filter(p => p.is_active && !p.is_sold_out);
   const queuedProducts = products.filter(p => !p.is_active && !p.is_sold_out);
@@ -234,13 +285,21 @@ export function useLiveShop(streamId: string | undefined) {
     }
 
     const { data, error } = await supabase.functions.invoke("stripe-create-live-purchase", {
-      body: { live_product_id: productId, variant_selected: variantSelected || null, buyer_message: buyerMessage || null },
+      body: {
+        live_product_id: productId,
+        variant_selected: variantSelected || null,
+        buyer_message: buyerMessage || null,
+        return_url: window.location.href,
+      },
     });
     if (error || data?.error) {
       toast.error("Purchase failed", { description: data?.error || error?.message });
       return;
     }
-    if (data?.url) window.open(data.url, "_blank");
+    if (data?.url) {
+      toast("Checkout opened in a new tab", { description: "Come back here after paying — your purchase will appear automatically." });
+      window.open(data.url, "_blank");
+    }
   }, [products]);
 
   const startGiveaway = useCallback(async (title: string) => {
@@ -340,7 +399,7 @@ export function useLiveShop(streamId: string | undefined) {
     products, activeProducts, queuedProducts, soldProducts,
     auctions, giveaways, activeGiveaway,
     flashSales, activeFlashSales,
-    variants, wishlistedIds,
+    variants, wishlistedIds, ownedProductIds,
     giveawayEntered, totalRevenue, unitsSold,
     activateProduct, deactivateProduct,
     placeBid, buyProduct,
