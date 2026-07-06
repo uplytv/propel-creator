@@ -223,6 +223,20 @@ export default function ComparisonPage() {
         </div>
       </section>
 
+      {/* ── Verdict band ── */}
+      {config.verdict && (
+        <section className="relative px-4 py-12 border-t border-border">
+          <div className="max-w-3xl mx-auto">
+            <div className="border border-primary/40 bg-primary/5 px-6 py-8 sm:px-10 text-center">
+              <p className="eyebrow-gold mb-3">The bottom line</p>
+              <p className="text-lg sm:text-xl font-bold leading-snug text-foreground">
+                {config.verdict}
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ── FAQ ── */}
       <section className="relative px-4 py-16 border-t border-border">
         <div className="max-w-3xl mx-auto">
