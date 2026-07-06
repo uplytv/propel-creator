@@ -3,6 +3,7 @@ import { useShoppableFeed } from "@/hooks/useShoppableFeed";
 import AppLayout from "@/components/layout/AppLayout";
 import { Loader2, ShoppingBag } from "lucide-react";
 import ShopProductOverlay from "@/components/shop/ShopProductOverlay";
+import CartCheckoutReturn from "@/components/shop/CartCheckoutReturn";
 import { useCartContext } from "@/context/CartContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "react-router-dom";
@@ -31,6 +32,7 @@ export default function Shop() {
   return (
     <AppLayout>
       <SEOHead title="Shop — UPLY" description="Tap-to-buy products featured in your favorite creators' content." />
+      <CartCheckoutReturn />
 
       <div className="max-w-2xl mx-auto pb-24">
         <header className="px-4 pt-6 pb-3 flex items-center justify-between">

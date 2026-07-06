@@ -87,6 +87,8 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
     verify_jwt = false
   [functions.blake-subscription-alerts]
     verify_jwt = false
+  [functions.platform-dunning-check]
+    verify_jwt = false
   [functions.track-affiliate-conversion]
     verify_jwt = false
   [functions.reveal-virtual-link]
@@ -118,6 +120,8 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
   [functions.release-expired-ticket-holds]
     verify_jwt = false
   [functions.finalize-ticket-order]
+    verify_jwt = false
+  [functions.finalize-cart-order]
     verify_jwt = false
   [functions.aria-event-copilot]
     verify_jwt = false
