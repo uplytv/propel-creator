@@ -19,6 +19,8 @@ export function PayoutsTab() {
   const queryClient = useQueryClient();
   const [connecting, setConnecting] = useState(false);
   const { showReauth, reauthLoading, requireReauth, confirmReauth, cancelReauth } = useReauthGuard();
+  const { data: walletData } = useWallet();
+  const walletId = walletData?.id;
 
   const { data: stripeAccount, isLoading: accountLoading } = useQuery({
     queryKey: ["stripe-account", user?.id],
@@ -34,8 +36,8 @@ export function PayoutsTab() {
   });
 
   const { data: revenueStats } = useQuery({
-    queryKey: ["revenue-stats", user?.id],
-    enabled: !!user && !!stripeAccount?.charges_enabled,
+    queryKey: ["revenue-stats", user?.id, walletId],
+    enabled: !!user && !!stripeAccount?.charges_enabled && !!walletId,
     queryFn: async () => {
       const now = new Date();
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
@@ -43,6 +45,7 @@ export function PayoutsTab() {
       const { data: allTx } = await supabase
         .from("transactions")
         .select("amount, net_amount, completed_at, type")
+        .eq("wallet_id", walletId!)
         .in("type", ["subscription", "subscription_renewal"])
         .eq("status", "completed");
 
@@ -62,12 +65,13 @@ export function PayoutsTab() {
   });
 
   const { data: recentTx } = useQuery({
-    queryKey: ["recent-transactions", user?.id],
-    enabled: !!user && !!stripeAccount?.charges_enabled,
+    queryKey: ["recent-transactions", user?.id, walletId],
+    enabled: !!user && !!stripeAccount?.charges_enabled && !!walletId,
     queryFn: async () => {
       const { data } = await supabase
         .from("transactions")
         .select("*")
+        .eq("wallet_id", walletId!)
         .eq("status", "completed")
         .order("completed_at", { ascending: false })
         .limit(10);
@@ -147,7 +151,6 @@ export function PayoutsTab() {
   }
 
   // Fully connected
-  const { data: walletData } = useWallet();
   const pendingBalance = Number(walletData?.pending_balance ?? 0);
   const availableBalance = Number(walletData?.available_balance ?? 0);
 

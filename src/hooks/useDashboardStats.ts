@@ -71,7 +71,10 @@ export function useDashboardStats() {
           };
         }, { count: 0, revenue: 0 }),
         safeQuery(async () => {
-          const r = await supabase.from("transactions").select("net_amount").gte("completed_at", startOfMonth).eq("status", "completed");
+          // Scope to this creator's wallet — transactions is a platform-wide table
+          const w = await supabase.from("wallets").select("id").eq("user_id", user.id).maybeSingle();
+          if (!w.data?.id) return 0;
+          const r = await supabase.from("transactions").select("net_amount").eq("wallet_id", w.data.id).gte("completed_at", startOfMonth).eq("status", "completed");
           const data = r.data || [];
           return data.reduce((sum, t: any) => sum + Number(t.net_amount || 0), 0);
         }, 0),

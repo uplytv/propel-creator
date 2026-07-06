@@ -28,8 +28,15 @@ serve(async (req) => {
     const { data: userData, error: userError } = await supabase.auth.getUser(token);
     if (userError || !userData.user) throw new Error("Unauthorized");
 
-    const { amount, creator_id, stream_id, message } = await req.json();
+    const { amount, creator_id, stream_id, message, context, track_id, return_path } = await req.json();
     if (!amount || !creator_id) throw new Error("amount and creator_id required");
+
+    // Optional relative path to return to after checkout (e.g. music pages).
+    // Must be a same-origin relative path to avoid open redirects.
+    const safeReturnPath =
+      typeof return_path === "string" && return_path.startsWith("/") && !return_path.startsWith("//")
+        ? return_path
+        : null;
 
     const amountCents = Math.round(amount * 100);
     const feeCents = Math.round(amountCents * 0.05);
@@ -67,8 +74,10 @@ serve(async (req) => {
         application_fee_amount: feeCents,
         transfer_data: { destination: stripeAccount.stripe_account_id },
       },
-      success_url: `${origin}/stream/${stream_id || ""}?tipped=true`,
-      cancel_url: `${origin}/stream/${stream_id || ""}`,
+      success_url: safeReturnPath
+        ? `${origin}${safeReturnPath}${safeReturnPath.includes("?") ? "&" : "?"}tipped=true`
+        : `${origin}/stream/${stream_id || ""}?tipped=true`,
+      cancel_url: safeReturnPath ? `${origin}${safeReturnPath}` : `${origin}/stream/${stream_id || ""}`,
       metadata: {
         purchase_type: "tip",
         sender_id: userData.user.id,
@@ -76,6 +85,9 @@ serve(async (req) => {
         stream_id: stream_id || "",
         message: message || "",
         amount: String(amount),
+        // Reconciliation markers for non-stream tips (e.g. music tips)
+        context: context || "",
+        track_id: track_id || "",
       },
     });
 

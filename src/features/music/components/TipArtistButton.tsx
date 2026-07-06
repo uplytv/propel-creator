@@ -27,17 +27,17 @@ export function TipArtistButton({ artistId, trackId, artistName }: Props) {
       return;
     }
     try {
-      await sendTip.mutateAsync({
+      // Real payment: redirects to Stripe Checkout. The tip is only recorded
+      // (and the artist only paid) after the payment succeeds.
+      const { url } = await sendTip.mutateAsync({
         artist_id: artistId,
         track_id: trackId,
         amount_cents: Math.round(amount * 100),
         message: message.trim() || undefined,
       });
-      toast.success(`Sent $${amount} to ${artistName ?? 'the artist'} 💚`);
-      setOpen(false);
-      setMessage('');
+      window.location.href = url;
     } catch (e: any) {
-      toast.error(e.message ?? 'Tip failed');
+      toast.error(e.message ?? 'Could not start checkout');
     }
   };
 
@@ -81,8 +81,11 @@ export function TipArtistButton({ artistId, trackId, artistName }: Props) {
             rows={3}
           />
           <Button onClick={submit} disabled={sendTip.isPending} className="w-full min-h-[44px]">
-            {sendTip.isPending ? 'Sending…' : `Send $${amount}`}
+            {sendTip.isPending ? 'Opening checkout…' : `Send $${amount}`}
           </Button>
+          <p className="text-[11px] text-center text-muted-foreground">
+            Paid securely via Stripe · 5% platform fee
+          </p>
         </div>
       </DialogContent>
     </Dialog>

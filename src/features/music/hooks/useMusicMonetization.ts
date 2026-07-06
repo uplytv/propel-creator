@@ -2,52 +2,37 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 // ===== Tips =====
-export function useArtistTips(artistId?: string) {
-  return useQuery({
-    queryKey: ['music', 'tips', 'artist', artistId],
-    queryFn: async () => {
-      if (!artistId) return [];
-      const { data, error } = await supabase
-        .from('music_tips')
-        .select('*')
-        .eq('artist_id', artistId)
-        .order('created_at', { ascending: false })
-        .limit(50);
-      if (error) throw error;
-      return data ?? [];
-    },
-    enabled: !!artistId,
-  });
-}
-
+// Tips are REAL payments: they go through Stripe Checkout via the existing
+// `stripe-create-tip` edge function (95/5 split, transfer to the artist's
+// connected account). No tip row is written client-side — the record and
+// wallet credit are created by the Stripe webhook only after payment succeeds.
 export function useSendTip() {
-  const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: {
       artist_id: string;
       track_id?: string | null;
       amount_cents: number;
       message?: string;
-    }) => {
+    }): Promise<{ url: string }> => {
       const { data: u } = await supabase.auth.getUser();
-      const fan_id = u.user?.id;
-      if (!fan_id) throw new Error('Not authenticated');
-      const { data, error } = await supabase
-        .from('music_tips')
-        .insert({
-          fan_id,
-          artist_id: input.artist_id,
-          track_id: input.track_id ?? null,
-          amount_cents: input.amount_cents,
-          message: input.message ?? null,
-        })
-        .select()
-        .single();
+      if (!u.user) throw new Error('Not authenticated');
+      if (!input.amount_cents || input.amount_cents < 100) {
+        throw new Error('Minimum tip is $1');
+      }
+      const { data, error } = await supabase.functions.invoke('stripe-create-tip', {
+        body: {
+          amount: input.amount_cents / 100,
+          creator_id: input.artist_id,
+          track_id: input.track_id ?? undefined,
+          message: input.message,
+          // Reconciliation marker so these tips are identifiable in Stripe
+          context: input.track_id ? 'music_track' : 'music_artist',
+          return_path: window.location.pathname,
+        },
+      });
       if (error) throw error;
-      return data;
-    },
-    onSuccess: (_d, vars) => {
-      qc.invalidateQueries({ queryKey: ['music', 'tips', 'artist', vars.artist_id] });
+      if (!data?.url) throw new Error(data?.error ?? 'Could not start checkout');
+      return { url: data.url as string };
     },
   });
 }
@@ -175,65 +160,11 @@ export function useUpsertSubTier() {
 }
 
 // ===== Active subscription =====
-export function useArtistSubscription(artistId?: string) {
-  return useQuery({
-    queryKey: ['music', 'artist-sub', artistId],
-    queryFn: async () => {
-      if (!artistId) return null;
-      const { data: u } = await supabase.auth.getUser();
-      const fan_id = u.user?.id;
-      if (!fan_id) return null;
-      const { data, error } = await supabase
-        .from('artist_subscriptions')
-        .select('*')
-        .eq('artist_id', artistId)
-        .eq('fan_id', fan_id)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!artistId,
-  });
-}
-
-export function useSubscribeToArtist() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (input: { artist_id: string; tier_id: string }) => {
-      const { data: u } = await supabase.auth.getUser();
-      const fan_id = u.user?.id;
-      if (!fan_id) throw new Error('Not authenticated');
-      const { data, error } = await supabase
-        .from('artist_subscriptions')
-        .upsert(
-          {
-            fan_id,
-            artist_id: input.artist_id,
-            tier_id: input.tier_id,
-            status: 'active',
-          },
-          { onConflict: 'fan_id,artist_id' },
-        )
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (_d, vars) =>
-      qc.invalidateQueries({ queryKey: ['music', 'artist-sub', vars.artist_id] }),
-  });
-}
-
-export function useCancelArtistSubscription() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('artist_subscriptions')
-        .update({ status: 'canceled' })
-        .eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['music', 'artist-sub'] }),
-  });
-}
+// NOTE: The old useArtistSubscription / useSubscribeToArtist /
+// useCancelArtistSubscription hooks wrote `artist_subscriptions` rows with
+// status 'active' and ZERO payment involvement (fans "subscribed" for free,
+// artists saw phantom members). They have been removed. Real artist
+// memberships are the community subscription tiers (`subscription_tiers` +
+// `member_subscriptions`, Stripe-billed) — see useSubscriptionTiers /
+// useMemberSubscription in `@/hooks/useStripeAccount` and the
+// /community/:creatorId/pricing checkout flow.
