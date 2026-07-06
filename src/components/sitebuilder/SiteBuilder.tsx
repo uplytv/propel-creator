@@ -89,20 +89,26 @@ export default function SiteBuilder() {
     queryKey: ["website-page", profileId],
     enabled: !!profileId,
     queryFn: async () => {
+      // limit(1) + array (not maybeSingle) so a duplicate website row can never
+      // throw and wedge the builder; take the most recently updated.
       const { data, error } = await supabase
         .from("creator_pages")
         .select("*")
         .eq("creator_id", profileId!)
         .eq("page_type", "website")
-        .maybeSingle();
+        .order("updated_at", { ascending: false })
+        .limit(1);
       if (error) throw error;
-      return data;
+      return data?.[0] ?? null;
     },
   });
 
   // Hydrate builder state once from the loaded page (or a starter site).
+  // Must wait for profileId — otherwise the query is disabled (isLoading is
+  // false while profile loads), and hydrating here would lock in a starter
+  // site before the saved page ever arrives.
   useEffect(() => {
-    if (loadedRef.current || isLoading) return;
+    if (loadedRef.current || isLoading || !profileId) return;
     if (page) {
       const content = (page.content || {}) as any;
       setSections(Array.isArray(content.sections) ? content.sections : starterSections());
