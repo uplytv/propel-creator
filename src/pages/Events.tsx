@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Plus, CalendarDays, MapPin, Monitor, Globe, Loader2, Users, Ticket, BarChart3, Download, ScanLine, ShieldCheck, Activity } from "lucide-react";
+import { Plus, CalendarDays, MapPin, Monitor, Globe, Loader2, Users, Ticket, BarChart3, Download, ScanLine, ShieldCheck, Activity, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,6 +15,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import QueryErrorState from "@/components/ui/QueryErrorState";
 import EventCheckIn from "@/components/events/EventCheckIn";
 import EventStaffManager from "@/components/events/EventStaffManager";
+import EventPromotersManager from "@/components/events/EventPromotersManager";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -160,6 +161,7 @@ function EventCard({ event, username }: { event: EventRow; username?: string }) 
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showStaff, setShowStaff] = useState(false);
+  const [showPromoters, setShowPromoters] = useState(false);
   const isPast = isBefore(new Date(event.ends_at), new Date());
   const isInPerson = event.event_type === "in_person" || event.event_type === "hybrid";
 
@@ -224,6 +226,9 @@ function EventCard({ event, username }: { event: EventRow; username?: string }) 
               <ShieldCheck className="w-3 h-3" /> Staff
             </Button>
           )}
+          <Button variant="outline" size="sm" className="text-xs gap-1" onClick={() => setShowPromoters((s) => !s)}>
+            <Megaphone className="w-3 h-3" /> Promoters
+          </Button>
           {event.status === "published" && !isPast && (
             <Button
               variant="outline"
@@ -244,6 +249,14 @@ function EventCard({ event, username }: { event: EventRow; username?: string }) 
         {showStaff && (
           <div className="px-4 pb-4 pt-1 border-t border-border">
             <EventStaffManager eventId={event.id} />
+          </div>
+        )}
+        {showPromoters && (
+          <div className="px-4 pb-4 pt-1 border-t border-border">
+            <EventPromotersManager
+              eventId={event.id}
+              eventUrl={`${window.location.origin}/events/${event.slug || event.id}`}
+            />
           </div>
         )}
       </motion.div>

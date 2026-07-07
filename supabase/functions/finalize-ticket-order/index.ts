@@ -183,6 +183,36 @@ serve(async (req) => {
       .update({ status: "completed", completed_at: new Date().toISOString() })
       .eq("id", order.id);
 
+    // ── Promoter attribution (tracking ONLY — moves no money) ──
+    // If checkout carried a valid promoter code for THIS event, record the
+    // sale once. UNIQUE(order_id) + ignoreDuplicates makes this idempotent:
+    // re-running finalize (success page + reconciliation cron) can't
+    // double-count. Best-effort: attribution must never block tickets.
+    try {
+      const rawPromoCode = (order.metadata as any)?.promoter_code;
+      if (typeof rawPromoCode === "string" && rawPromoCode.trim()) {
+        const promoCode = rawPromoCode.trim().toUpperCase();
+        const { data: promoter } = await supabase
+          .from("event_promoters")
+          .select("id")
+          .eq("event_id", order.event_id)
+          .eq("code", promoCode)
+          .maybeSingle();
+        if (promoter) {
+          await supabase.from("event_promoter_sales").upsert(
+            {
+              promoter_id: promoter.id,
+              event_id: order.event_id,
+              order_id: order.id,
+              amount_cents: order.subtotal_cents ?? 0,
+              tickets_count: totalQty,
+            },
+            { onConflict: "order_id", ignoreDuplicates: true },
+          );
+        }
+      }
+    } catch (_e) { /* non-fatal — attribution is best-effort */ }
+
     // Email each ticket (best-effort) + one in-app notification.
     for (const tk of created) {
       try {

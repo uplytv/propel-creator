@@ -19,8 +19,14 @@ serve(async (req) => {
     if (!u?.user) return err("Unauthorized", 401);
     userId = u.user.id;
     body = await req.json();
-    const { tier_id, quantity = 1, referral_code, success_url, cancel_url } = body ?? {};
+    const { tier_id, quantity = 1, referral_code, promo_code, success_url, cancel_url } = body ?? {};
     if (!tier_id) return err("tier_id required");
+    // Event promoter attribution code (?promo=CODE). Carried in metadata only —
+    // validated at finalize time; never affects pricing or fees.
+    const promoterCode =
+      typeof promo_code === "string" && promo_code.trim().length >= 3
+        ? promo_code.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, "").slice(0, 40)
+        : null;
     if (quantity < 1 || quantity > 8) return err("quantity must be 1-8");
 
     // Idempotency
@@ -78,7 +84,7 @@ serve(async (req) => {
         line_items: [
           { tier_id, quantity, unit_price_cents: tier.price_cents, name: tier.name },
         ],
-        metadata: { referral_code: referral_code ?? null },
+        metadata: { referral_code: referral_code ?? null, promoter_code: promoterCode },
       })
       .select()
       .single();
@@ -125,6 +131,7 @@ serve(async (req) => {
           quantity: String(quantity),
           buyer_id: userId,
           referral_code: referral_code ?? "",
+          promoter_code: promoterCode ?? "",
           order_type: "primary_ticket",
         },
       },

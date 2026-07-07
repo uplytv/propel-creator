@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { getEventPromoCode } from "@/lib/eventPromo";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Loader2, Check, Ticket } from "lucide-react";
 import { toast } from "sonner";
@@ -61,10 +62,14 @@ export default function EventTierPicker({ eventId }: { eventId: string; eventTit
     setBuying(tier.id);
     try {
       const quantity = qty[tier.id] ?? 1;
+      // Promoter attribution: forward the captured ?promo= code (if any) so
+      // the finalized order can be credited to the promoter. Tracking only.
+      const promoCode = getEventPromoCode(eventId);
       const { data, error } = await supabase.functions.invoke("purchase-ticket", {
         body: {
           tier_id: tier.id,
           quantity,
+          ...(promoCode ? { promo_code: promoCode } : {}),
           success_url: `${window.location.origin}/tickets/success`,
           cancel_url: window.location.href,
         },

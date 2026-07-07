@@ -26,6 +26,7 @@ import { PurchaseOverlay } from "@/components/payments/PurchaseOverlay";
 import SeatPicker from "@/components/events/SeatPicker";
 import ResaleListings from "@/components/events/ResaleListings";
 import { useAuth } from "@/context/AuthContext";
+import { captureEventPromoCode } from "@/lib/eventPromo";
 import { useEvent, useMyTicketForEvent, useClaimFreeTicket, useSetEventReminder } from "@/hooks/useEvents";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
@@ -108,6 +109,13 @@ export default function EventPage() {
   }, []);
   const isSeated = (event as any)?.ticketing_mode === "seated";
   const seatMap = (event as any)?.seat_map as { rows?: number; cols?: number; blocked?: string[] } | null;
+
+  // Promoter link attribution: capture ?promo=CODE for this event (7-day
+  // window, cookie + localStorage). Validated server-side at finalize time.
+  useEffect(() => {
+    const promo = searchParams.get("promo");
+    if (promo && event?.id) captureEventPromoCode(event.id, promo);
+  }, [searchParams, event?.id]);
 
   // Get creator profile
   const { data: creatorProfile } = useQuery({

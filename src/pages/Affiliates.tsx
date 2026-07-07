@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import AppLayout from "@/components/layout/AppLayout";
+import EventPromoCard from "@/components/affiliates/EventPromoCard";
 import { useAffiliateLink, useAffiliateStats } from "@/hooks/useAffiliates";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -107,6 +108,9 @@ export default function Affiliates() {
             );
           })}
         </div>
+
+        {/* Event promoter links (self-hides unless this user promotes events) */}
+        <EventPromoCard />
 
         {/* Conversions Table */}
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="glass-card overflow-hidden">
