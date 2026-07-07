@@ -205,6 +205,7 @@ const Newsletter = lazy(() => import("./pages/Newsletter"));
 const MyPage = lazy(() => import("./pages/MyPage"));
 const PublicSite = lazy(() => import("./pages/PublicSite"));
 const Purchases = lazy(() => import("./pages/Purchases"));
+const DirectMessages = lazy(() => import("./pages/DirectMessages"));
 const FunnelEditor = lazy(() => import("./pages/FunnelEditor"));
 const Marketplace = lazy(() => import("./pages/Marketplace"));
 const BrandDeal = lazy(() => import("./pages/BrandDeal"));
@@ -239,7 +240,12 @@ const SocialLocal = lazy(() => import("./pages/social/SocialLocal"));
 const SocialFriends = lazy(() => import("./pages/social/SocialFriends"));
 const SocialProducers = lazy(() => import("./pages/social/SocialProducers"));
 const SocialPeople = lazy(() => import("./pages/social/SocialPeople"));
-import SocialLayout from "./components/social/SocialLayout";
+// Lazy: SocialLayout statically imports AppLayout (and with it VideoUploadSheet
+// → @mux/upchunk, GlobalAriaLauncher → AriaPanel, MobileTabBar → CreateSheet),
+// which would otherwise all land in the entry chunk. Every other consumer of
+// AppLayout is already a lazy page, so this moves the whole layout tree out of
+// the critical path. Rendered inside the existing route-level <Suspense>.
+const SocialLayout = lazy(() => import("./components/social/SocialLayout"));
 import { CartProvider } from "@/context/CartContext";
 import CartDrawer from "@/components/shop/CartDrawer";
 const Shop = lazy(() => import("./pages/Shop"));
@@ -585,6 +591,7 @@ const App = () => (
                    <Route path="/new" element={<NewCreators />} />
                    <Route path="/c/:category" element={<CategoryFeed />} />
                     <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+                    <Route path="/dm" element={<ProtectedRoute><DirectMessages /></ProtectedRoute>} />
                     <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
                     <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
                     <Route path="/scan" element={<ProtectedRoute><Scan /></ProtectedRoute>} />

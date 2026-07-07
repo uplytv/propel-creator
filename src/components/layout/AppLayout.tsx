@@ -32,6 +32,19 @@ import { safeNavPath, validateNavPaths, isKnownRoute } from "@/lib/routeRegistry
 import { usePublicProfileInfo } from "@/hooks/usePublicProfilePath";
 
 type NavItem = { label: string; icon: React.ElementType; path: string; desc: string; requiresTier?: number; badgeKey?: string; featureKey?: string };
+type NavGroup = { core: string; label: string; icon: React.ElementType; items: NavItem[] };
+
+// Expanded-cluster state survives reloads so the sidebar reopens the way the
+// user left it (e.g. MUSIC and EARN open, everything else folded).
+const NAV_EXPANDED_KEY = "uply_nav_expanded_groups";
+
+function loadExpandedGroups(): string[] {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(NAV_EXPANDED_KEY) || "[]");
+    if (Array.isArray(parsed)) return parsed.filter((v): v is string => typeof v === "string");
+  } catch { /* corrupted/absent — fall through */ }
+  return [];
+}
 
 // Six flat primary destinations (Skool-style calm). Everything else lives under
 // the single collapsible "More" group at the bottom of the nav.
@@ -47,9 +60,10 @@ const primaryNav: NavItem[] = [
 // Paths already surfaced as primary items — excluded from "More" to avoid duplicates.
 const primaryPaths = new Set(primaryNav.map((i) => i.path));
 
-// Item catalog feeding the "More" group. Grouping is kept for per-core feature
-// gating (isCoreEnabled) — the render flattens everything into one group.
-// Every item is feature-gated so admins can tune per-category in /admin/feature-toggles.
+// Item catalog feeding the "More" section. Groups render as collapsible labeled
+// clusters (EVENTS & TICKETS / CONTENT / …) and drive per-core feature gating
+// (isCoreEnabled). Every item is also feature-gated so admins can tune
+// per-category in /admin/feature-toggles.
 const coreNav: { core: string; label: string; icon: React.ElementType; items: NavItem[] }[] = [
   {
     core: "events",
@@ -195,7 +209,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [expandedCores, setExpandedCores] = useState<string[]>([]);
+  const [expandedCores, setExpandedCores] = useState<string[]>(loadExpandedGroups);
   const [uploadSheetOpen, setUploadSheetOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
@@ -214,17 +228,39 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { path: publicProfilePath, handle: vanitySlug } = usePublicProfileInfo();
   const yourPagePath = user ? `/music/artist/${user.id}/edit` : "/auth";
 
-  // Everything that isn't one of the six primary destinations, flattened into
-  // the single "More" group. Preserves per-core gating (isCoreEnabled) and
-  // item-level featureKey gating; skips items already surfaced as primaries.
-  const moreNavItems: NavItem[] = ([
+  // Everything that isn't one of the six primary destinations, organized into
+  // labeled collapsible clusters under "More". Preserves per-core gating
+  // (isCoreEnabled) and item-level featureKey gating; skips items already
+  // surfaced as primaries so nothing appears twice.
+  const gateItems = (items: NavItem[]) =>
+    items
+      .filter((i) => !primaryPaths.has(i.path))
+      .filter((i) => !i.featureKey || isEnabled(i.featureKey));
+
+  const moreNavGroups: NavGroup[] = [
     ...coreNav
       .filter((g) => isCoreEnabled(g.core))
-      .flatMap((g) => g.items.filter((i) => !primaryPaths.has(i.path))),
-    { label: "Your Page", icon: Globe, path: yourPagePath, desc: "Your public artist page" } as NavItem,
-    ...utilityNav,
-    ...(isAdmin ? [{ label: "Admin", icon: Shield, path: "/admin", desc: "Platform admin" } as NavItem] : []),
-  ] as NavItem[]).filter((i) => !i.featureKey || isEnabled(i.featureKey));
+      .map((g) => ({ core: g.core, label: g.label, icon: g.icon, items: gateItems(g.items) })),
+    {
+      core: "account",
+      label: "ACCOUNT",
+      icon: Settings,
+      items: gateItems([
+        { label: "Your Page", icon: Globe, path: yourPagePath, desc: "Your public artist page" } as NavItem,
+        ...utilityNav,
+        ...(isAdmin ? [{ label: "Admin", icon: Shield, path: "/admin", desc: "Platform admin" } as NavItem] : []),
+      ]),
+    },
+  ].filter((g) => g.items.length > 0);
+
+  // Flat view of the same items — used by the collapsed icon rail and the
+  // active-route auto-expand check.
+  const moreNavItems: NavItem[] = moreNavGroups.flatMap((g) => g.items);
+
+  const toggleCore = (core: string) =>
+    setExpandedCores((prev) =>
+      prev.includes(core) ? prev.filter((c) => c !== core) : [...prev, core],
+    );
 
   const getBadge = (item: NavItem) => {
     if (item.badgeKey === "collaborate") return unreadCount;
@@ -259,14 +295,23 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     }
   }, [publicProfilePath, yourPagePath]);
 
-  // Auto-expand "More" when it contains the active route
+  // Persist expanded clusters so the sidebar reopens the way the user left it.
   useEffect(() => {
-    const moreActive = moreNavItems.some(item => {
+    try { localStorage.setItem(NAV_EXPANDED_KEY, JSON.stringify(expandedCores)); } catch { /* private mode */ }
+  }, [expandedCores]);
+
+  // Auto-expand "More" + the cluster that contains the active route.
+  useEffect(() => {
+    const isItemActive = (item: NavItem) => {
       const resolved = resolvePath(item);
       return location.pathname === resolved || location.pathname.startsWith(resolved + "/");
-    }) || location.pathname.startsWith("/admin");
-    if (moreActive && !expandedCores.includes("more")) {
-      setExpandedCores(prev => [...prev, "more"]);
+    };
+    const activeGroup = moreNavGroups.find((g) => g.items.some(isItemActive))
+      ?? (location.pathname.startsWith("/admin") ? moreNavGroups.find((g) => g.core === "account") : undefined);
+    if (!activeGroup) return;
+    const want = ["more", activeGroup.core];
+    if (want.some((c) => !expandedCores.includes(c))) {
+      setExpandedCores((prev) => Array.from(new Set([...prev, ...want])));
     }
   }, [location.pathname, user]);
 
@@ -350,10 +395,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         )
       )}
 
-      {/* More — everything else under one collapsible group */}
+      {/* More — everything else, as collapsible labeled clusters */}
       {(() => {
-        const moreCore = "more";
-        const isExpanded = expandedCores.includes(moreCore);
+        const isExpanded = expandedCores.includes("more");
         if (moreNavItems.length === 0) return null;
 
         if (collapsed) {
@@ -372,9 +416,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         return (
           <div className="mt-3 pt-3 border-t border-border/50">
             <button
-              onClick={() => setExpandedCores(prev =>
-                prev.includes(moreCore) ? prev.filter(c => c !== moreCore) : [...prev, moreCore]
-              )}
+              onClick={() => toggleCore("more")}
               className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
             >
               <Settings className="w-3.5 h-3.5" />
@@ -388,9 +430,37 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="overflow-hidden space-y-0.5 ml-1"
+                  className="overflow-hidden ml-1"
                 >
-                  {moreNavItems.map(item => renderNavItem(item, false))}
+                  {moreNavGroups.map((group) => {
+                    const groupExpanded = expandedCores.includes(group.core);
+                    return (
+                      <div key={group.core} className="mt-0.5">
+                        <button
+                          onClick={() => toggleCore(group.core)}
+                          aria-expanded={groupExpanded}
+                          className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/80 hover:text-foreground transition-colors"
+                        >
+                          <group.icon className="w-3.5 h-3.5" />
+                          <span className="flex-1 text-left">{group.label}</span>
+                          <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${groupExpanded ? "rotate-180" : ""}`} />
+                        </button>
+                        <AnimatePresence initial={false}>
+                          {groupExpanded && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.15 }}
+                              className="overflow-hidden space-y-0.5 ml-2"
+                            >
+                              {group.items.map(item => renderNavItem(item, false))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  })}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -735,17 +805,14 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 {/* Primary — six flat destinations */}
                 {primaryNav.map(item => renderNavItem(item, false, () => setMobileMenuOpen(false)))}
 
-                {/* More — everything else under one collapsible group */}
+                {/* More — everything else, as collapsible labeled clusters */}
                 {(() => {
-                  const moreCore = "more";
-                  const isExpanded = expandedCores.includes(moreCore);
+                  const isExpanded = expandedCores.includes("more");
                   if (moreNavItems.length === 0) return null;
                   return (
                     <div className="mt-3 pt-3 border-t border-border/50">
                       <button
-                        onClick={() => setExpandedCores(prev =>
-                          prev.includes(moreCore) ? prev.filter(c => c !== moreCore) : [...prev, moreCore]
-                        )}
+                        onClick={() => toggleCore("more")}
                         className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
                       >
                         <Settings className="w-3.5 h-3.5" />
@@ -753,8 +820,28 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                         <ChevronDown className={`w-3 h-3 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
                       </button>
                       {isExpanded && (
-                        <div className="space-y-0.5 ml-1">
-                          {moreNavItems.map(item => renderNavItem(item, false, () => setMobileMenuOpen(false)))}
+                        <div className="ml-1">
+                          {moreNavGroups.map((group) => {
+                            const groupExpanded = expandedCores.includes(group.core);
+                            return (
+                              <div key={group.core} className="mt-0.5">
+                                <button
+                                  onClick={() => toggleCore(group.core)}
+                                  aria-expanded={groupExpanded}
+                                  className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/80"
+                                >
+                                  <group.icon className="w-3.5 h-3.5" />
+                                  <span className="flex-1 text-left">{group.label}</span>
+                                  <ChevronDown className={`w-3 h-3 transition-transform ${groupExpanded ? "rotate-180" : ""}`} />
+                                </button>
+                                {groupExpanded && (
+                                  <div className="space-y-0.5 ml-2">
+                                    {group.items.map(item => renderNavItem(item, false, () => setMobileMenuOpen(false)))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>

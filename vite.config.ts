@@ -54,6 +54,10 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        // Regression guard: no single precache entry may exceed 3 MB. Anything
+        // bigger (a future oversized chunk or image) silently falls out of the
+        // install payload instead of bloating first-visit downloads.
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         // Don't force first-time visitors to download heavy on-demand chunks and
         // oversized marketing images upfront — they lazy-load normally and get
         // runtime-cached (rule below). Hashed filenames make this deploy-safe.
@@ -66,6 +70,7 @@ export default defineConfig(({ mode }) => ({
           "**/RichTextEditor-*.js",
           "**/favicon.png",
           "**/logo.png",
+          "**/logo-*.png", // hashed emit of src/assets/logo.png (1.4 MB) — content-hashed, HTTP cache handles it
           "**/arya-xo-*.png",
         ],
         navigateFallbackDenylist: [/^\/~oauth/, /^\/api/],
