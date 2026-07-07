@@ -5,7 +5,9 @@ import {
   Plus, MoreVertical, Grid, List, Brain, Link as LinkIcon,
   LayoutTemplate, Pencil, Users, DollarSign, X, ArrowLeft,
   Loader2, Sparkles, Trash2, Video, Upload, ImageIcon, Package,
+  TicketPercent, Ban,
 } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +25,230 @@ import UPLYMuxPlayer from "@/components/MuxPlayer";
 const typeIcons: Record<string, string> = {
   digital: "📦", course: "📚", community: "🤝", coaching: "🎯",
 };
+
+interface CreatorCoupon {
+  id: string;
+  code: string;
+  percent_off: number;
+  product_id: string | null;
+  max_redemptions: number | null;
+  redeemed_count: number;
+  expires_at: string | null;
+  active: boolean;
+}
+
+/**
+ * UPLY-level coupons (not Stripe promotion codes — those would apply
+ * platform-wide). Rows are creator-owned via RLS; buyers validate through the
+ * validate_coupon RPC and stripe-create-product-checkout applies the discount
+ * server-side before session creation.
+ */
+function CouponsSection({ products }: { products: any[] }) {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const [showForm, setShowForm] = useState(false);
+  const [code, setCode] = useState("");
+  const [percentOff, setPercentOff] = useState("20");
+  const [scope, setScope] = useState("all"); // "all" | product id
+  const [maxRedemptions, setMaxRedemptions] = useState("");
+  const [expiresAt, setExpiresAt] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const { data: coupons, isLoading } = useQuery({
+    queryKey: ["creator-coupons", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("creator_coupons")
+        .select("*")
+        .eq("creator_id", user!.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data || []) as CreatorCoupon[];
+    },
+  });
+
+  const productName = (id: string | null) =>
+    id ? products.find((p) => p.id === id)?.name || "One product" : "All products";
+
+  const generateCode = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    setCode(Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join(""));
+  };
+
+  const createCoupon = async () => {
+    if (!user) return;
+    const normalized = code.trim().toUpperCase().replace(/\s+/g, "");
+    const pct = parseInt(percentOff, 10);
+    if (normalized.length < 3 || normalized.length > 32) {
+      toast.error("Code must be 3–32 characters");
+      return;
+    }
+    if (!Number.isFinite(pct) || pct < 5 || pct > 100) {
+      toast.error("Discount must be between 5% and 100%");
+      return;
+    }
+    setSaving(true);
+    try {
+      const { error } = await (supabase as any).from("creator_coupons").insert({
+        creator_id: user.id,
+        code: normalized,
+        percent_off: pct,
+        product_id: scope === "all" ? null : scope,
+        max_redemptions: maxRedemptions.trim() ? parseInt(maxRedemptions, 10) : null,
+        expires_at: expiresAt ? new Date(`${expiresAt}T23:59:59`).toISOString() : null,
+      });
+      if (error) {
+        if (/duplicate|unique/i.test(error.message)) {
+          toast.error("You already have a code with that name");
+        } else {
+          toast.error("Could not create code", { description: error.message });
+        }
+        return;
+      }
+      toast.success(`Code ${normalized} created`);
+      setCode(""); setPercentOff("20"); setScope("all"); setMaxRedemptions(""); setExpiresAt("");
+      setShowForm(false);
+      qc.invalidateQueries({ queryKey: ["creator-coupons", user.id] });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deactivateCoupon = async (couponId: string) => {
+    if (!user) return;
+    const { error } = await (supabase as any)
+      .from("creator_coupons")
+      .update({ active: false })
+      .eq("id", couponId)
+      .eq("creator_id", user.id);
+    if (error) {
+      toast.error("Could not deactivate code");
+      return;
+    }
+    toast.success("Code deactivated");
+    qc.invalidateQueries({ queryKey: ["creator-coupons", user.id] });
+  };
+
+  return (
+    <div className="mt-10">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-lg font-bold flex items-center gap-2">
+            <TicketPercent className="w-5 h-5 text-primary" /> Coupons
+          </h2>
+          <p className="text-sm text-muted-foreground">Discount codes buyers can enter at checkout.</p>
+        </div>
+        <Button variant="soft" size="sm" onClick={() => setShowForm((s) => !s)}>
+          <Plus className="w-4 h-4 mr-1" /> New Code
+        </Button>
+      </div>
+
+      {showForm && (
+        <div className="glass-card-hover p-5 mb-4 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Code</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.toUpperCase())}
+                  placeholder="LAUNCH20"
+                  className="font-mono uppercase"
+                  maxLength={32}
+                />
+                <Button type="button" variant="outline" size="sm" className="h-10" onClick={generateCode}>
+                  <Sparkles className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Discount (%)</Label>
+              <Input type="number" min="5" max="100" value={percentOff} onChange={(e) => setPercentOff(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Applies to</Label>
+              <Select value={scope} onValueChange={setScope}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All my products</SelectItem>
+                  {products
+                    .filter((p) => p.status === "active" && Number(p.price) > 0)
+                    .map((p) => (
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Max uses</Label>
+                <Input type="number" min="1" value={maxRedemptions} onChange={(e) => setMaxRedemptions(e.target.value)} placeholder="∞" />
+              </div>
+              <div className="space-y-2">
+                <Label>Expires</Label>
+                <Input type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} />
+              </div>
+            </div>
+          </div>
+          <Button onClick={createCoupon} disabled={saving || !code.trim()} className="w-full sm:w-auto">
+            {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating…</> : "Create Code"}
+          </Button>
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+        </div>
+      ) : !coupons || coupons.length === 0 ? (
+        <div className="glass-card-hover p-6 text-center">
+          <p className="text-sm text-muted-foreground">
+            No codes yet. Create one to run a launch discount or reward your community.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {coupons.map((c) => {
+            const expired = !!c.expires_at && new Date(c.expires_at) < new Date();
+            const capped = c.max_redemptions !== null && c.redeemed_count >= c.max_redemptions;
+            const live = c.active && !expired && !capped;
+            return (
+              <div
+                key={c.id}
+                className={`glass-card-hover p-4 flex items-center gap-3 flex-wrap ${live ? "" : "opacity-60"}`}
+              >
+                <span className="font-mono font-bold text-sm px-2 py-1 rounded bg-primary/10 text-primary">{c.code}</span>
+                <span className="text-sm font-semibold">−{c.percent_off}%</span>
+                <span className="text-xs text-muted-foreground">{productName(c.product_id)}</span>
+                <span className="text-xs text-muted-foreground">
+                  {c.redeemed_count}{c.max_redemptions !== null ? `/${c.max_redemptions}` : ""} redeemed
+                </span>
+                {c.expires_at && (
+                  <span className="text-xs text-muted-foreground">
+                    {expired ? "Expired" : `Until ${new Date(c.expires_at).toLocaleDateString()}`}
+                  </span>
+                )}
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${live ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+                  {live ? "Active" : capped ? "Used up" : expired ? "Expired" : "Inactive"}
+                </span>
+                {c.active && (
+                  <button
+                    onClick={() => deactivateCoupon(c.id)}
+                    className="ml-auto p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                    title="Deactivate code"
+                  >
+                    <Ban className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const templates = [
   { name: "Online Course", type: "course", price: 97, desc: "A structured course with modules and lessons." },
@@ -95,6 +321,9 @@ export default function Products() {
   const [editDownloadPath, setEditDownloadPath] = useState<string | null>(null);
   const [editDownloadName, setEditDownloadName] = useState<string | null>(null);
 
+  // Edit: order bump ("none" sentinel — shadcn Select can't hold "")
+  const [editBumpId, setEditBumpId] = useState<string>("none");
+
   const openEdit = (p: any) => {
     setEditingProduct(p);
     setEditName(p.name);
@@ -105,6 +334,7 @@ export default function Products() {
     setEditImageFile(null);
     setEditDownloadPath(p.download_url || null);
     setEditDownloadName(p.download_file_name || null);
+    setEditBumpId((p as any).bump_product_id || "none");
   };
 
   const closeEdit = () => {
@@ -185,6 +415,7 @@ export default function Products() {
       description: editDescription,
       type: editType,
       price: parseFloat(editPrice) || 0,
+      bump_product_id: editBumpId === "none" ? null : editBumpId,
     };
     if (image_url !== undefined) updates.image_url = image_url;
 
@@ -523,6 +754,9 @@ export default function Products() {
           </div>
         )}
 
+        {/* Coupons — creator discount codes for their own products */}
+        {!isEmpty && !isLoading && <CouponsSection products={products || []} />}
+
         {/* Mobile FAB */}
         <button
           onClick={() => setShowCreate(true)}
@@ -844,6 +1078,29 @@ export default function Products() {
                       <Input type="number" value={editPrice} onChange={(e) => setEditPrice(e.target.value)} placeholder="0" min="0" />
                     </div>
                   </div>
+
+                  {/* Order bump — one "Add this too" cross-sell shown at checkout */}
+                  {(products || []).filter((p: any) => p.id !== editingProduct.id && p.status === "active" && Number(p.price) > 0).length > 0 && (
+                    <div className="space-y-2">
+                      <Label>Order bump (shown at checkout)</Label>
+                      <Select value={editBumpId} onValueChange={setEditBumpId}>
+                        <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">None</SelectItem>
+                          {(products || [])
+                            .filter((p: any) => p.id !== editingProduct.id && p.status === "active" && Number(p.price) > 0)
+                            .map((p: any) => (
+                              <SelectItem key={p.id} value={p.id}>
+                                {p.name} — ${Number(p.price)}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-[11px] text-muted-foreground">
+                        Buyers see an "Add this too" offer for this product on the checkout screen.
+                      </p>
+                    </div>
+                  )}
 
                   {/* Image */}
                   <div className="space-y-2">

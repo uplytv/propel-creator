@@ -1,8 +1,18 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import Hls from 'hls.js';
-import { Loader2, RefreshCw, WifiOff, PictureInPicture2 } from 'lucide-react';
+import { Loader2, RefreshCw, WifiOff, PictureInPicture2, Settings, ListVideo, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAutoPip } from '@/hooks/useAutoPip';
+
+export interface PlayerChapter {
+  title: string;
+  start_seconds: number;
+}
+
+interface QualityLevel {
+  levelIndex: number;
+  height: number;
+}
 
 interface MuxPlayerProps {
   playbackId: string;
@@ -13,6 +23,17 @@ interface MuxPlayerProps {
   streamType?: 'on-demand' | 'live' | 'll-live';
   /** Called once when the underlying <video> element is ready, so callers can read currentTime for watch-time tracking. */
   onVideoRef?: (el: HTMLVideoElement | null) => void;
+  /** VOD chapter markers (video_chapters rows) — renders progress-bar ticks + a clickable chapter list. */
+  chapters?: PlayerChapter[];
+}
+
+function fmtTime(s: number) {
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = Math.floor(s % 60);
+  return h > 0
+    ? `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+    : `${m}:${String(sec).padStart(2, '0')}`;
 }
 
 export const UPLYMuxPlayer = ({
@@ -23,6 +44,7 @@ export const UPLYMuxPlayer = ({
   className,
   streamType = 'on-demand',
   onVideoRef,
+  chapters,
 }: MuxPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -32,6 +54,18 @@ export const UPLYMuxPlayer = ({
   const maxRetries = 5;
   const isLive = streamType === 'live' || streamType === 'll-live';
   const hlsUrl = `https://stream.mux.com/${playbackId}.m3u8`;
+
+  // Quality selector — only when hls.js attaches (native-HLS Safari has no
+  // levels API, so the menu stays hidden there).
+  const [qualities, setQualities] = useState<QualityLevel[]>([]);
+  const [selectedLevel, setSelectedLevel] = useState<number>(-1); // -1 = Auto
+  const [qualityMenuOpen, setQualityMenuOpen] = useState(false);
+
+  // Chapters — VOD only
+  const hasChapters = !isLive && !!chapters && chapters.length > 0;
+  const [chapterListOpen, setChapterListOpen] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
 
   const destroyHls = useCallback(() => {
     if (retryTimerRef.current) { clearTimeout(retryTimerRef.current); retryTimerRef.current = null; }
@@ -43,6 +77,9 @@ export const UPLYMuxPlayer = ({
     if (!video || !playbackId) return;
     destroyHls();
     setStatus('loading');
+    setQualities([]);
+    setSelectedLevel(-1);
+    setQualityMenuOpen(false);
 
     if (Hls.isSupported()) {
       const hls = new Hls({
@@ -68,6 +105,18 @@ export const UPLYMuxPlayer = ({
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         setStatus('playing');
         setRetryCount(0);
+        // Expose available renditions for the quality menu (dedupe by height,
+        // keep the highest-bitrate level per height).
+        const byHeight = new Map<number, number>();
+        hls.levels.forEach((level, index) => {
+          if (!level.height) return;
+          byHeight.set(level.height, index);
+        });
+        setQualities(
+          [...byHeight.entries()]
+            .map(([height, levelIndex]) => ({ height, levelIndex }))
+            .sort((a, b) => b.height - a.height)
+        );
         video.play().catch(() => {});
       });
 
@@ -160,7 +209,45 @@ export const UPLYMuxPlayer = ({
     };
   }, [isLive]);
 
+  // Track time/duration for the chapter strip (VOD with chapters only)
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el || !hasChapters) return;
+    const onTime = () => setCurrentTime(el.currentTime || 0);
+    const onDuration = () => {
+      const d = el.duration;
+      setDuration(Number.isFinite(d) ? d : 0);
+    };
+    el.addEventListener('timeupdate', onTime);
+    el.addEventListener('loadedmetadata', onDuration);
+    el.addEventListener('durationchange', onDuration);
+    onDuration();
+    return () => {
+      el.removeEventListener('timeupdate', onTime);
+      el.removeEventListener('loadedmetadata', onDuration);
+      el.removeEventListener('durationchange', onDuration);
+    };
+  }, [hasChapters, playbackId]);
+
+  const seekTo = useCallback((seconds: number) => {
+    const el = videoRef.current;
+    if (!el) return;
+    el.currentTime = seconds;
+    el.play().catch(() => {});
+  }, []);
+
+  const selectQuality = useCallback((levelIndex: number) => {
+    setSelectedLevel(levelIndex);
+    setQualityMenuOpen(false);
+    if (hlsRef.current) hlsRef.current.currentLevel = levelIndex; // -1 = Auto (ABR)
+  }, []);
+
   const { isPip, togglePip, containerRef } = useAutoPip(videoRef, status === 'playing');
+
+  const showQualityMenuButton = status === 'playing' && !!hlsRef.current && qualities.length > 1;
+  const activeChapterIdx = hasChapters
+    ? chapters!.reduce((acc, c, i) => (currentTime >= c.start_seconds ? i : acc), 0)
+    : -1;
 
   return (
     <div ref={containerRef} className={`relative w-full aspect-video bg-black ${className || ''}`}>
@@ -205,14 +292,105 @@ export const UPLYMuxPlayer = ({
         </div>
       )}
 
-      {status === 'playing' && document.pictureInPictureEnabled && (
-        <button
-          onClick={togglePip}
-          className="absolute top-3 right-3 z-10 p-2 rounded-lg bg-background/60 backdrop-blur-sm text-foreground hover:bg-background/80 transition-colors"
-          title={isPip ? 'Exit Picture-in-Picture' : 'Picture-in-Picture'}
+      {/* Chapter tick strip — clickable mini progress bar with markers (VOD) */}
+      {status === 'playing' && hasChapters && duration > 0 && (
+        <div
+          className="absolute top-0 left-0 right-0 z-10 h-4 cursor-pointer group/chapters"
+          onClick={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const ratio = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
+            seekTo(ratio * duration);
+          }}
+          title="Seek"
         >
-          <PictureInPicture2 className={`w-4 h-4 ${isPip ? 'text-primary' : ''}`} />
-        </button>
+          <div className="absolute top-0 left-0 right-0 h-1 bg-white/20 group-hover/chapters:h-1.5 transition-all">
+            <div
+              className="h-full bg-primary"
+              style={{ width: `${Math.min((currentTime / duration) * 100, 100)}%` }}
+            />
+          </div>
+          {chapters!.map((c, i) => (
+            <button
+              key={`${c.start_seconds}-${i}`}
+              onClick={(e) => { e.stopPropagation(); seekTo(c.start_seconds); }}
+              className="absolute top-0 -translate-x-1/2 h-2.5 w-[3px] bg-white/90 hover:bg-primary hover:h-3.5 transition-all"
+              style={{ left: `${Math.min((c.start_seconds / duration) * 100, 100)}%` }}
+              title={`${fmtTime(c.start_seconds)} — ${c.title}`}
+              aria-label={`Jump to chapter: ${c.title}`}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Top-right controls: quality, chapters, PiP */}
+      {status === 'playing' && (
+        <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
+          {showQualityMenuButton && (
+            <button
+              onClick={() => { setQualityMenuOpen((o) => !o); setChapterListOpen(false); }}
+              className="p-2 rounded-lg bg-background/60 backdrop-blur-sm text-foreground hover:bg-background/80 transition-colors"
+              title="Quality"
+              aria-label="Quality"
+            >
+              <Settings className={`w-4 h-4 ${selectedLevel !== -1 ? 'text-primary' : ''}`} />
+            </button>
+          )}
+          {hasChapters && (
+            <button
+              onClick={() => { setChapterListOpen((o) => !o); setQualityMenuOpen(false); }}
+              className="p-2 rounded-lg bg-background/60 backdrop-blur-sm text-foreground hover:bg-background/80 transition-colors"
+              title="Chapters"
+              aria-label="Chapters"
+            >
+              <ListVideo className={`w-4 h-4 ${chapterListOpen ? 'text-primary' : ''}`} />
+            </button>
+          )}
+          {document.pictureInPictureEnabled && (
+            <button
+              onClick={togglePip}
+              className="p-2 rounded-lg bg-background/60 backdrop-blur-sm text-foreground hover:bg-background/80 transition-colors"
+              title={isPip ? 'Exit Picture-in-Picture' : 'Picture-in-Picture'}
+            >
+              <PictureInPicture2 className={`w-4 h-4 ${isPip ? 'text-primary' : ''}`} />
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Quality menu — hls.js levels (Auto + available heights) */}
+      {status === 'playing' && qualityMenuOpen && showQualityMenuButton && (
+        <div className="absolute top-12 right-3 z-20 min-w-[120px] rounded-lg bg-background/90 backdrop-blur-md border border-border overflow-hidden">
+          {[{ levelIndex: -1, height: 0 }, ...qualities].map((q) => (
+            <button
+              key={q.levelIndex}
+              onClick={() => selectQuality(q.levelIndex)}
+              className="w-full flex items-center justify-between gap-3 px-3 py-2 text-xs font-medium text-foreground hover:bg-secondary/60 transition-colors"
+            >
+              <span>{q.levelIndex === -1 ? 'Auto' : `${q.height}p`}</span>
+              {selectedLevel === q.levelIndex && <Check className="w-3.5 h-3.5 text-primary" />}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Chapter list — clickable, active chapter highlighted */}
+      {status === 'playing' && chapterListOpen && hasChapters && (
+        <div className="absolute top-12 right-3 z-20 w-60 max-h-[60%] overflow-y-auto rounded-lg bg-background/90 backdrop-blur-md border border-border">
+          {chapters!.map((c, i) => (
+            <button
+              key={`${c.start_seconds}-${i}`}
+              onClick={() => { seekTo(c.start_seconds); setChapterListOpen(false); }}
+              className={`w-full flex items-start gap-2 px-3 py-2 text-left hover:bg-secondary/60 transition-colors ${
+                i === activeChapterIdx ? 'bg-primary/10' : ''
+              }`}
+            >
+              <span className={`text-[10px] font-mono mt-0.5 ${i === activeChapterIdx ? 'text-primary' : 'text-muted-foreground'}`}>
+                {fmtTime(c.start_seconds)}
+              </span>
+              <span className="text-xs font-medium text-foreground line-clamp-2">{c.title}</span>
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );

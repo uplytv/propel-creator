@@ -108,10 +108,13 @@ export function useUpdateProduct() {
       image_url?: string | null;
       download_url?: string | null;
       download_file_name?: string | null;
+      bump_product_id?: string | null;
     }) => {
+      // Cast: bump_product_id ships in migration 20260707060000_coupons.sql;
+      // regenerate types.ts after deploy and drop this cast.
       const { data, error } = await supabase
         .from("products")
-        .update(updates)
+        .update(updates as any)
         .eq("id", id)
         .select()
         .single();

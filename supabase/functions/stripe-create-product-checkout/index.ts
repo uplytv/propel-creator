@@ -32,7 +32,7 @@ serve(async (req) => {
     const { data: userData, error: userError } = await supabase.auth.getUser(token);
     if (userError || !userData.user) throw new Error("Unauthorized");
 
-    const { product_id, creator_id, purchase_type, success_url, cancel_url, embedded } = await req.json();
+    const { product_id, creator_id, purchase_type, success_url, cancel_url, embedded, coupon_code } = await req.json();
     if (!product_id) throw new Error("product_id required");
 
     // Check if already purchased
@@ -64,6 +64,37 @@ serve(async (req) => {
 
     let stripePriceId = product.stripe_price_id;
     const effectiveCreatorId = creator_id || product.user_id;
+
+    // UPLY-level coupon (NOT a Stripe promotion code — those would be
+    // redeemable platform-wide across other creators' checkouts). The client
+    // pre-validates via the validate_coupon RPC for UX; we ALWAYS re-validate
+    // here server-side and apply percent_off to the unit_amount before the
+    // session is created. The 5% application fee below is computed from the
+    // discounted amount, so the 95/5 split applies to what the buyer pays.
+    let appliedCoupon: { id: string; percent_off: number; code: string } | null = null;
+    let discountedUnitAmount: number | null = null;
+    if (coupon_code && typeof coupon_code === "string" && coupon_code.trim()) {
+      const normalizedCode = coupon_code.trim().toUpperCase();
+      const { data: couponRows, error: couponErr } = await supabase.rpc("validate_coupon", {
+        p_creator_id: effectiveCreatorId,
+        p_code: normalizedCode,
+        p_product_id: product_id,
+      });
+      const match = Array.isArray(couponRows) ? couponRows[0] : couponRows;
+      if (couponErr || !match) {
+        logStep("Coupon rejected", { code: normalizedCode, error: couponErr?.message });
+        throw new Error("That code isn't valid for this product");
+      }
+      const baseAmount = Math.round(Number(product.price) * 100);
+      const discounted = Math.round((baseAmount * (100 - match.percent_off)) / 100);
+      // Stripe payment-mode sessions require a charge of at least $0.50.
+      if (discounted < 50) {
+        throw new Error("This code brings the price below the $0.50 card minimum — the creator should use a free product instead");
+      }
+      appliedCoupon = { id: match.coupon_id, percent_off: match.percent_off, code: normalizedCode };
+      discountedUnitAmount = discounted;
+      logStep("Coupon applied", { code: normalizedCode, percent_off: match.percent_off, discounted });
+    }
 
     // Auto-provision Stripe product/price if missing
     if (!stripePriceId) {
@@ -104,11 +135,27 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://uply.tv";
 
-    // Build session config
+    // Build session config. With a coupon, the discount is applied to the
+    // unit_amount via price_data BEFORE session creation (inline price for
+    // this session only; the stored stripe_price_id is untouched).
+    const lineItems = discountedUnitAmount !== null
+      ? [{
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: product.name,
+              ...(product.image_url ? { images: [product.image_url] } : {}),
+            },
+            unit_amount: discountedUnitAmount,
+          },
+          quantity: 1,
+        }]
+      : [{ price: stripePriceId, quantity: 1 }];
+
     const sessionConfig: any = {
       customer: customerId,
       customer_email: customerId ? undefined : userData.user.email!,
-      line_items: [{ price: stripePriceId, quantity: 1 }],
+      line_items: lineItems,
       mode: "payment",
       success_url: success_url || `${origin}/products?purchased=true&product_id=${product_id}`,
       cancel_url: cancel_url || `${origin}/products`,
@@ -117,6 +164,13 @@ serve(async (req) => {
         buyer_id: userData.user.id,
         product_id: product_id,
         creator_id: effectiveCreatorId,
+        ...(appliedCoupon
+          ? {
+              coupon: appliedCoupon.code,
+              coupon_id: appliedCoupon.id,
+              coupon_percent_off: String(appliedCoupon.percent_off),
+            }
+          : {}),
       },
     };
 
@@ -128,8 +182,17 @@ serve(async (req) => {
       .maybeSingle();
 
     if (stripeAccount?.stripe_account_id && stripeAccount?.charges_enabled) {
-      const price = await stripe.prices.retrieve(stripePriceId);
-      const feeAmount = Math.round((price.unit_amount || 0) * 0.05);
+      // Fee base is what the buyer actually pays: the coupon-discounted
+      // amount when a code is applied, the stored price otherwise. The 5%
+      // platform-fee rate itself is unchanged.
+      let feeBaseAmount: number;
+      if (discountedUnitAmount !== null) {
+        feeBaseAmount = discountedUnitAmount;
+      } else {
+        const price = await stripe.prices.retrieve(stripePriceId);
+        feeBaseAmount = price.unit_amount || 0;
+      }
+      const feeAmount = Math.round(feeBaseAmount * 0.05);
       sessionConfig.payment_intent_data = {
         application_fee_amount: feeAmount,
         transfer_data: { destination: stripeAccount.stripe_account_id },
@@ -150,7 +213,33 @@ serve(async (req) => {
       delete sessionConfig.cancel_url;
     }
 
-    const session = await stripe.checkout.sessions.create(sessionConfig);
+    // Redemption is counted HERE, at session creation, via an atomic guarded
+    // UPDATE (consume_coupon fails once the cap is hit, so concurrent
+    // checkouts can't exceed max_redemptions). The paid-side hooks can't do
+    // this reliably: the Stripe webhook is frozen, and verify-product-purchase
+    // only runs if the buyer returns to a page that invokes it — the embedded
+    // overlay flow never does. Trade-off: an abandoned session consumes a
+    // redemption (over-count), which errs on the side of fewer discounts.
+    if (appliedCoupon) {
+      const { data: consumed, error: consumeErr } = await supabase.rpc("consume_coupon", {
+        p_coupon_id: appliedCoupon.id,
+      });
+      if (consumeErr || !consumed) {
+        logStep("Coupon consume failed", { code: appliedCoupon.code, error: consumeErr?.message });
+        throw new Error("That code has reached its redemption limit");
+      }
+    }
+
+    let session;
+    try {
+      session = await stripe.checkout.sessions.create(sessionConfig);
+    } catch (sessionErr) {
+      // Session never existed — give the redemption back.
+      if (appliedCoupon) {
+        await supabase.rpc("release_coupon_redemption", { p_coupon_id: appliedCoupon.id });
+      }
+      throw sessionErr;
+    }
     logStep("Checkout session created", { sessionId: session.id });
 
     if (embedded) {

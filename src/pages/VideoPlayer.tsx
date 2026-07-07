@@ -20,6 +20,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import ChapterRail from "@/components/video/ChapterRail";
 import ChapterEditor from "@/components/video/ChapterEditor";
+import { useVideoChapters } from "@/hooks/useVideoChapters";
 import AddToPlaylistButton from "@/components/video/AddToPlaylistButton";
 import NextUpCard from "@/components/video/NextUpCard";
 import BoostButton from "@/components/video/BoostButton";
@@ -69,6 +70,8 @@ export default function VideoPlayer() {
   const isOwner = user?.id === video?.creator_id;
   const subscribed = video?.creator_id ? isFollowing(video.creator_id) : false;
   const videoElRef = useRef<HTMLVideoElement | null>(null);
+  // Chapters (video_chapters) — shared by ChapterRail and the in-player markers
+  const { data: playerChapters } = useVideoChapters(video?.id);
 
   // Watch-time tracking → drives UPLY discovery algorithm
   useWatchTimeTracker({
@@ -225,6 +228,7 @@ export default function VideoPlayer() {
             title={video.title}
             autoPlay
             onVideoRef={(el) => { videoElRef.current = el; }}
+            chapters={playerChapters}
           />
         ) : (
           <div className="aspect-video bg-secondary flex items-center justify-center">
