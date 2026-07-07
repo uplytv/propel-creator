@@ -9,6 +9,7 @@ export interface NotificationPrefs {
   new_follower_email: boolean;
   tip_received_email: boolean;
   member_joined_email: boolean;
+  daily_digest_email: boolean;
 }
 
 const defaults: NotificationPrefs = {
@@ -18,6 +19,7 @@ const defaults: NotificationPrefs = {
   new_follower_email: true,
   tip_received_email: true,
   member_joined_email: true,
+  daily_digest_email: true,
 };
 
 export function useNotificationPreferences() {
@@ -28,14 +30,16 @@ export function useNotificationPreferences() {
   const query = useQuery({
     queryKey: key,
     queryFn: async (): Promise<NotificationPrefs> => {
-      const { data, error } = await supabase
+      // (supabase as any): daily_digest_email (20260707040000) is not in the
+      // generated types yet — remove the cast after regenerating types.ts.
+      const { data, error } = await (supabase as any)
         .from("notification_preferences")
-        .select("budget_warning, campaign_completed, weekly_report_email, new_follower_email, tip_received_email, member_joined_email")
+        .select("budget_warning, campaign_completed, weekly_report_email, new_follower_email, tip_received_email, member_joined_email, daily_digest_email")
         .eq("user_id", user!.id)
         .maybeSingle();
       if (error) throw error;
       if (!data) return defaults;
-      return data as unknown as NotificationPrefs;
+      return { ...defaults, ...(data as Partial<NotificationPrefs>) } as NotificationPrefs;
     },
     enabled: !!user,
   });

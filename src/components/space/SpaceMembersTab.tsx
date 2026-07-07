@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Search, UserPlus, UserCheck, FileText, CalendarDays } from "lucide-react";
 import { useCommunityMembers } from "@/hooks/useCommunityMembers";
 import { useMemberCommunityProfile } from "@/hooks/useCommunityDepth";
+import { useMemberPointTotals } from "@/hooks/useMemberLevels";
+import MemberXPBadge from "@/components/space/MemberXPBadge";
 import { useFollows } from "@/hooks/useFollows";
 import { useAuth } from "@/context/AuthContext";
 import { formatDistanceToNow, format } from "date-fns";
@@ -19,6 +21,12 @@ export default function SpaceMembersTab({ creatorId }: Props) {
 
   const filtered = members.filter((m: any) =>
     (m.display_name || "").toLowerCase().includes(search.toLowerCase())
+  );
+
+  // Level badges: ONE member_points query for all visible members.
+  const { data: memberTotals } = useMemberPointTotals(
+    creatorId,
+    filtered.map((m: any) => m.user_id as string)
   );
 
   return (
@@ -65,7 +73,10 @@ export default function SpaceMembersTab({ creatorId }: Props) {
                   {(member.display_name || "M").charAt(0)}
                 </div>
               )}
-              <p className="text-sm font-semibold text-foreground truncate">{member.display_name}</p>
+              <p className="text-sm font-semibold text-foreground truncate flex items-center justify-center gap-1.5">
+                <span className="truncate">{member.display_name}</span>
+                <MemberXPBadge xp={memberTotals?.get(member.user_id) ?? 0} />
+              </p>
               <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
                 Joined {formatDistanceToNow(new Date(member.joined_at), { addSuffix: true })}
               </p>
@@ -83,13 +94,14 @@ export default function SpaceMembersTab({ creatorId }: Props) {
       <MemberProfileSheet
         member={selectedMember}
         creatorId={creatorId}
+        xp={selectedMember ? memberTotals?.get(selectedMember.user_id) ?? 0 : 0}
         onClose={() => setSelectedMember(null)}
       />
     </div>
   );
 }
 
-function MemberProfileSheet({ member, creatorId, onClose }: { member: any; creatorId: string; onClose: () => void }) {
+function MemberProfileSheet({ member, creatorId, xp, onClose }: { member: any; creatorId: string; xp: number; onClose: () => void }) {
   const { user } = useAuth();
   const { follow, unfollow, isFollowing } = useFollows();
   const { data, isLoading } = useMemberCommunityProfile(member?.user_id, creatorId);
@@ -117,8 +129,9 @@ function MemberProfileSheet({ member, creatorId, onClose }: { member: any; creat
                 </div>
               )}
               <div className="min-w-0">
-                <p className="text-base font-bold text-foreground truncate">
-                  {profile?.display_name || member.display_name}
+                <p className="text-base font-bold text-foreground truncate flex items-center gap-2">
+                  <span className="truncate">{profile?.display_name || member.display_name}</span>
+                  <MemberXPBadge xp={xp} size="md" />
                 </p>
                 {profile?.username && (
                   <p className="text-xs text-muted-foreground truncate">@{profile.username}</p>

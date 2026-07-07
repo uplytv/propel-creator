@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
-import { ThumbsUp, MessageCircle, Pin, PinOff, MoreHorizontal, Send, ArrowLeft, SlidersHorizontal, Megaphone, Flag, Trash2, Ban, ImagePlus, BarChart3, X, Search, Loader2, Heart, CornerDownRight, Check } from "lucide-react";
+import { ThumbsUp, MessageCircle, Pin, PinOff, MoreHorizontal, Send, ArrowLeft, SlidersHorizontal, Megaphone, Flag, Trash2, Ban, ImagePlus, BarChart3, X, Search, Loader2, Heart, CornerDownRight, Check, Lock } from "lucide-react";
 import ContentGate from "@/components/ContentGate";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/context/AuthContext";
@@ -62,6 +62,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import BlastComposer from "@/components/blast/BlastComposer";
 import CommunityReportsSheet from "@/components/space/CommunityReportsSheet";
+import MemberXPBadge, { getLevel } from "@/components/space/MemberXPBadge";
+import { useMemberPointTotals } from "@/hooks/useMemberLevels";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   creatorId: string;
@@ -120,6 +124,21 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
   const displayPosts = searchActive ? (searchResults ?? clientFiltered) : posts;
 
   const { data: categories = [] } = useCommunityCategories(creatorId);
+
+  // Level badges: ONE member_points query per feed page for all visible authors.
+  const feedAuthorIds = useMemo(
+    () => [...new Set(displayPosts.map((p: any) => p.author_id as string))],
+    [displayPosts]
+  );
+  const { data: authorTotals } = useMemberPointTotals(creatorId, feedAuthorIds);
+
+  // "Who can post" gate — client mirror of the community_posts INSERT policy
+  // (public.meets_min_post_level, 20260707040000_levels_digest.sql).
+  const minPostLevel = Math.min(5, Math.max(1, Number((space as any)?.min_post_level ?? 1)));
+  const { data: myTotals } = useMemberPointTotals(creatorId, user ? [user.id] : []);
+  const myLevel = getLevel(myTotals?.get(user?.id ?? "") ?? 0).levelNum;
+  const canPost = isOwner || minPostLevel <= 1 || myLevel >= minPostLevel;
+
   const { data: likedSet = new Set<string>() } = useUserLikes(displayPosts.map((p: any) => p.id));
   const { data: pollMap = {} } = usePostPolls(displayPosts.map((p: any) => p.id));
   const createPost = useCreatePostWithExtras();
@@ -260,6 +279,7 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm font-semibold text-foreground">Community</span>
           <div className="flex items-center gap-2">
+            <MinPostLevelSelect creatorId={creatorId} value={minPostLevel} />
             <Button
               size="sm"
               variant="outline"
@@ -330,8 +350,9 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
         </button>
       </div>
 
-      {/* Post Composer Trigger */}
-      {user && (
+      {/* Post Composer Trigger — disabled with a level hint when the member
+          is under the space's min_post_level (server-enforced by RLS) */}
+      {user && (canPost ? (
         <div
           className="flex items-center gap-3 p-3 rounded-lg mb-4 cursor-pointer bg-card border border-border"
           onClick={() => setShowComposer(true)}
@@ -341,7 +362,19 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
           </div>
           <span className="text-sm text-muted-foreground">Write something...</span>
         </div>
-      )}
+      ) : (
+        <div
+          aria-disabled="true"
+          className="flex items-center gap-3 p-3 rounded-lg mb-4 bg-card border border-border opacity-70 cursor-not-allowed"
+        >
+          <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-muted text-muted-foreground">
+            <Lock className="w-4 h-4" />
+          </div>
+          <span className="text-sm text-muted-foreground">
+            Reach Level {minPostLevel} to post — you're Level {myLevel}. Earn points by commenting, completing lessons, and attending events.
+          </span>
+        </div>
+      ))}
 
       {/* Post Composer Modal */}
       <Dialog open={showComposer} onOpenChange={setShowComposer}>
@@ -525,6 +558,7 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
                     <div>
                       <div className="flex items-center gap-1.5">
                         <span className="text-sm font-bold text-foreground">{post.author_name}</span>
+                        <MemberXPBadge xp={authorTotals?.get(post.author_id) ?? 0} />
                         {post.author_id === creatorId && <span>⭐</span>}
                       </div>
                       <div className="flex items-center gap-1.5">
@@ -736,6 +770,45 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
   );
 }
 
+/** Owner-only "Who can post" control — writes creator_spaces.min_post_level
+ *  (enforced server-side by the community_posts INSERT policy). */
+function MinPostLevelSelect({ creatorId, value }: { creatorId: string; value: number }) {
+  const queryClient = useQueryClient();
+  const updateMinLevel = useMutation({
+    mutationFn: async (level: number) => {
+      const { error } = await (supabase as any)
+        .from("creator_spaces")
+        .update({ min_post_level: level })
+        .eq("creator_id", creatorId);
+      if (error) throw error;
+    },
+    onSuccess: (_data, level) => {
+      queryClient.invalidateQueries({ queryKey: ["creator-space", creatorId] });
+      toast.success(level <= 1 ? "Everyone can post" : `Members need Level ${level}+ to post`);
+    },
+    onError: (err: any) => toast.error("Couldn't update", { description: err.message }),
+  });
+
+  return (
+    <Select
+      value={String(value)}
+      onValueChange={(v) => updateMinLevel.mutate(Number(v))}
+      disabled={updateMinLevel.isPending}
+    >
+      <SelectTrigger className="h-8 w-auto gap-1.5 text-xs" aria-label="Who can post">
+        <SelectValue placeholder="Who can post" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="1">Everyone can post</SelectItem>
+        <SelectItem value="2">Level 2+ can post</SelectItem>
+        <SelectItem value="3">Level 3+ can post</SelectItem>
+        <SelectItem value="4">Level 4+ can post</SelectItem>
+        <SelectItem value="5">Level 5+ can post</SelectItem>
+      </SelectContent>
+    </Select>
+  );
+}
+
 /** Poll with live result bars — options before voting, results after. */
 function PollBlock({ poll }: { poll: PostPoll }) {
   const { user } = useAuth();
@@ -823,6 +896,13 @@ function PostDetailView({ post, creatorId, isOwner, onClose, onReportComment, on
   const { data: commentLikes = { counts: {}, mine: new Set<string>() } } = useCommentLikes(post.id, commentIds);
   const toggleCommentLike = useToggleCommentLike();
 
+  // Level badges: ONE member_points query for the post author + all comment authors.
+  const detailAuthorIds = useMemo(
+    () => [...new Set([post.author_id, ...comments.map((c: any) => c.author_id as string)])],
+    [post.author_id, comments]
+  );
+  const { data: detailTotals } = useMemberPointTotals(creatorId, detailAuthorIds);
+
   // One-level threading (Skool-style): top-level comments + their replies
   const topLevelComments = comments.filter((c: any) => !c.parent_id);
   const repliesFor = (id: string) => comments.filter((c: any) => c.parent_id === id);
@@ -890,6 +970,7 @@ function PostDetailView({ post, creatorId, isOwner, onClose, onReportComment, on
           <div>
             <div className="flex items-center gap-1.5">
               <span className="text-sm font-bold text-foreground">{post.author_name}</span>
+              <MemberXPBadge xp={detailTotals?.get(post.author_id) ?? 0} />
               {post.author_id === creatorId && <span>⭐</span>}
             </div>
             <span className="text-xs text-muted-foreground">
@@ -936,6 +1017,7 @@ function PostDetailView({ post, creatorId, isOwner, onClose, onReportComment, on
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs font-bold text-foreground">{comment.author_name}</span>
+                    <MemberXPBadge xp={detailTotals?.get(comment.author_id) ?? 0} />
                     <span className="text-[10px] text-muted-foreground">
                       {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
                     </span>

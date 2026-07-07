@@ -425,6 +425,7 @@ export default function Settings() {
               </div>
               <p className="text-xs text-muted-foreground">Choose which emails you receive. These do not affect in-app notifications.</p>
               {[
+                { key: "daily_digest_email" as const, label: "Daily Digest", desc: "One email a day summarizing your unread notifications" },
                 { key: "weekly_report_email" as const, label: "Weekly Growth Report", desc: "Summary of views, members & revenue every Monday" },
                 { key: "new_follower_email" as const, label: "New Follower", desc: "Get notified when someone follows you" },
                 { key: "tip_received_email" as const, label: "Tip Received", desc: "Get notified when a viewer sends you a tip" },
