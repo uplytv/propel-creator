@@ -40,7 +40,7 @@ export default function ReferralRedirect() {
 
       if (isBetaInvite) {
         // For /invite/ paths, look up via invite_codes table
-        const { data: inviteRow } = await (supabase as any)
+        const { data: inviteRow } = await supabase
           .from("invite_codes")
           .select("owner_id, is_used")
           .eq("code", actualCode)

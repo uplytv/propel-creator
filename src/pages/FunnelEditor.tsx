@@ -47,7 +47,7 @@ export default function FunnelEditor() {
     queryKey: ["site-ai-generations", user?.id, pageId],
     enabled: !!user && historyOpen,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("site_ai_generations")
         .select("id, prompt, credits_charged, input_tokens, output_tokens, model, preview, created_at, page_id, page_type")
         .eq("user_id", user!.id)

@@ -37,7 +37,7 @@ export function useDripLockedModules(creatorId: string | undefined, enabled: boo
     enabled: !!creatorId && !!user && enabled,
     staleTime: 60_000,
     queryFn: async (): Promise<DripLockedModule[]> => {
-      const { data, error } = await (supabase as any).rpc("my_drip_locked_modules", { p_creator_id: creatorId });
+      const { data, error } = await (supabase as any).rpc("my_drip_locked_modules", { p_creator_id: creatorId }); // cast: awaiting types regen (rpc my_drip_locked_modules)
       if (error) throw error;
       return (data || []) as DripLockedModule[];
     },
@@ -77,7 +77,7 @@ export function useLessonQuiz(lessonId: string | undefined) {
     queryKey: ["lesson-quiz", lessonId],
     enabled: !!lessonId,
     queryFn: async (): Promise<LessonQuizRow | null> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as any) // cast: awaiting types regen (lesson_quizzes)
         .from("lesson_quizzes")
         .select("id, lesson_id, pass_pct")
         .eq("lesson_id", lessonId!)
@@ -94,7 +94,7 @@ export function useQuizQuestions(quizId: string | undefined) {
     queryKey: ["quiz-questions", quizId],
     enabled: !!quizId,
     queryFn: async () => {
-      const { data, error } = await (supabase as any).rpc("get_quiz_questions", { p_quiz_id: quizId });
+      const { data, error } = await (supabase as any).rpc("get_quiz_questions", { p_quiz_id: quizId }); // cast: awaiting types regen (rpc get_quiz_questions)
       if (error) throw error;
       return ((data || []) as any[]).map((q) => ({
         id: q.id as string,
@@ -111,7 +111,7 @@ export function useQuizQuestionsForOwner(quizId: string | undefined) {
     queryKey: ["quiz-questions-owner", quizId],
     enabled: !!quizId,
     queryFn: async (): Promise<QuizQuestionDraft[]> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as any) // cast: awaiting types regen (quiz_questions)
         .from("quiz_questions")
         .select("id, question, options, correct_index, position")
         .eq("quiz_id", quizId!)
@@ -135,7 +135,7 @@ export function useMyQuizAttempts(quizId: string | undefined) {
     queryKey: ["quiz-attempts", quizId, user?.id],
     enabled: !!quizId && !!user,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as any) // cast: awaiting types regen (quiz_attempts)
         .from("quiz_attempts")
         .select("score_pct, passed, created_at")
         .eq("quiz_id", quizId!)
@@ -155,7 +155,7 @@ export function useSaveQuiz() {
   return useMutation({
     mutationFn: async ({ lessonId, passPct, questions }: { lessonId: string; passPct: number; questions: QuizQuestionDraft[] }) => {
       if (!user) throw new Error("Not authenticated");
-      const { data: quiz, error: quizErr } = await (supabase as any)
+      const { data: quiz, error: quizErr } = await (supabase as any) // cast: awaiting types regen (lesson_quizzes)
         .from("lesson_quizzes")
         .upsert(
           { lesson_id: lessonId, creator_id: user.id, pass_pct: passPct, updated_at: new Date().toISOString() },
@@ -166,7 +166,7 @@ export function useSaveQuiz() {
       if (quizErr) throw quizErr;
       const quizId = (quiz as any).id as string;
       // Replace the question set (attempts reference quiz_id, so they survive edits).
-      const { error: delErr } = await (supabase as any).from("quiz_questions").delete().eq("quiz_id", quizId);
+      const { error: delErr } = await (supabase as any).from("quiz_questions").delete().eq("quiz_id", quizId); // cast: awaiting types regen (quiz_questions)
       if (delErr) throw delErr;
       if (questions.length > 0) {
         const rows = questions.map((q, i) => ({
@@ -176,7 +176,7 @@ export function useSaveQuiz() {
           correct_index: q.correct_index,
           position: i,
         }));
-        const { error: insErr } = await (supabase as any).from("quiz_questions").insert(rows);
+        const { error: insErr } = await (supabase as any).from("quiz_questions").insert(rows); // cast: awaiting types regen (quiz_questions)
         if (insErr) throw insErr;
       }
       return quizId;
@@ -194,7 +194,7 @@ export function useDeleteQuiz() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ quizId }: { quizId: string; lessonId: string }) => {
-      const { error } = await (supabase as any).from("lesson_quizzes").delete().eq("id", quizId);
+      const { error } = await (supabase as any).from("lesson_quizzes").delete().eq("id", quizId); // cast: awaiting types regen (lesson_quizzes)
       if (error) throw error;
     },
     onSuccess: (_res, { lessonId }) => {
@@ -219,7 +219,7 @@ export function useGradeQuiz() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ quizId, answers }: { quizId: string; answers: Record<string, number> }): Promise<QuizGradeResult> => {
-      const { data, error } = await (supabase as any).rpc("grade_quiz_attempt", {
+      const { data, error } = await (supabase as any).rpc("grade_quiz_attempt", { // cast: awaiting types regen (rpc grade_quiz_attempt)
         p_quiz_id: quizId,
         p_answers: answers,
       });
@@ -257,7 +257,7 @@ export function useResumePosition(lessonId: string | undefined) {
     enabled: !!lessonId && !!user,
     staleTime: 30_000,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as any) // cast: awaiting types regen (lesson_progress)
         .from("lesson_progress")
         .select("position_seconds")
         .eq("lesson_id", lessonId!)
@@ -271,7 +271,7 @@ export function useResumePosition(lessonId: string | undefined) {
   const write = useCallback(
     async (seconds: number) => {
       if (!user || !lessonId || !(seconds > 0)) return;
-      await (supabase as any)
+      await (supabase as any) // cast: awaiting types regen (lesson_progress)
         .from("lesson_progress")
         .upsert(
           { lesson_id: lessonId, user_id: user.id, position_seconds: Math.floor(seconds), updated_at: new Date().toISOString() },

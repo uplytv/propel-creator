@@ -13,7 +13,7 @@ export default function OutgoingFriendRequestsSection() {
     queryKey: ["friend-requests-outgoing", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("friend_connections")
         .select("*")
         .eq("status", "pending")
@@ -39,7 +39,7 @@ export default function OutgoingFriendRequestsSection() {
 
   const cancel = useMutation({
     mutationFn: async (otherId: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("friend_connections")
         .delete()
         .or(

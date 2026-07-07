@@ -168,7 +168,7 @@ export async function recordMentions(opts: {
   const { actorId, mentionedUserIds, sourceType, sourceId, preview, link } = opts;
   const unique = [...new Set(mentionedUserIds)].filter((id) => id && id !== actorId);
   if (unique.length === 0) return;
-  await (supabase as any).from("mentions").insert(
+  await supabase.from("mentions").insert(
     unique.map((mentioned_user_id) => ({
       mentioned_user_id,
       actor_id: actorId,

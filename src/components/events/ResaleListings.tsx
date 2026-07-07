@@ -39,7 +39,7 @@ export default function ResaleListings({
     enabled: !!eventId && !!resaleAllowed,
     refetchInterval: 15000,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("ticket_listings")
         .select("id, ticket_id, asking_price_cents, listing_type, seller_id, tickets(seat_label)")
         .eq("event_id", eventId)

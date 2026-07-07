@@ -382,13 +382,13 @@ export function useLiveShop(streamId: string | undefined) {
     const sendAlerts = async () => {
       for (const p of lowStockProducts) {
         try {
-          await (supabase as any).from("live_chat_messages").insert({
+          await supabase.from("live_chat_messages").insert({
             stream_id: streamId, user_id: p.creator_id,
             username: "UPLY Shop",
             message: `🔥 Only ${p.quantity_remaining} left of "${p.title}"!`,
             is_pinned: false,
           });
-          await (supabase as any).from("live_products").update({ low_stock_alert_sent: true }).eq("id", p.id);
+          await supabase.from("live_products").update({ low_stock_alert_sent: true }).eq("id", p.id);
         } catch { /* best effort */ }
       }
     };

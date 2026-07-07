@@ -26,7 +26,7 @@ export function useTrackLyrics(trackId?: string, language?: string) {
     queryKey: ["lyrics", trackId, language ?? "any"],
     queryFn: async () => {
       if (!trackId) return null;
-      let q = (supabase as any)
+      let q = supabase
         .from("music_lyrics")
         .select("*")
         .eq("track_id", trackId)
@@ -90,7 +90,7 @@ export function useUpsertLyrics() {
       is_published?: boolean;
     }) => {
       if (!user) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_lyrics")
         .upsert(
           {

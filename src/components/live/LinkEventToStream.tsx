@@ -46,7 +46,7 @@ export default function LinkEventToStream({ streamId, onEventLinked, onSkip }: L
 
   const handleSelectEvent = async (event: any) => {
     try {
-      await (supabase as any)
+      await supabase
         .from("mux_live_streams")
         .update({ event_id: event.id, is_event_stream: true })
         .eq("id", streamId);
@@ -82,7 +82,7 @@ export default function LinkEventToStream({ streamId, onEventLinked, onSkip }: L
 
       if (error) throw error;
 
-      await (supabase as any)
+      await supabase
         .from("mux_live_streams")
         .update({ event_id: newEvent.id, is_event_stream: true })
         .eq("id", streamId);

@@ -66,7 +66,7 @@ export default function AdminBookingInquiries() {
       return;
     }
     (async () => {
-      const { data, error } = await (supabase as any).rpc("has_role", {
+      const { data, error } = await supabase.rpc("has_role", {
         _user_id: user.id,
         _role: "admin",
       });
@@ -78,7 +78,7 @@ export default function AdminBookingInquiries() {
   // Load inquiries
   const load = async () => {
     setLoading(true);
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("public_booking_inquiries")
       .select("*")
       .order("created_at", { ascending: false })
@@ -110,7 +110,7 @@ export default function AdminBookingInquiries() {
 
   const updateStatus = async (id: string, status: Status) => {
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, status } : i)));
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("public_booking_inquiries")
       .update({ status })
       .eq("id", id);

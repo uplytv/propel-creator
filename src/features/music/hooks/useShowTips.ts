@@ -18,7 +18,7 @@ export function useShowTipLeaderboard(showId?: string, limit = 20) {
     queryKey: ["show-tip-leaderboard", showId, limit],
     queryFn: async () => {
       if (!showId) return [] as ShowTipLeader[];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("music_show_tip_leaderboard")
         .select("*")
         .eq("show_id", showId)
@@ -27,7 +27,7 @@ export function useShowTipLeaderboard(showId?: string, limit = 20) {
       const rows = (data as ShowTipLeader[]) ?? [];
       const fanIds = rows.map((r) => r.fan_id);
       if (fanIds.length) {
-        const { data: profiles } = await (supabase as any)
+        const { data: profiles } = await supabase
           .from("profiles")
           .select("user_id,display_name,avatar_url")
           .in("user_id", fanIds);
@@ -59,7 +59,7 @@ export function useSendShowTip() {
       message?: string;
     }) => {
       if (!user) throw new Error("Sign in to tip");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_show_tips")
         .insert({
           show_id: params.show_id,

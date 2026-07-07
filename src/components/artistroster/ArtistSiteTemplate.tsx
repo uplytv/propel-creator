@@ -927,7 +927,7 @@ function BookingSection({
         message: form.message.trim() || null,
         source: `${slug}-site`,
       };
-      const { error: insertErr } = await (supabase as any)
+      const { error: insertErr } = await supabase
         .from("public_booking_inquiries")
         .insert(payload);
       if (insertErr) throw insertErr;
@@ -1181,7 +1181,7 @@ function TourRequestsSection({ slug, displayName }: { slug: string; displayName:
   const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("public_tour_requests")
       .select("id, city, country, vote_count")
       .eq("artist_slug", slug)
@@ -1212,7 +1212,7 @@ function TourRequestsSection({ slug, displayName }: { slug: string; displayName:
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, vote_count: i.vote_count + 1 } : i)));
     setVoted((prev) => new Set(prev).add(id));
     markVoted(slug, id);
-    const { error } = await (supabase as any).rpc("vote_public_tour_request", {
+    const { error } = await supabase.rpc("vote_public_tour_request", {
       _request_id: id,
       _voter_fp: getVoterFp(),
     });
@@ -1227,7 +1227,7 @@ function TourRequestsSection({ slug, displayName }: { slug: string; displayName:
     if (!city.trim()) return;
     setSubmitting(true);
     setError(null);
-    const { data, error } = await (supabase as any).rpc("create_public_tour_request", {
+    const { data, error } = await supabase.rpc("create_public_tour_request", {
       _artist_slug: slug,
       _city: city.trim(),
       _country: country.trim(),

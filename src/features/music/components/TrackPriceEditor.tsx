@@ -25,7 +25,7 @@ export default function TrackPriceEditor({ trackId, isPaid, priceCents }: Props)
     setSaving(true);
     try {
       const cents = Math.max(0, Math.round(parseFloat(price || "0") * 100));
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("tracks")
         .update({ is_paid: paid && cents > 0, price_cents: cents })
         .eq("id", trackId);

@@ -25,7 +25,7 @@ export default function SocialIconsRow({ userId }: { userId: string }) {
     queryKey: ["creator-social-links", userId],
     enabled: !!userId,
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("social_links")
         .select("id,platform,url")
         .eq("user_id", userId);

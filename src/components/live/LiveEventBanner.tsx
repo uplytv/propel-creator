@@ -31,7 +31,7 @@ export default function LiveEventBanner({ eventId, streamId }: LiveEventBannerPr
   // Subscribe to venue_attendance_count updates via Realtime
   useEffect(() => {
     const fetchAttendance = async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("mux_live_streams")
         .select("venue_attendance_count")
         .eq("id", streamId)

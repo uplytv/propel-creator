@@ -21,7 +21,7 @@ export default function LiveTicketSalesPanel({ streamId, eventId, viewerCount }:
     const fetch = async () => {
       const [{ data: evt }, { data: stream }] = await Promise.all([
         supabase.from("events").select("id, title, ticket_price, ticket_quantity, tickets_sold, is_free").eq("id", eventId).single(),
-        (supabase as any).from("mux_live_streams").select("tickets_sold_during_stream, venue_attendance_count").eq("id", streamId).single(),
+        supabase.from("mux_live_streams").select("tickets_sold_during_stream, venue_attendance_count").eq("id", streamId).single(),
       ]);
       if (evt) setEvent(evt);
       if (stream) {
@@ -48,7 +48,7 @@ export default function LiveTicketSalesPanel({ streamId, eventId, viewerCount }:
     setAttendanceCount(val);
     setEditingAttendance(false);
     try {
-      await (supabase as any)
+      await supabase
         .from("mux_live_streams")
         .update({ venue_attendance_count: val })
         .eq("id", streamId);

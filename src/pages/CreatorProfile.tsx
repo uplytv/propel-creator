@@ -60,13 +60,13 @@ function useCreatorProfileData(username: string | undefined) {
     queryKey: ["creator-public-profile", username],
     queryFn: async () => {
       // Try username first, then display_name as fallback
-      let { data, error } = await (supabase as any)
+      let { data, error } = await supabase
         .from("profiles")
         .select("id, user_id, display_name, username, avatar_url, bio, creator_type, members, mrr, total_revenue, cover_image_url, business_category, website, is_founding_creator")
         .eq("username", username)
         .maybeSingle();
       if (!data) {
-        const res = await (supabase as any)
+        const res = await supabase
           .from("profiles")
           .select("id, user_id, display_name, username, avatar_url, bio, creator_type, members, mrr, total_revenue, cover_image_url, business_category, website, is_founding_creator")
           .ilike("display_name", username!)
@@ -87,7 +87,7 @@ function useCreatorProfileData(username: string | undefined) {
   const socialLinksQuery = useQuery({
     queryKey: ["creator-social-links", userId],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("social_links")
         .select("*")
         .eq("user_id", userId!);
@@ -1118,7 +1118,7 @@ function CreatorProfileEvents({ username }: { username?: string }) {
     queryFn: async () => {
       const { data: prof } = await supabase.from("profiles").select("user_id").eq("username", username).maybeSingle();
       if (!prof) return [];
-      const { data } = await (supabase as any).from("events").select("*").eq("creator_id", prof.user_id).eq("status", "published").order("starts_at", { ascending: true }).limit(6);
+      const { data } = await supabase.from("events").select("*").eq("creator_id", prof.user_id).eq("status", "published").order("starts_at", { ascending: true }).limit(6);
       return data || [];
     },
   });

@@ -19,7 +19,7 @@ export function RsvpButton({ eventId }: Props) {
       const { data: { user } } = await supabase.auth.getUser();
       setUserId(user?.id ?? null);
 
-      const sb = supabase as any;
+      const sb = supabase;
       const [{ count: c }, mine] = await Promise.all([
         sb.from("event_rsvps").select("*", { count: "exact", head: true }).eq("event_id", eventId),
         user ? sb.from("event_rsvps").select("id").eq("event_id", eventId).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
@@ -36,7 +36,7 @@ export function RsvpButton({ eventId }: Props) {
       return;
     }
     setLoading(true);
-    const sb = supabase as any;
+    const sb = supabase;
     if (going) {
       await sb.from("event_rsvps").delete().eq("event_id", eventId).eq("user_id", userId);
       setGoing(false);

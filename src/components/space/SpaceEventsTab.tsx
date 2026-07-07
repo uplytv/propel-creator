@@ -248,7 +248,7 @@ export default function SpaceEventsTab({ creatorId, isOwner }: Props) {
     staleTime: 60_000,
     queryFn: async () => {
       try {
-        const { data } = await (supabase as any)
+        const { data } = await supabase
           .from("attendance")
           .select("*, global_event:global_event_id(title, starts_at, venue, city, image_url, ticket_url, category)")
           .eq("user_id", creatorId)

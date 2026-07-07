@@ -29,7 +29,7 @@ export default function WeeklyPlansStrip({ creatorUserId }: Props) {
     queryKey: ["creator-weekly-plans", creatorUserId, today],
     enabled: !!creatorUserId,
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("attendance")
         .select("id,attend_date,status,event_title,event_id")
         .eq("user_id", creatorUserId)

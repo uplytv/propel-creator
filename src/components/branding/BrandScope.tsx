@@ -34,7 +34,7 @@ export function useWhitelabelBrand(creatorId?: string | null) {
     enabled: !!creatorId,
     staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<Brand | null> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("whitelabel_config")
         .select("brand_name, logo_url, primary_hsl, accent_hsl, support_email, enabled")
         .eq("creator_id", creatorId)

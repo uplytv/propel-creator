@@ -101,7 +101,7 @@ export function useSubmitGuestRequest() {
       note?: string;
     }) => {
       if (!user?.id) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_show_guest_requests")
         .insert({
           guest_list_id: input.guest_list_id,

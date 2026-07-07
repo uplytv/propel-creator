@@ -4,9 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import type { CrmActivityKind, CrmContact, CrmActivity, CrmStage } from "@/components/crm/crmTypes";
 
-// NOTE: crm_contacts / crm_activities / crm_sync_contacts are new —
-// (supabase as any) casts stay until types.ts is regenerated.
-const db = supabase as any;
+const db = supabase;
 
 export function useCrmContacts() {
   const { user } = useAuth();

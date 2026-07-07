@@ -28,7 +28,7 @@ export function useInviteCodes() {
     enabled: !!user && profile.isApproved,
     staleTime: 60_000,
     queryFn: async (): Promise<InviteCodeData> => {
-      const { data: codes, error } = await (supabase as any)
+      const { data: codes, error } = await supabase
         .from("invite_codes")
         .select("id, code, is_used, used_by, used_at")
         .eq("owner_id", user!.id)

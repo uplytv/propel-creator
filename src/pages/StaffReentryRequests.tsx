@@ -43,7 +43,7 @@ export default function StaffReentryRequests() {
   const load = async () => {
     if (!user?.id) return;
     setLoading(true);
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("notifications")
       .select("id, title, message, read, created_at, reference_id, link, metadata")
       .eq("user_id", user.id)
@@ -65,7 +65,7 @@ export default function StaffReentryRequests() {
   // Realtime: prepend new requests
   useEffect(() => {
     if (!user?.id) return;
-    const channel = (supabase as any)
+    const channel = supabase
       .channel("staff-reentry-requests")
       .on(
         "postgres_changes",
@@ -87,7 +87,7 @@ export default function StaffReentryRequests() {
       )
       .subscribe();
     return () => {
-      (supabase as any).removeChannel(channel);
+      supabase.removeChannel(channel);
     };
   }, [user?.id]);
 
@@ -149,7 +149,7 @@ export default function StaffReentryRequests() {
   ) => {
     if (!guestUserId) return;
     try {
-      await (supabase as any).from("notifications").insert({
+      await supabase.from("notifications").insert({
         user_id: guestUserId,
         type: approved ? "ticket_reentry_approved" : "ticket_reentry_denied",
         title: approved ? "✅ Re-entry approved" : "🚫 Re-entry denied",
@@ -171,7 +171,7 @@ export default function StaffReentryRequests() {
     // Resolve current actor's display name (best-effort)
     let actorName = "Staff";
     try {
-      const { data: prof } = await (supabase as any)
+      const { data: prof } = await supabase
         .from("profiles")
         .select("display_name, username")
         .eq("user_id", user!.id)
@@ -197,7 +197,7 @@ export default function StaffReentryRequests() {
     const nextLog = [...existingLog, entry];
     const nextMetadata = { ...(req.metadata || {}), audit_log: nextLog };
 
-    await (supabase as any)
+    await supabase
       .from("notifications")
       .update({ read: true, metadata: nextMetadata })
       .eq("id", req.id);
@@ -213,7 +213,7 @@ export default function StaffReentryRequests() {
     const ticketUrl = req.metadata?.ticket_url || (ticketId ? `/tickets/${ticketId}` : null);
 
     if (ticketId) {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("tickets")
         .update({
           status: "active",
@@ -333,7 +333,7 @@ export default function StaffReentryRequests() {
       // Roll the notifications back to their pre-bulk state (read=false, prior metadata)
       await Promise.all(
         snapshots.map((s) =>
-          (supabase as any)
+          supabase
             .from("notifications")
             .update({ read: false, metadata: s.metadata ?? {} })
             .eq("id", s.id)
@@ -346,7 +346,7 @@ export default function StaffReentryRequests() {
           snapshots.map((s) => {
             const ticketId = s.metadata?.ticket_id || s.reference_id;
             if (!ticketId) return Promise.resolve();
-            return (supabase as any)
+            return supabase
               .from("tickets")
               .update({ status: "used", checked_in: true, checked_in_at: new Date().toISOString() })
               .eq("id", ticketId);

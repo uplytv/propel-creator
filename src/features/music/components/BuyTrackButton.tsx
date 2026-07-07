@@ -20,7 +20,7 @@ export default function BuyTrackButton({ trackId, priceCents }: Props) {
     queryKey: ["track-purchased", trackId, user?.id],
     queryFn: async () => {
       if (!user) return false;
-      const { data } = await (supabase as any).rpc("has_purchased_track", {
+      const { data } = await supabase.rpc("has_purchased_track", {
         _user_id: user.id,
         _track_id: trackId,
       });

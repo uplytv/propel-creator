@@ -776,7 +776,7 @@ function MinPostLevelSelect({ creatorId, value }: { creatorId: string; value: nu
   const queryClient = useQueryClient();
   const updateMinLevel = useMutation({
     mutationFn: async (level: number) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("creator_spaces")
         .update({ min_post_level: level })
         .eq("creator_id", creatorId);

@@ -18,7 +18,7 @@ export function useArtistMerch(artistId?: string) {
     queryKey: ["artist-merch", artistId],
     queryFn: async () => {
       if (!artistId) return [] as MerchItem[];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("artist_merch_items")
         .select("*")
         .eq("artist_id", artistId)
@@ -36,7 +36,7 @@ export function useAddMerchItem() {
   return useMutation({
     mutationFn: async (payload: Omit<MerchItem, "id" | "artist_id">) => {
       if (!user) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("artist_merch_items")
         .insert({ ...payload, artist_id: user.id })
         .select()
@@ -53,7 +53,7 @@ export function useDeleteMerchItem() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from("artist_merch_items").delete().eq("id", id);
+      const { error } = await supabase.from("artist_merch_items").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["artist-merch", user?.id] }),

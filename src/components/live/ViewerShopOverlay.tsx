@@ -184,7 +184,7 @@ export default function ViewerShopOverlay({ streamId, creatorUserId }: Props) {
   useEffect(() => {
     if (!streamId) return;
     const loadFlash = async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("live_flash_sales")
         .select("*, live_products(title)")
         .eq("stream_id", streamId)

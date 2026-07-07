@@ -13,7 +13,7 @@ export default function TrendingEventsWidget() {
       const nextWeek = new Date();
       nextWeek.setDate(nextWeek.getDate() + 7);
 
-      const { data: events } = await (supabase as any)
+      const { data: events } = await supabase
         .from("events")
         .select("id, title, cover_image, starts_at, event_date, location_name, ticket_price")
         .gte("starts_at", new Date().toISOString())
@@ -25,7 +25,7 @@ export default function TrendingEventsWidget() {
 
       // Get attendance counts
       const eventIds = events.map((e: any) => e.id);
-      const { data: attendance } = await (supabase as any)
+      const { data: attendance } = await supabase
         .from("attendance")
         .select("event_id")
         .in("event_id", eventIds);

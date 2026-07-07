@@ -29,7 +29,7 @@ export default function UsernameRedirect() {
       const candidates = getProfileHandleCandidates(username);
       const results = await Promise.all(
         candidates.map((candidate) =>
-          (supabase as any)
+          supabase
             .rpc("get_public_profile_by_username", { _username: candidate })
             .maybeSingle()
         )
@@ -44,7 +44,7 @@ export default function UsernameRedirect() {
         return;
       }
 
-      const { data: artist } = await (supabase as any)
+      const { data: artist } = await supabase
         .from("artist_profiles")
         .select("vanity_slug")
         .eq("user_id", profile.user_id)

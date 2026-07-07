@@ -27,7 +27,7 @@ export function useMyVerificationApplication() {
     queryKey: ['music', 'verification', 'mine', user?.id],
     queryFn: async () => {
       if (!user) return null;
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('artist_verification_applications')
         .select('*')
         .eq('user_id', user.id)
@@ -47,7 +47,7 @@ export function useSubmitVerificationApplication() {
   return useMutation({
     mutationFn: async (payload: Partial<VerificationApplication>) => {
       if (!user) throw new Error('Not authenticated');
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('artist_verification_applications')
         .insert({ user_id: user.id, status: 'pending', ...payload })
         .select()

@@ -26,7 +26,7 @@ export default function StoriesRow({ filterLocal, filterFriends }: StoriesRowPro
     queryKey: ["my-avatar", user?.id],
     queryFn: async () => {
       if (!user) return null;
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("profiles")
         .select("avatar_url, display_name")
         .eq("user_id", user.id)

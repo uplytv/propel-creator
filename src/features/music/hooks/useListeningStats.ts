@@ -20,7 +20,7 @@ export function useListeningSessions(artistId?: string) {
     enabled: !!artistId,
     staleTime: 30_000,
     queryFn: async (): Promise<ListeningSession[]> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_listening_sessions")
         .select("*")
         .eq("artist_id", artistId)
@@ -40,7 +40,7 @@ export function useMyListeningSessions(trackId?: string) {
     queryFn: async (): Promise<ListeningSession[]> => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) return [];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_listening_sessions")
         .select("*")
         .eq("track_id", trackId)
@@ -65,7 +65,7 @@ export function useTopListeners(artistId?: string, limit = 10) {
     enabled: !!artistId,
     staleTime: 60_000,
     queryFn: async (): Promise<TopListener[]> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_listening_sessions")
         .select("fan_id,duration_seconds,completed")
         .eq("artist_id", artistId)
@@ -98,7 +98,7 @@ export function useLogListeningSession() {
     }) => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("Not signed in");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_listening_sessions")
         .insert({
           artist_id: input.artist_id,

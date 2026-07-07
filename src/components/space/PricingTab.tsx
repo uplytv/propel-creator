@@ -122,12 +122,12 @@ export function PricingTab({ creatorId }: PricingTabProps) {
   // Tier-gated classroom content: rank -> lesson count, via SECURITY DEFINER
   // RPC (gated lesson rows are invisible to under-tier members, so a plain
   // select would undercount). Used for the per-tier "Unlocks N gated lessons"
-  // hint. (supabase as any): new RPC not yet in generated types.
+  // hint.
   const { data: gatedCounts = [] } = useQuery({
     queryKey: ["tier-gated-lesson-counts", creatorId],
     enabled: !!creatorId,
     queryFn: async () => {
-      const { data, error } = await (supabase as any).rpc("tier_gated_lesson_counts", { p_creator_id: creatorId });
+      const { data, error } = await supabase.rpc("tier_gated_lesson_counts", { p_creator_id: creatorId });
       if (error) return [] as { min_rank: number; lesson_count: number }[];
       return (data || []) as { min_rank: number; lesson_count: number }[];
     },
@@ -187,7 +187,7 @@ export function PricingTab({ creatorId }: PricingTabProps) {
       if (yearly !== null && (!isFinite(yearly) || yearly <= 0)) {
         throw new Error("Annual price must be a positive number");
       }
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("subscription_tiers")
         .update({
           price_yearly: yearly,

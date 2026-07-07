@@ -46,7 +46,7 @@ export default function LiveEventStreamsSection({ title, filterFollowing, follow
 
   useEffect(() => {
     const fetch = async () => {
-      let query = (supabase as any)
+      let query = supabase
         .from("mux_live_streams")
         .select("id, title, mux_playback_id, venue_attendance_count, viewer_count, user_id, event_id")
         .eq("status", "active")

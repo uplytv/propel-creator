@@ -12,9 +12,6 @@ import { useAuth } from "@/context/AuthContext";
    this via has_tier_access() RLS — these hooks exist so the UI can (a) let
    creators pick a minimum tier and (b) tell an under-tier member WHICH tier
    to upgrade to.
-
-   (supabase as any) casts: tier_rank / min_tier_rank are new columns not yet
-   in the generated types.ts — remove casts after regenerating types.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 export interface CreatorTier {
@@ -37,7 +34,7 @@ export function useCreatorTiers(creatorId: string | undefined) {
     enabled: !!creatorId,
     staleTime: 60_000,
     queryFn: async (): Promise<CreatorTier[]> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("subscription_tiers")
         .select("id, name, price_monthly, tier_rank, is_active, created_at")
         .eq("creator_id", creatorId!)

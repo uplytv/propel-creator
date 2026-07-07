@@ -16,7 +16,7 @@ export default function FestivalsSection({ limit = 12 }: { limit?: number }) {
     queryKey: ["festivals-global", limit],
     queryFn: async () => {
       const nowIso = new Date().toISOString();
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("events_global")
         .select("*")
         .gte("date", nowIso)

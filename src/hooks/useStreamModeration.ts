@@ -3,8 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Stream chat moderation (migration 20260706153000_moderation.sql).
- * Tables `chat_moderation` + `mux_live_streams.slow_mode_seconds` are not in
- * the generated types yet, hence the (supabase as any) casts.
  */
 
 export interface ChatRestriction {
@@ -27,7 +25,7 @@ export function useStreamModeration(
       setRestriction(null);
       return;
     }
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("chat_moderation")
       .select("kind, expires_at")
       .eq("stream_creator_id", creatorUserId)
@@ -80,7 +78,7 @@ export function useStreamModeration(
   // ── Slow mode (readable for public streams; owner can set) ──
   useEffect(() => {
     if (!streamId) return;
-    (supabase as any)
+    supabase
       .from("mux_live_streams")
       .select("slow_mode_seconds")
       .eq("id", streamId)
@@ -93,7 +91,7 @@ export function useStreamModeration(
   const setSlowMode = useCallback(
     async (seconds: number): Promise<string | undefined> => {
       if (!streamId) return "No stream";
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("mux_live_streams")
         .update({ slow_mode_seconds: seconds })
         .eq("id", streamId);
@@ -112,7 +110,7 @@ export function useStreamModeration(
   const timeoutUser = useCallback(
     async (targetUserId: string, minutes = 5): Promise<string | undefined> => {
       if (!creatorUserId || !viewerUserId) return "Not authorized";
-      const { error } = await (supabase as any).from("chat_moderation").upsert(
+      const { error } = await supabase.from("chat_moderation").upsert(
         {
           stream_creator_id: creatorUserId,
           target_user_id: targetUserId,
@@ -130,7 +128,7 @@ export function useStreamModeration(
   const banUser = useCallback(
     async (targetUserId: string): Promise<string | undefined> => {
       if (!creatorUserId || !viewerUserId) return "Not authorized";
-      const { error } = await (supabase as any).from("chat_moderation").upsert(
+      const { error } = await supabase.from("chat_moderation").upsert(
         {
           stream_creator_id: creatorUserId,
           target_user_id: targetUserId,

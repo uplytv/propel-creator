@@ -56,7 +56,7 @@ export default function TicketPurchasesSection({
     queryKey: ["purchases-tickets", user?.id],
     enabled: !!user?.id,
     queryFn: async (): Promise<TicketRow[]> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("tickets")
         .select(
           "id, qr_code_token, status, amount_paid, created_at, purchased_from, stripe_payment_intent_id, ticket_tiers:tier_id(name), events:event_id(id,title,starts_at,location_name,cover_image_url)",

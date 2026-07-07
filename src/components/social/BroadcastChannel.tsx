@@ -26,7 +26,7 @@ export default function BroadcastChannel({ creatorId, creatorName, creatorAvatar
   const { data: messages = [], isLoading } = useQuery({
     queryKey: ["broadcast-messages", creatorId],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("broadcast_messages")
         .select("*, profiles:creator_id(display_name, avatar_url)")
         .eq("creator_id", creatorId)
@@ -54,7 +54,7 @@ export default function BroadcastChannel({ creatorId, creatorName, creatorAvatar
   const handleSend = async () => {
     if (!text.trim() || !user || sending) return;
     setSending(true);
-    const { error } = await (supabase as any).from("broadcast_messages").insert({
+    const { error } = await supabase.from("broadcast_messages").insert({
       creator_id: user.id,
       content: text.trim(),
       message_type: "text",

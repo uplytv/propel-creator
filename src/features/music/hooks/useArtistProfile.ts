@@ -17,7 +17,7 @@ export function useArtistProfile(userId?: string) {
     queryKey: ["artist-profile", userId],
     queryFn: async () => {
       if (!userId) return null;
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("artist_profiles")
         .select("*")
         .eq("user_id", userId)
@@ -35,7 +35,7 @@ export function useUpsertArtistProfile() {
   return useMutation({
     mutationFn: async (payload: Partial<ArtistProfile>) => {
       if (!user) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("artist_profiles")
         .upsert({ user_id: user.id, ...payload }, { onConflict: "user_id" })
         .select()

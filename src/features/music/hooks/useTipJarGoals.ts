@@ -83,7 +83,7 @@ export function useContributeToTipJar() {
       is_anonymous?: boolean;
     }) => {
       if (!user?.id) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_tip_jar_contributions")
         .insert({
           goal_id: input.goal_id,

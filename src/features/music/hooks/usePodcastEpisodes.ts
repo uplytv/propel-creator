@@ -25,7 +25,7 @@ export function useArtistPodcastEpisodes(artistId?: string, includeUnpublished =
     queryKey: ['music', 'podcast', 'episodes', artistId, includeUnpublished],
     queryFn: async () => {
       if (!artistId) return [];
-      let q = (supabase as any)
+      let q = supabase
         .from('music_podcast_episodes')
         .select('*')
         .eq('artist_id', artistId)
@@ -47,7 +47,7 @@ export function useCreateEpisode() {
   return useMutation({
     mutationFn: async (payload: Partial<PodcastEpisode>) => {
       if (!user) throw new Error('Not authenticated');
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('music_podcast_episodes')
         .insert({ artist_id: user.id, ...payload })
         .select()
@@ -65,7 +65,7 @@ export function useTogglePublishEpisode() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, publish }: { id: string; publish: boolean }) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('music_podcast_episodes')
         .update({ is_published: publish, published_at: publish ? new Date().toISOString() : null })
         .eq('id', id)
@@ -81,7 +81,7 @@ export function useTogglePublishEpisode() {
 export function useIncrementEpisodePlay() {
   return useMutation({
     mutationFn: async (episodeId: string) => {
-      await (supabase as any).rpc('increment_podcast_episode_plays', { _episode_id: episodeId });
+      await supabase.rpc('increment_podcast_episode_plays', { _episode_id: episodeId });
     },
   });
 }

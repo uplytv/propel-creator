@@ -70,7 +70,7 @@ export function useAddFanPoints() {
       ref_id?: string;
       tip_cents?: number;
     }) => {
-      const { error } = await (supabase as any).rpc("add_fan_points", {
+      const { error } = await supabase.rpc("add_fan_points", {
         _artist_id: input.artist_id,
         _fan_id: input.fan_id,
         _source: input.source,

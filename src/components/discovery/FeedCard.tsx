@@ -100,7 +100,7 @@ const FeedCard = memo(forwardRef<HTMLDivElement, FeedCardProps>(function FeedCar
         };
         const likeTarget = likeTableMap[item.type as FeedItemType];
         if (likeTarget) {
-          (supabase as any)
+          (supabase as any) // cast: dynamic table name from likeTableMap
             .from(likeTarget.table)
             .insert({ [likeTarget.idCol]: item.id, user_id: user.id })
             .then(() => {})

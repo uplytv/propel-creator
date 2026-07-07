@@ -20,7 +20,7 @@ export default function SocialProducers() {
     queryKey: ["profile-producer", user?.id],
     queryFn: async () => {
       if (!user) return null;
-      const { data } = await (supabase as any).from("profiles").select("is_producer, producer_type").eq("user_id", user.id).single();
+      const { data } = await supabase.from("profiles").select("is_producer, producer_type").eq("user_id", user.id).single();
       return data as { is_producer: boolean | null; producer_type: string | null } | null;
     },
     enabled: !!user,

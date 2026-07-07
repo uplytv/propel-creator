@@ -25,7 +25,7 @@ export default function EventDiscoveryGrid({
     queryKey: ["profile-location", user?.id],
     queryFn: async () => {
       if (!user) return null;
-      const { data } = await (supabase as any).from("profiles").select("location").eq("user_id", user.id).single();
+      const { data } = await supabase.from("profiles").select("location").eq("user_id", user.id).single();
       return data as { location: string | null } | null;
     },
     enabled: !!user,
@@ -54,7 +54,7 @@ export default function EventDiscoveryGrid({
       }
 
       // 2. Global events (Ticketmaster/Eventbrite)
-      let globalQ = (supabase as any)
+      let globalQ = supabase
         .from("events_global")
         .select("*")
         .gte("date", nowIso)
@@ -86,7 +86,7 @@ export default function EventDiscoveryGrid({
       if (uply.length === 0 && global.length === 0 && profile?.location && filter === "active") {
         const [u2, g2] = await Promise.all([
           supabase.from("events").select("*").gte("starts_at", nowIso).order("starts_at", { ascending: true }).limit(limit),
-          (supabase as any).from("events_global").select("*").gte("date", nowIso).order("date", { ascending: true }).limit(limit),
+          supabase.from("events_global").select("*").gte("date", nowIso).order("date", { ascending: true }).limit(limit),
         ]);
         const uplyAll = (u2.data || []).map((e: any) => ({ ...e, _source: "uply" as const }));
         const globalAll = (g2.data || []).map((e: any) => ({

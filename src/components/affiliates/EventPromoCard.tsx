@@ -31,7 +31,7 @@ export default function EventPromoCard() {
     queryKey: ["my-event-promos", user?.id],
     enabled: !!user?.id,
     queryFn: async (): Promise<PromoRow[]> => {
-      const { data: promoters } = await (supabase as any)
+      const { data: promoters } = await (supabase as any) // cast: awaiting types regen (event_promoters)
         .from("event_promoters")
         .select("id, code, event_id")
         .eq("promoter_user_id", user!.id);
@@ -39,13 +39,13 @@ export default function EventPromoCard() {
       if (!list.length) return [];
 
       const eventIds = [...new Set(list.map((p) => p.event_id))];
-      const { data: events } = await (supabase as any)
+      const { data: events } = await supabase
         .from("events")
         .select("id, title, slug")
         .in("id", eventIds);
       const eventById = Object.fromEntries(((events ?? []) as any[]).map((e) => [e.id, e]));
 
-      const { data: sales } = await (supabase as any)
+      const { data: sales } = await (supabase as any) // cast: awaiting types regen (event_promoter_sales)
         .from("event_promoter_sales")
         .select("promoter_id, amount_cents, tickets_count")
         .in("promoter_id", list.map((p) => p.id));

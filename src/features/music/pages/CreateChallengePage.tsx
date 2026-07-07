@@ -31,7 +31,7 @@ export default function CreateChallengePage() {
     if (!title.trim()) return toast.error('Title required');
     setSaving(true);
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('music_challenges')
         .insert({
           host_id: user.id,

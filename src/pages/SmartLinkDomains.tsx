@@ -29,7 +29,7 @@ export default function SmartLinkDomains() {
 
   const load = async () => {
     if (!user) return;
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("smart_link_domains")
       .select("*")
       .eq("creator_id", user.id)
@@ -58,7 +58,7 @@ export default function SmartLinkDomains() {
         return;
       }
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("smart_link_domains")
         .insert({ creator_id: user.id, domain });
 
@@ -106,7 +106,7 @@ export default function SmartLinkDomains() {
 
   const deleteDomain = async (domainId: string, domain: string) => {
     if (!confirm(`Remove ${domain}? This cannot be undone.`)) return;
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("smart_link_domains")
       .delete()
       .eq("id", domainId);

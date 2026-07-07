@@ -42,7 +42,7 @@ export default function HangoutMatchSection() {
     enabled: !!user,
     queryFn: async () => {
       // Pull recently active profiles, exclude self + already-following
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("profiles")
         .select("user_id, display_name, avatar_url, username, bio, city")
         .neq("user_id", user!.id)
@@ -59,7 +59,7 @@ export default function HangoutMatchSection() {
     mutationFn: async ({ targetId }: { targetId: string }) => {
       if (!user) throw new Error("Sign in required");
       const [a, b] = [user.id, targetId].sort();
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("friend_connections")
         .insert({
           user_id: a,

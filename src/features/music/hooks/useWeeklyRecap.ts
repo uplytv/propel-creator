@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import type { Track } from "../types";
 
-const sb = supabase as any;
+const sb = supabase;
 
 export interface WeeklyRecap {
   totalPlays: number;

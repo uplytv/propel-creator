@@ -86,7 +86,7 @@ export default function SeatPicker({
     setSelected([]);
     setLoading(true);
     (async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("tickets")
         .select("seat_label")
         .eq("event_id", eventId)

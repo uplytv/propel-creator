@@ -30,9 +30,7 @@ export function useNotificationPreferences() {
   const query = useQuery({
     queryKey: key,
     queryFn: async (): Promise<NotificationPrefs> => {
-      // (supabase as any): daily_digest_email (20260707040000) is not in the
-      // generated types yet — remove the cast after regenerating types.ts.
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as any) // cast: awaiting types regen (notification_preferences.daily_digest_email)
         .from("notification_preferences")
         .select("budget_warning, campaign_completed, weekly_report_email, new_follower_email, tip_received_email, member_joined_email, daily_digest_email")
         .eq("user_id", user!.id)

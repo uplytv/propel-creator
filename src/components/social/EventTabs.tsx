@@ -71,7 +71,7 @@ function EventChatTab({ eventId }: { eventId: string }) {
   const { data: messages = [], isLoading } = useQuery({
     queryKey: ["event-chat", eventId],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("event_chat_messages")
         .select("*, profiles:user_id(display_name, avatar_url, username)")
         .eq("event_id", eventId)
@@ -106,7 +106,7 @@ function EventChatTab({ eventId }: { eventId: string }) {
     mutationFn: async () => {
       if (!user) throw new Error("Sign in required");
       if (!text.trim()) return;
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("event_chat_messages")
         .insert({ event_id: eventId, user_id: user.id, content: text.trim() });
       if (error) throw error;
@@ -185,7 +185,7 @@ function EventPeopleTab({ eventId }: { eventId: string }) {
   const { data: people = [], isLoading } = useQuery({
     queryKey: ["event-people", eventId],
     queryFn: async () => {
-      const { data: att } = await (supabase as any)
+      const { data: att } = await supabase
         .from("attendance")
         .select("user_id, status")
         .eq("event_id", eventId)
@@ -243,8 +243,8 @@ function EventGalleryTab({ eventId }: { eventId: string }) {
     queryKey: ["event-gallery", eventId],
     queryFn: async () => {
       const [storiesRes, chatRes] = await Promise.all([
-        (supabase as any).from("stories").select("id, media_url, user_id, created_at").eq("event_id", eventId).order("created_at", { ascending: false }).limit(30),
-        (supabase as any).from("event_chat_messages").select("id, media_url, user_id, created_at").eq("event_id", eventId).not("media_url", "is", null).order("created_at", { ascending: false }).limit(30),
+        supabase.from("stories").select("id, media_url, user_id, created_at").eq("event_id", eventId).order("created_at", { ascending: false }).limit(30),
+        supabase.from("event_chat_messages").select("id, media_url, user_id, created_at").eq("event_id", eventId).not("media_url", "is", null).order("created_at", { ascending: false }).limit(30),
       ]);
       const items = [
         ...((storiesRes.data || []).map((s: any) => ({ ...s, _kind: "story" }))),
@@ -301,7 +301,7 @@ function EventMarketplaceTab({ eventId, eventTitle }: { eventId: string; eventTi
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["event-marketplace", eventId],
     queryFn: async () => {
-      const { data: posts } = await (supabase as any)
+      const { data: posts } = await supabase
         .from("social_posts")
         .select("*")
         .eq("event_id", eventId)

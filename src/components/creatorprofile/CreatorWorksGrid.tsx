@@ -33,7 +33,7 @@ export default function CreatorWorksGrid({
     queryKey: ["creator-works", creatorProfileId, workTypes.join(",")],
     enabled: !!creatorProfileId,
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("creator_works")
         .select("*")
         .eq("creator_id", creatorProfileId)

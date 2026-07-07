@@ -35,7 +35,7 @@ export function useMerchDrops(artistId?: string) {
     enabled: !!artistId,
     staleTime: 30_000,
     queryFn: async (): Promise<MerchDrop[]> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_merch_drops")
         .select("*")
         .eq("artist_id", artistId)
@@ -52,7 +52,7 @@ export function useMerchDrop(id?: string) {
     enabled: !!id,
     staleTime: 15_000,
     queryFn: async (): Promise<MerchDrop | null> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_merch_drops")
         .select("*")
         .eq("id", id)
@@ -71,7 +71,7 @@ export function useMyMerchReservation(dropId?: string) {
     queryFn: async (): Promise<MerchReservation | null> => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) return null;
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_merch_reservations")
         .select("*")
         .eq("drop_id", dropId)
@@ -89,7 +89,7 @@ export function useReserveMerchDrop() {
     mutationFn: async (input: { drop_id: string; quantity?: number }) => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("Not signed in");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_merch_reservations")
         .insert({
           drop_id: input.drop_id,
@@ -113,7 +113,7 @@ export function useCancelMerchReservation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("music_merch_reservations")
         .delete()
         .eq("id", id);

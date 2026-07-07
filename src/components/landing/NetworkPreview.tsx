@@ -18,7 +18,7 @@ export default function NetworkPreview() {
     Promise.all([
       supabase.from("mux_live_streams").select("id", { count: "exact", head: true }),
       supabase.from("profiles").select("id", { count: "exact", head: true }).not("creator_type", "is", null),
-      (supabase as any).from("uply_channels").select("id", { count: "exact", head: true }).eq("is_active", true),
+      supabase.from("uply_channels").select("id", { count: "exact", head: true }).eq("is_active", true),
     ]).then(([streams, creators, channels]) => {
       setStats({
         streams: Math.max(streams.count || 0, 1),

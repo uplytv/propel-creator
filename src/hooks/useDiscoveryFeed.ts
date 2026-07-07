@@ -118,7 +118,7 @@ export function useDiscoveryFeed(
           ? supabase.from("clips").select("*").eq("is_public", true).order("created_at", { ascending: false }).limit(60)
           : Promise.resolve({ data: [], error: null }),
         (filter === "all" || filter === "livestream")
-          ? (supabase as any).from("videos").select("*").eq("is_public", true).order("created_at", { ascending: false }).limit(60)
+          ? supabase.from("videos").select("*").eq("is_public", true).order("created_at", { ascending: false }).limit(60)
           : Promise.resolve({ data: [], error: null }),
       ]);
 

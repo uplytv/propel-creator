@@ -128,7 +128,7 @@ export function useSubmitSetlistRequest() {
   return useMutation({
     mutationFn: async (input: { setlist_id: string; track_title: string; note?: string }) => {
       if (!user?.id) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_setlist_requests")
         .insert({
           setlist_id: input.setlist_id,
@@ -161,7 +161,7 @@ export function useToggleSetlistRequestVote() {
           .eq("voter_id", user.id);
         if (error) throw error;
       } else {
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from("music_setlist_request_votes")
           .insert({ request_id: input.request_id, voter_id: user.id });
         if (error) throw error;

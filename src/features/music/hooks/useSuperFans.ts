@@ -17,7 +17,7 @@ export function useSuperFans(artistId?: string, limit = 10) {
     queryKey: ["super-fans", artistId, limit],
     queryFn: async (): Promise<SuperFan[]> => {
       if (!artistId) return [];
-      const { data, error } = await (supabase as any).rpc("get_super_fans", {
+      const { data, error } = await supabase.rpc("get_super_fans", {
         _artist_id: artistId,
         _limit: limit,
       });

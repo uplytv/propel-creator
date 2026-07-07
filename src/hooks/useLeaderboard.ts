@@ -25,7 +25,7 @@ export function useLeaderboard() {
       if (!entries || entries.length === 0) return [];
 
       const userIds = entries.map((e: any) => e.user_id);
-      const { data: profiles } = await (supabase as any)
+      const { data: profiles } = await supabase
         .from("profiles_public")
         .select("user_id, display_name, avatar_url")
         .in("user_id", userIds);

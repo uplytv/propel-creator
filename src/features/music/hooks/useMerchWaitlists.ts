@@ -82,7 +82,7 @@ export function useJoinMerchWaitlist() {
   return useMutation({
     mutationFn: async (input: { waitlist_id: string; email?: string; size_pref?: string }) => {
       if (!user?.id) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_merch_waitlist_signups")
         .insert({
           waitlist_id: input.waitlist_id,

@@ -75,7 +75,7 @@ export default function WaitlistPage() {
         return;
       }
       // Mark code as used
-      await (supabase as any)
+      await supabase
         .from("invite_codes")
         .update({ is_used: true, used_by: user.id, used_at: new Date().toISOString() })
         .eq("id", invite.id);
@@ -134,7 +134,7 @@ export default function WaitlistPage() {
     }
 
     // Unified leaderboard
-    const { data: topReferrers } = await (supabase as any)
+    const { data: topReferrers } = await supabase
       .from("unified_referral_leaderboard")
       .select("user_id, display_name, username, avatar_url, total_referrals, is_approved, origin_member, role_type")
       .gt("total_referrals", 0)

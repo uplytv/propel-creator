@@ -18,7 +18,7 @@ export function useTourDates(artistId?: string) {
     queryKey: ["tour-dates", artistId],
     queryFn: async () => {
       if (!artistId) return [] as TourDate[];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("artist_tour_dates")
         .select("*")
         .eq("artist_id", artistId)
@@ -36,7 +36,7 @@ export function useAddTourDate() {
   return useMutation({
     mutationFn: async (payload: Omit<TourDate, "id" | "artist_id">) => {
       if (!user) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("artist_tour_dates")
         .insert({ ...payload, artist_id: user.id })
         .select()
@@ -53,7 +53,7 @@ export function useDeleteTourDate() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from("artist_tour_dates").delete().eq("id", id);
+      const { error } = await supabase.from("artist_tour_dates").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tour-dates", user?.id] }),

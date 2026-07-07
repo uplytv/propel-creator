@@ -33,7 +33,7 @@ export function useGroupChats() {
     setLoading(true);
 
     // Get groups user is a member of
-    const { data: memberships } = await (supabase as any)
+    const { data: memberships } = await supabase
       .from("group_members")
       .select("conversation_id")
       .eq("user_id", user.id);
@@ -45,7 +45,7 @@ export function useGroupChats() {
     }
 
     const ids = memberships.map((m: any) => m.conversation_id);
-    const { data: convos } = await (supabase as any)
+    const { data: convos } = await supabase
       .from("group_conversations")
       .select("*")
       .in("id", ids)
@@ -54,7 +54,7 @@ export function useGroupChats() {
     // Enrich with last message
     const enriched = await Promise.all(
       (convos || []).map(async (g: any) => {
-        const { data: lastMsg } = await (supabase as any)
+        const { data: lastMsg } = await supabase
           .from("group_messages")
           .select("content, created_at")
           .eq("conversation_id", g.id)
@@ -62,7 +62,7 @@ export function useGroupChats() {
           .limit(1)
           .maybeSingle();
 
-        const { count } = await (supabase as any)
+        const { count } = await supabase
           .from("group_members")
           .select("user_id", { count: "exact", head: true })
           .eq("conversation_id", g.id);
@@ -102,7 +102,7 @@ export function useGroupMessages(conversationId: string | null) {
   const fetchMessages = useCallback(async () => {
     if (!conversationId) return;
     setLoading(true);
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("group_messages")
       .select("*, profiles:user_id(display_name, avatar_url)")
       .eq("conversation_id", conversationId)

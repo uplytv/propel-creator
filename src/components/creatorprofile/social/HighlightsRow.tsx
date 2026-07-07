@@ -21,7 +21,7 @@ export default function HighlightsRow({ creatorUserId }: Props) {
     queryKey: ["creator-highlights", creatorUserId],
     enabled: !!creatorUserId,
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("stories")
         .select("id,highlight_title,highlight_cover_url,media_url")
         .eq("user_id", creatorUserId)

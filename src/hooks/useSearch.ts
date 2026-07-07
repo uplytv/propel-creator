@@ -29,7 +29,7 @@ export function useSearch() {
     setLoading(true);
     const term = `%${q.trim()}%`;
 
-    const sb = supabase as any;
+    const sb = supabase;
     const [profiles, products, streams, recordings, jobs, tracks, albums, artists] = await Promise.all([
       supabase.from("profiles_public").select("user_id, display_name, username, avatar_url").or(`display_name.ilike.${term},username.ilike.${term}`).limit(5),
       supabase.from("products").select("id, name, image_url, type, price").ilike("name", term).eq("status", "active").limit(5),

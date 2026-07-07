@@ -22,7 +22,7 @@ export function useSmartPlaylists() {
     queryKey: ["smart-playlists", user?.id],
     queryFn: async () => {
       if (!user) return [] as SmartPlaylist[];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("music_smart_playlists")
         .select("*")
         .eq("user_id", user.id)
@@ -39,7 +39,7 @@ export function useCreateSmartPlaylist() {
   return useMutation({
     mutationFn: async (payload: { title: string; rule_type: SmartRuleType; rule_params?: Record<string, any> }) => {
       if (!user) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_smart_playlists")
         .insert({ user_id: user.id, rule_params: {}, ...payload })
         .select()
@@ -56,7 +56,7 @@ export function useDeleteSmartPlaylist() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from("music_smart_playlists").delete().eq("id", id);
+      const { error } = await supabase.from("music_smart_playlists").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["smart-playlists", user?.id] }),
@@ -68,7 +68,7 @@ export function useSmartPlaylistTracks(smartId?: string) {
     queryKey: ["smart-playlist-tracks", smartId],
     queryFn: async () => {
       if (!smartId) return [] as Track[];
-      const { data: ids, error } = await (supabase as any).rpc("resolve_smart_playlist", {
+      const { data: ids, error } = await supabase.rpc("resolve_smart_playlist", {
         _smart_id: smartId,
         _limit: 100,
       });
@@ -77,7 +77,7 @@ export function useSmartPlaylistTracks(smartId?: string) {
         typeof r === "string" ? r : r.resolve_smart_playlist ?? r,
       );
       if (!trackIds.length) return [] as Track[];
-      const { data: tracks } = await (supabase as any)
+      const { data: tracks } = await supabase
         .from("tracks")
         .select("*")
         .in("id", trackIds);

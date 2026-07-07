@@ -21,7 +21,7 @@ export default function EventReview({ eventId }: EventReviewProps) {
   const { data: reviews = [] } = useQuery({
     queryKey: ["event-reviews", eventId],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await (supabase as any) // cast: awaiting types regen (event_reviews)
         .from("event_reviews")
         .select("*")
         .eq("event_id", eventId)
@@ -29,7 +29,7 @@ export default function EventReview({ eventId }: EventReviewProps) {
         .limit(20);
       if (!data || data.length === 0) return [];
       const reviewerIds = data.map((r: any) => r.reviewer_id);
-      const { data: profiles } = await (supabase as any)
+      const { data: profiles } = await supabase
         .from("profiles")
         .select("user_id, display_name, avatar_url")
         .in("user_id", reviewerIds);
@@ -47,7 +47,7 @@ export default function EventReview({ eventId }: EventReviewProps) {
     if (!user || rating === 0) return;
     setSubmitting(true);
     try {
-      await (supabase as any).from("event_reviews").upsert(
+      await (supabase as any).from("event_reviews").upsert( // cast: awaiting types regen (event_reviews)
         { event_id: eventId, reviewer_id: user.id, rating, body: body.trim() },
         { onConflict: "event_id,reviewer_id" }
       );

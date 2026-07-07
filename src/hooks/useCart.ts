@@ -31,7 +31,7 @@ export function useCart() {
       return;
     }
     setLoading(true);
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("cart_items")
       .select("*, product:product_id(id, name, price, image_url, type, user_id, stripe_price_id)")
       .eq("user_id", user.id)
@@ -68,12 +68,12 @@ export function useCart() {
       // Upsert quantity
       const existing = items.find((i) => i.product_id === productId);
       if (existing) {
-        await (supabase as any)
+        await supabase
           .from("cart_items")
           .update({ quantity: existing.quantity + 1 })
           .eq("id", existing.id);
       } else {
-        await (supabase as any).from("cart_items").insert({
+        await supabase.from("cart_items").insert({
           user_id: user.id,
           product_id: productId,
           quantity: 1,
@@ -88,16 +88,16 @@ export function useCart() {
 
   const updateQuantity = useCallback(async (id: string, quantity: number) => {
     if (quantity < 1) return removeItem(id);
-    await (supabase as any).from("cart_items").update({ quantity }).eq("id", id);
+    await supabase.from("cart_items").update({ quantity }).eq("id", id);
   }, []);
 
   const removeItem = useCallback(async (id: string) => {
-    await (supabase as any).from("cart_items").delete().eq("id", id);
+    await supabase.from("cart_items").delete().eq("id", id);
   }, []);
 
   const clearCart = useCallback(async () => {
     if (!user) return;
-    await (supabase as any).from("cart_items").delete().eq("user_id", user.id);
+    await supabase.from("cart_items").delete().eq("user_id", user.id);
   }, [user]);
 
   const subtotal = items.reduce((sum, i) => sum + (i.product?.price ?? 0) * i.quantity, 0);

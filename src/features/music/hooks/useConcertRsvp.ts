@@ -20,7 +20,7 @@ export function useMyConcertRsvp(concertId?: string) {
     queryKey: ["concert-rsvp", concertId, user?.id],
     queryFn: async () => {
       if (!user || !concertId) return null;
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("music_concert_rsvps")
         .select("*")
         .eq("concert_id", concertId)
@@ -38,12 +38,12 @@ export function useConcertRsvpCounts(concertId?: string) {
     queryFn: async () => {
       if (!concertId) return { going: 0, interested: 0 };
       const [g, i] = await Promise.all([
-        (supabase as any)
+        supabase
           .from("music_concert_rsvps")
           .select("id", { count: "exact", head: true })
           .eq("concert_id", concertId)
           .eq("status", "going"),
-        (supabase as any)
+        supabase
           .from("music_concert_rsvps")
           .select("id", { count: "exact", head: true })
           .eq("concert_id", concertId)
@@ -69,7 +69,7 @@ export function useSetConcertRsvp() {
       remindMe?: boolean;
     }) => {
       if (!user) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_concert_rsvps")
         .upsert(
           {

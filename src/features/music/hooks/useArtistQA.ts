@@ -82,7 +82,7 @@ export function useSubmitQAQuestion() {
   return useMutation({
     mutationFn: async (input: { artist_id: string; body: string; is_anonymous?: boolean }) => {
       if (!user?.id) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_artist_qa_questions")
         .insert({
           artist_id: input.artist_id,
@@ -108,7 +108,7 @@ export function useToggleQAUpvote() {
     mutationFn: async (input: { question_id: string; on: boolean }) => {
       if (!user?.id) throw new Error("Not authenticated");
       if (input.on) {
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from("music_artist_qa_upvotes")
           .insert({ question_id: input.question_id, voter_id: user.id });
         if (error && !String(error.message).includes("duplicate")) throw error;
@@ -135,7 +135,7 @@ export function useAnswerQAQuestion() {
   return useMutation({
     mutationFn: async (input: { question_id: string; body: string }) => {
       if (!user?.id) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_artist_qa_answers")
         .insert({
           question_id: input.question_id,

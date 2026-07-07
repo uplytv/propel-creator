@@ -26,7 +26,7 @@ export default function SwipeCard({ person, index, onSwipeRight, onSwipeLeft, on
     queryKey: ["my-interests", user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("profiles")
         .select("interests")
         .eq("user_id", user.id)

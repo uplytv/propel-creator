@@ -73,7 +73,7 @@ export default function BrandingSettings() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("whitelabel_config")
         .select("*")
         .eq("creator_id", user.id)
@@ -98,7 +98,7 @@ export default function BrandingSettings() {
     const effectiveEnabled = whitelabelActive ? enabled : false;
     setSaving(true);
     try {
-      const { error } = await (supabase as any).from("whitelabel_config").upsert(
+      const { error } = await supabase.from("whitelabel_config").upsert(
         {
           creator_id: user.id,
           enabled: effectiveEnabled,

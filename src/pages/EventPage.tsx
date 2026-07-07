@@ -132,7 +132,7 @@ export default function EventPage() {
     queryKey: ["event-attendees", event?.id],
     enabled: !!event,
     queryFn: async () => {
-      const { data } = await (supabase as any).from("tickets").select("buyer_id").eq("event_id", event!.id).eq("status", "active").limit(5);
+      const { data } = await supabase.from("tickets").select("buyer_id").eq("event_id", event!.id).eq("status", "active").limit(5);
       return data || [];
     },
   });
@@ -242,7 +242,7 @@ export default function EventPage() {
     if (!myTicket?.id) return;
     setRegenerating(true);
     try {
-      const { error } = await (supabase as any).rpc("rotate_ticket_qr", { p_ticket_id: myTicket.id });
+      const { error } = await supabase.rpc("rotate_ticket_qr", { p_ticket_id: myTicket.id });
       if (error) throw error;
       await qc.invalidateQueries({ queryKey: ["my-ticket"] });
       setQrUpdatedAt(new Date());

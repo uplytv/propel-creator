@@ -52,7 +52,7 @@ export default function MembershipsSection({
     queryKey: ["purchases-memberships", user?.id],
     enabled: !!user?.id,
     queryFn: async (): Promise<MembershipRow[]> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("member_subscriptions")
         .select(
           "id, creator_id, status, created_at, current_period_end, stripe_subscription_id, subscription_tiers(name, price_monthly)",
@@ -64,7 +64,7 @@ export default function MembershipsSection({
 
       const creatorIds = [...new Set((data || []).map((s: any) => s.creator_id))];
       const { data: profiles } = creatorIds.length
-        ? await (supabase as any)
+        ? await supabase
             .from("profiles")
             .select("user_id, display_name, username, avatar_url")
             .in("user_id", creatorIds)

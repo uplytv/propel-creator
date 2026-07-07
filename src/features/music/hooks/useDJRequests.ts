@@ -27,7 +27,7 @@ export function useDJRequestQueue(sessionId?: string) {
     queryKey: ["dj-requests", sessionId],
     queryFn: async () => {
       if (!sessionId) return [] as DJSongRequest[];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("dj_song_requests")
         .select("*")
         .eq("session_id", sessionId)
@@ -38,7 +38,7 @@ export function useDJRequestQueue(sessionId?: string) {
       const rows = (data as DJSongRequest[]) ?? [];
       const fanIds = [...new Set(rows.map((r) => r.fan_id))];
       if (fanIds.length) {
-        const { data: profiles } = await (supabase as any)
+        const { data: profiles } = await supabase
           .from("profiles")
           .select("user_id,display_name,avatar_url")
           .in("user_id", fanIds);
@@ -88,7 +88,7 @@ export function useCreateDJRequest() {
       currency?: string;
     }) => {
       if (!user) throw new Error("Sign in to request a song");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("dj_song_requests")
         .insert({
           session_id: params.session_id,
@@ -122,7 +122,7 @@ export function useUpdateDJRequestStatus() {
       session_id: string;
       status: DJSongRequest["status"];
     }) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("dj_song_requests")
         .update({ status })
         .eq("id", id);
@@ -138,7 +138,7 @@ export function useCancelDJRequest() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, session_id }: { id: string; session_id: string }) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("dj_song_requests")
         .delete()
         .eq("id", id);

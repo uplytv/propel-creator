@@ -111,7 +111,7 @@ export default function Apply() {
 
     try {
       // Upsert into waitlist (using existing schema)
-      await (supabase as any)
+      await supabase
         .from("waitlist")
         .upsert(
           {
@@ -127,7 +127,7 @@ export default function Apply() {
         );
 
       // Mark profile as onboarding complete so they don't get bounced back
-      await (supabase as any)
+      await supabase
         .from("profiles")
         .update({
           onboarding_complete: true,

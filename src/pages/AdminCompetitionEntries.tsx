@@ -77,12 +77,12 @@ export default function AdminCompetitionEntries() {
   const load = async () => {
     setLoading(true);
     const [{ data: ents, error: eErr }, { data: chs, error: cErr }] = await Promise.all([
-      (supabase as any)
+      supabase
         .from("music_challenge_entries")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(1000),
-      (supabase as any)
+      supabase
         .from("music_challenges")
         .select("id,title,slug,status")
         .order("created_at", { ascending: false }),
@@ -118,7 +118,7 @@ export default function AdminCompetitionEntries() {
     const patch: any = { moderation_status };
     if (moderation_notes !== undefined) patch.moderation_notes = moderation_notes;
     setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, ...patch } : e)));
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("music_challenge_entries")
       .update(patch)
       .eq("id", id);
@@ -452,7 +452,7 @@ function EntryCard({
       return;
     }
     setEmailLogsLoading(true);
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("email_send_log")
       .select("id,message_id,template_name,recipient_email,status,error_message,metadata,created_at")
       .eq("template_name", "competition-entry-status-update")
@@ -524,7 +524,7 @@ function EntryCard({
 
   const loadHistory = async () => {
     setHistoryLoading(true);
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("competition_entry_moderation_log")
       .select("id,moderator_id,previous_status,new_status,notes,created_at")
       .eq("entry_id", entry.id)

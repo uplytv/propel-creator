@@ -9,7 +9,7 @@ export default function EventGuestList({ eventId, totalGoing }: { eventId: strin
     queryKey: ["event-guest-list", eventId],
     enabled: !!eventId && totalGoing > 0,
     queryFn: async (): Promise<Guest[]> => {
-      const { data } = await (supabase as any).rpc("event_guest_list", { p_event_id: eventId, p_limit: 8 });
+      const { data } = await (supabase as any).rpc("event_guest_list", { p_event_id: eventId, p_limit: 8 }); // cast: awaiting types regen (rpc event_guest_list)
       return (data ?? []) as Guest[];
     },
   });

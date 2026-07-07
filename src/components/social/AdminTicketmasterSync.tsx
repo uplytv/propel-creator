@@ -13,7 +13,7 @@ export default function AdminTicketmasterSync() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)

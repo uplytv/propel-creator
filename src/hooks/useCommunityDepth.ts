@@ -11,11 +11,9 @@ import {
 /**
  * Community depth hooks (migration 20260706200000_community_depth.sql):
  * polls, threaded replies, comment likes, post search, member profiles,
- * and calendar-event RSVPs. New tables/columns are not in the generated
- * types yet, hence the (supabase as any) casts.
+ * and calendar-event RSVPs.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
+const db = supabase;
 
 export const POLL_MIN_OPTIONS = 2;
 export const POLL_MAX_OPTIONS = 6;

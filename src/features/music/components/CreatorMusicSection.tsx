@@ -4,7 +4,7 @@ import { Music } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import TrackRow from "./TrackRow";
 
-const sb = supabase as any;
+const sb = supabase;
 
 interface Props {
   userId?: string;

@@ -13,7 +13,7 @@ export default function EventWaitlist({ eventId }: { eventId: string }) {
     queryKey: ["event-waitlist-count", eventId],
     enabled: !!eventId,
     queryFn: async () => {
-      const { data } = await (supabase as any).rpc("event_waitlist_count", { p_event_id: eventId });
+      const { data } = await (supabase as any).rpc("event_waitlist_count", { p_event_id: eventId }); // cast: awaiting types regen (rpc event_waitlist_count)
       return Number(data ?? 0);
     },
   });
@@ -22,14 +22,14 @@ export default function EventWaitlist({ eventId }: { eventId: string }) {
     queryKey: ["event-waitlist-joined", eventId, user?.id],
     enabled: !!eventId && !!user,
     queryFn: async () => {
-      const { data } = await (supabase as any).rpc("is_on_event_waitlist", { p_event_id: eventId });
+      const { data } = await (supabase as any).rpc("is_on_event_waitlist", { p_event_id: eventId }); // cast: awaiting types regen (rpc is_on_event_waitlist)
       return !!data;
     },
   });
 
   const join = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any).rpc("join_event_waitlist", { p_event_id: eventId, p_email: user?.email ?? null });
+      const { error } = await (supabase as any).rpc("join_event_waitlist", { p_event_id: eventId, p_email: user?.email ?? null }); // cast: awaiting types regen (rpc join_event_waitlist)
       if (error) throw error;
     },
     onSuccess: () => {

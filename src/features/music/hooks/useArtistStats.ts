@@ -15,7 +15,7 @@ export function useArtistStats(artistId?: string, days = 30) {
       if (!artistId) {
         return { monthly_listeners: 0, total_plays: 0, top_countries: [], top_cities: [] };
       }
-      const { data, error } = await (supabase as any).rpc("get_artist_listener_stats", {
+      const { data, error } = await supabase.rpc("get_artist_listener_stats", {
         _artist_id: artistId,
         _days: days,
       });

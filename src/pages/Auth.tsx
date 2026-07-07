@@ -50,7 +50,7 @@ export default function Auth() {
     const checkAndRedirect = async (session: any) => {
       if (!session) return;
       // Check if user needs onboarding
-      const { data: profile } = await (supabase as any)
+      const { data: profile } = await supabase
         .from("profiles")
         .select("onboarding_complete, is_approved, account_type")
         .eq("user_id", session.user.id)
@@ -65,7 +65,7 @@ export default function Auth() {
         // A creator who signs in through a member CTA link must never be
         // downgraded — onboarding_complete/is_approved mark the creator path.
         if (asMember && p?.account_type !== "member" && !p?.onboarding_complete && !p?.is_approved) {
-          await (supabase as any)
+          await supabase
             .from("profiles")
             .update({ account_type: "member" })
             .eq("user_id", session.user.id);
@@ -160,7 +160,7 @@ export default function Auth() {
         if (asMember) {
           // Free member account: record the persona and skip creator
           // onboarding/waitlist. Idempotent with checkAndRedirect's write.
-          await (supabase as any)
+          await supabase
             .from("profiles")
             .update({ account_type: "member" })
             .eq("user_id", signUpData.user.id);

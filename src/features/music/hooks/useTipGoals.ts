@@ -33,7 +33,7 @@ export function useTipGoals(artistId?: string) {
     enabled: !!artistId,
     staleTime: 30_000,
     queryFn: async (): Promise<TipGoal[]> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_tip_goals")
         .select("*")
         .eq("artist_id", artistId)
@@ -50,7 +50,7 @@ export function useTipGoal(id?: string) {
     enabled: !!id,
     staleTime: 15_000,
     queryFn: async (): Promise<TipGoal | null> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_tip_goals")
         .select("*")
         .eq("id", id)
@@ -67,7 +67,7 @@ export function useTipContributions(goalId?: string) {
     enabled: !!goalId,
     staleTime: 15_000,
     queryFn: async (): Promise<TipContribution[]> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_tip_contributions")
         .select("*")
         .eq("goal_id", goalId)
@@ -90,7 +90,7 @@ export function useContributeToGoal() {
     }) => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("Not signed in");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_tip_contributions")
         .insert({
           goal_id: input.goal_id,

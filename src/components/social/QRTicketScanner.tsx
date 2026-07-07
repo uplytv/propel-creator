@@ -19,7 +19,7 @@ export default function QRTicketScanner({ eventId, onClose }: QRTicketScannerPro
   useEffect(() => {
     // Fetch already-checked count
     (async () => {
-      const { count } = await (supabase as any)
+      const { count } = await supabase
         .from("tickets")
         .select("*", { count: "exact", head: true })
         .eq("event_id", eventId)
@@ -33,7 +33,7 @@ export default function QRTicketScanner({ eventId, onClose }: QRTicketScannerPro
     setChecking(true);
     setResult(null);
     try {
-      const { data: ticket, error } = await (supabase as any)
+      const { data: ticket, error } = await supabase
         .from("tickets")
         .select("*, profiles:user_id(display_name)")
         .eq("qr_secret", code.trim())
@@ -54,7 +54,7 @@ export default function QRTicketScanner({ eventId, onClose }: QRTicketScannerPro
       }
 
       // Mark as checked in
-      await (supabase as any)
+      await supabase
         .from("tickets")
         .update({ checked_in: true, checked_in_at: new Date().toISOString() })
         .eq("id", ticket.id);

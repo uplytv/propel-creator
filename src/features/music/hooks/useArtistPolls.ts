@@ -105,7 +105,7 @@ export function useCastArtistPollVote() {
         .delete()
         .eq("poll_id", input.poll_id)
         .eq("voter_id", user.id);
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_artist_poll_votes")
         .insert({
           poll_id: input.poll_id,

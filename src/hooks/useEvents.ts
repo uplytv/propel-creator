@@ -222,7 +222,7 @@ export function useClaimFreeTicket() {
       if (existing) return existing as TicketRow;
 
       // Atomic reserve to prevent oversell
-      const { data: reserved, error: reserveErr } = await (supabase as any)
+      const { data: reserved, error: reserveErr } = await supabase
         .rpc("reserve_event_ticket", { p_event_id: event.id, p_qty: 1 });
       if (reserveErr) throw reserveErr;
       if (!reserved) throw new Error("Sold out");

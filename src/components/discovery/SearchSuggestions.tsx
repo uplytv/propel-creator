@@ -33,7 +33,7 @@ const SearchSuggestions = memo(function SearchSuggestions({ onSearchSubmit }: Se
 
     const [profiles, videos, spaces] = await Promise.all([
       supabase.from("profiles").select("user_id, display_name, username, avatar_url").or(`display_name.ilike.${term},username.ilike.${term}`).limit(3),
-      (supabase as any).from("videos").select("id, title, playback_id, creator_id, slug").ilike("title", term).eq("is_public", true).limit(3),
+      supabase.from("videos").select("id, title, playback_id, creator_id, slug").ilike("title", term).eq("is_public", true).limit(3),
       supabase.from("creator_spaces").select("id, creator_id, name, avatar_url, slug").ilike("name", term).eq("is_public", true).limit(3),
     ]);
 

@@ -12,16 +12,16 @@ export default function CreatorAnalyticsDashboard() {
       if (!user) return null;
 
       const [events, tickets, followers, stories, reviews] = await Promise.all([
-        (supabase as any).from("events").select("*", { count: "exact", head: true }).eq("creator_id", user.id),
-        (supabase as any).from("tickets").select("amount_paid, creator_earnings").eq("creator_id", user.id),
-        (supabase as any).from("follows").select("*", { count: "exact", head: true }).eq("following_id", user.id),
-        (supabase as any).from("story_views").select("story_id").in(
+        supabase.from("events").select("*", { count: "exact", head: true }).eq("creator_id", user.id),
+        supabase.from("tickets").select("amount_paid, creator_earnings").eq("creator_id", user.id),
+        supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", user.id),
+        supabase.from("story_views").select("story_id").in(
           "story_id",
-          (await (supabase as any).from("stories").select("id").eq("user_id", user.id)).data?.map((s: any) => s.id) || []
+          (await supabase.from("stories").select("id").eq("user_id", user.id)).data?.map((s: any) => s.id) || []
         ),
-        (supabase as any).from("event_reviews").select("rating").in(
+        (supabase as any).from("event_reviews").select("rating").in( // cast: awaiting types regen (event_reviews)
           "event_id",
-          (await (supabase as any).from("events").select("id").eq("creator_id", user.id)).data?.map((e: any) => e.id) || []
+          (await supabase.from("events").select("id").eq("creator_id", user.id)).data?.map((e: any) => e.id) || []
         ),
       ]);
 

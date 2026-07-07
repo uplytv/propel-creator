@@ -24,13 +24,13 @@ export default function EpisodeFeed({ creatorUserId, limit = 12 }: Props) {
     queryKey: ["creator-episodes", creatorUserId, limit],
     enabled: !!creatorUserId,
     queryFn: async () => {
-      const { data: podcast } = await (supabase as any)
+      const { data: podcast } = await supabase
         .from("creator_podcasts")
         .select("id")
         .eq("creator_id", creatorUserId)
         .maybeSingle();
       if (!podcast?.id) return [];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("podcast_episodes")
         .select("id,title,description,audio_url,audio_duration,episode_number,is_members_only,published_at")
         .eq("podcast_id", podcast.id)

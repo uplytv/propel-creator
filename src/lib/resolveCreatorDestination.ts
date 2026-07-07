@@ -42,7 +42,7 @@ async function resolveUncached(handle: string): Promise<string> {
     const candidates = getProfileHandleCandidates(handle);
     const results = await Promise.all(
       candidates.map((candidate) =>
-        (supabase as any)
+        supabase
           .rpc("get_public_profile_by_username", { _username: candidate })
           .maybeSingle(),
       ),

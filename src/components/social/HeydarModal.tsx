@@ -26,7 +26,7 @@ export default function HeydarModal({ count, onClose }: HeydarModalProps) {
     queryKey: ["wallet-balance", user?.id],
     queryFn: async () => {
       if (!user) return null;
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("wallets")
         .select("balance")
         .eq("user_id", user.id)
@@ -45,7 +45,7 @@ export default function HeydarModal({ count, onClose }: HeydarModalProps) {
     try {
       // Update heydar_active_until on profiles
       const activeUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("profiles")
         .update({ heydar_active_until: activeUntil })
         .eq("user_id", user.id);

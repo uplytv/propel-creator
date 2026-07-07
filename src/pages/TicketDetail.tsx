@@ -30,7 +30,7 @@ export default function TicketDetail() {
     queryKey: ["ticket-detail", token],
     enabled: !!token,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("tickets")
         .select("*, events:event_id(*)")
         .eq("qr_code_token", token)

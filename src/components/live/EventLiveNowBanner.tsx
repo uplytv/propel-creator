@@ -19,7 +19,7 @@ export default function EventLiveNowBanner({ eventId }: EventLiveNowBannerProps)
 
   useEffect(() => {
     const fetchLiveStream = async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("mux_live_streams")
         .select("id, user_id, title, slug, venue_attendance_count")
         .eq("event_id", eventId)

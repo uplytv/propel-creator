@@ -16,7 +16,7 @@ export default function MatchModal({ person, onClose }: MatchModalProps) {
   const handleSendMessage = async () => {
     if (!user) return;
     // Create or find existing DM conversation
-    const { data: existing } = await (supabase as any)
+    const { data: existing } = await supabase
       .from("direct_conversations")
       .select("id")
       .or(
@@ -27,7 +27,7 @@ export default function MatchModal({ person, onClose }: MatchModalProps) {
     if (existing) {
       navigate(`/messages/${existing.id}`);
     } else {
-      const { data: newConv } = await (supabase as any)
+      const { data: newConv } = await supabase
         .from("direct_conversations")
         .insert({
           participant_one: user.id,

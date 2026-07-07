@@ -70,7 +70,7 @@ export function useStreamPpvGate(
 
   const refresh = useCallback(async () => {
     if (!refId || !mightBePpv) return;
-    const { data, error } = await (supabase as any).rpc("get_stream_playback", {
+    const { data, error } = await supabase.rpc("get_stream_playback", {
       p_ref_id: refId,
       p_ref_type: refType,
     });

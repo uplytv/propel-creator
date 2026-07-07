@@ -141,19 +141,19 @@ export function useLessonMediaSources(lessons: any[]) {
       const byUpload: Record<string, any> = {};
       const byAsset: Record<string, any> = {};
       if (uploadIds.length > 0) {
-        const { data } = await (supabase as any)
+        const { data } = await supabase
           .from("mux_assets")
           .select("upload_id, mux_asset_id, status, mux_playback_id, duration")
           .in("upload_id", uploadIds);
         (data || []).forEach((a: any) => { if (a.upload_id) byUpload[a.upload_id] = a; });
       }
       if (assetIds.length > 0) {
-        const { data } = await (supabase as any)
+        const { data } = await supabase
           .from("mux_assets")
           .select("mux_asset_id, status, mux_playback_id, duration")
           .in("mux_asset_id", assetIds);
         (data || []).forEach((a: any) => { byAsset[a.mux_asset_id] = a; });
-        const { data: recs } = await (supabase as any)
+        const { data: recs } = await supabase
           .from("stream_recordings")
           .select("mux_asset_id, playback_id, duration_seconds")
           .in("mux_asset_id", assetIds);
@@ -194,7 +194,7 @@ export function useSelfHealLessonMedia(lessons: any[], isOwner: boolean, sources
         };
         if (row?.mux_asset_id && row.mux_asset_id !== "pending") patch.mux_asset_id = row.mux_asset_id;
         if ((!l.duration_seconds || l.duration_seconds === 0) && row?.duration) patch.duration_seconds = Math.round(row.duration);
-        const { error } = await (supabase as any).from("classroom_lessons").update(patch).eq("id", l.id);
+        const { error } = await supabase.from("classroom_lessons").update(patch).eq("id", l.id);
         if (!error) healed = true;
       }
       if (healed) queryClient.invalidateQueries({ queryKey: ["classroom-lessons"] });
@@ -290,8 +290,7 @@ export function useCreateModule() {
         .order("position", { ascending: false })
         .limit(1);
       const nextPos = existing && (existing as any[]).length > 0 ? (existing as any[])[0].position + 1 : 0;
-      // (supabase as any): min_tier_rank / drip_days are new columns not yet in generated types
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as any) // cast: awaiting types regen (classroom_modules.drip_days)
         .from("classroom_modules")
         .insert({ creator_id: creatorId, title, description, position: nextPos, is_free: is_free ?? true, min_tier_rank: min_tier_rank ?? null, drip_days: drip_days ?? null })
         .select()
@@ -341,7 +340,7 @@ export function useCreateLesson() {
         .order("position", { ascending: false })
         .limit(1);
       const nextPos = existing && (existing as any[]).length > 0 ? (existing as any[])[0].position + 1 : 0;
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("classroom_lessons")
         .insert({ ...lesson, position: nextPos });
       if (error) throw error;
@@ -359,7 +358,7 @@ export function useUpdateModule() {
       const patch: any = { title, description };
       if (min_tier_rank !== undefined) patch.min_tier_rank = min_tier_rank; // new column — only send when provided
       if (drip_days !== undefined) patch.drip_days = drip_days; // new column — only send when provided
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("classroom_modules")
         .update(patch)
         .eq("id", id);
@@ -379,7 +378,7 @@ export function useUpdateLesson() {
       // untouched columns.
       const updateData: any = {};
       Object.entries(patch).forEach(([k, v]) => { if (v !== undefined) updateData[k] = v; });
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("classroom_lessons")
         .update(updateData)
         .eq("id", id);

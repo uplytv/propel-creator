@@ -19,7 +19,7 @@ export function useTrackDrop(trackId?: string) {
     queryKey: ["track-drop", trackId],
     queryFn: async (): Promise<TrackDrop | null> => {
       if (!trackId) return null;
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("track_drops")
         .select("*")
         .eq("track_id", trackId)
@@ -33,7 +33,7 @@ export function useTrackDrop(trackId?: string) {
     queryKey: ["track-drop-reminder", drop.data?.id, user?.id],
     queryFn: async (): Promise<boolean> => {
       if (!drop.data || !user) return false;
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("track_drop_reminders")
         .select("id")
         .eq("drop_id", drop.data.id)
@@ -48,7 +48,7 @@ export function useTrackDrop(trackId?: string) {
     queryKey: ["track-drop-reminder-count", drop.data?.id],
     queryFn: async (): Promise<number> => {
       if (!drop.data) return 0;
-      const { count } = await (supabase as any)
+      const { count } = await supabase
         .from("track_drop_reminders")
         .select("id", { count: "exact", head: true })
         .eq("drop_id", drop.data.id);
@@ -61,12 +61,12 @@ export function useTrackDrop(trackId?: string) {
     mutationFn: async (on: boolean) => {
       if (!drop.data || !user) throw new Error("Sign in required");
       if (on) {
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from("track_drop_reminders")
           .insert({ drop_id: drop.data.id, user_id: user.id });
         if (error && !error.message.includes("duplicate")) throw error;
       } else {
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from("track_drop_reminders")
           .delete()
           .eq("drop_id", drop.data.id)

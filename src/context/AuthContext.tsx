@@ -22,7 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const enrichIdentify = async (userId: string, email?: string | null) => {
       try {
-        const { data } = await (supabase as any)
+        const { data } = await supabase
           .from('profiles')
           .select('tier, role_type, creator_type, onboarding_complete')
           .eq('id', userId)

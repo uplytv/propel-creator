@@ -78,7 +78,7 @@ export function useInbox() {
     );
 
     // 2) Mentions
-    const { data: mentions = [] } = await (supabase as any)
+    const { data: mentions = [] } = await supabase
       .from("mentions")
       .select("id, actor_id, source_type, preview, link, read, created_at")
       .eq("mentioned_user_id", user.id)

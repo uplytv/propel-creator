@@ -7,7 +7,7 @@ export default function VenueSpecialsFeed() {
   const { data: specials = [], isLoading } = useQuery({
     queryKey: ["venue-specials"],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("social_posts")
         .select("*, profiles:user_id(display_name, avatar_url, username, producer_type)")
         .eq("post_type", "venue_special")

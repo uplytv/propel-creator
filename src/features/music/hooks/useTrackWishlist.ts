@@ -18,7 +18,7 @@ export function useMyWishlist() {
     queryFn: async (): Promise<WishlistItem[]> => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) return [];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_track_wishlist")
         .select("*")
         .eq("fan_id", u.user.id)
@@ -42,7 +42,7 @@ export function useTrackDemand(artistId?: string) {
     enabled: !!artistId,
     staleTime: 60_000,
     queryFn: async (): Promise<TrackDemand[]> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_track_wishlist")
         .select("track_id,priority")
         .eq("artist_id", artistId)
@@ -77,7 +77,7 @@ export function useAddToWishlist() {
     }) => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("Not signed in");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_track_wishlist")
         .insert({
           fan_id: u.user.id,
@@ -102,7 +102,7 @@ export function useRemoveFromWishlist() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("music_track_wishlist")
         .delete()
         .eq("id", id);
@@ -120,7 +120,7 @@ export function useUpdateWishlistPriority() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: { id: string; priority: number }) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("music_track_wishlist")
         .update({ priority: Math.min(5, Math.max(1, input.priority)) })
         .eq("id", input.id);

@@ -18,7 +18,7 @@ export default function SocialProfileSection() {
     queryKey: ["social-profile", user?.id],
     queryFn: async () => {
       if (!user) return null;
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("profiles")
         .select("age, interests, show_in_people, location_sharing_enabled, people_photos")
         .eq("user_id", user.id)
@@ -60,7 +60,7 @@ export default function SocialProfileSection() {
     if (!user) return;
     setSaving(true);
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("profiles")
         .update({
           age: age ? parseInt(age) : null,

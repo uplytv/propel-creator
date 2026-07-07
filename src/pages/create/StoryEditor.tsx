@@ -47,7 +47,7 @@ export default function StoryEditor() {
         bucket: "stories",
         ext: media.kind === "video" ? "webm" : "jpg",
       });
-      const { error } = await (supabase as any).from("stories").insert({
+      const { error } = await supabase.from("stories").insert({
         user_id: user.id,
         media_url: url,
         media_type: media.kind === "video" ? "video" : "image",

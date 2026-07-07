@@ -11,9 +11,9 @@ export function usePresave(trackId: string) {
     queryKey: ["presave", trackId, user?.id],
     queryFn: async () => {
       const [{ count }, mineRes] = await Promise.all([
-        (supabase as any).from("track_presaves").select("id", { count: "exact", head: true }).eq("track_id", trackId),
+        supabase.from("track_presaves").select("id", { count: "exact", head: true }).eq("track_id", trackId),
         user
-          ? (supabase as any).from("track_presaves").select("id").eq("track_id", trackId).eq("user_id", user.id).maybeSingle()
+          ? supabase.from("track_presaves").select("id").eq("track_id", trackId).eq("user_id", user.id).maybeSingle()
           : Promise.resolve({ data: null }),
       ]);
       return {
@@ -28,7 +28,7 @@ export function usePresave(trackId: string) {
     mutationFn: async () => {
       if (!user) throw new Error("Sign in to pre-save");
       if (status.data?.hasPresaved) {
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from("track_presaves")
           .delete()
           .eq("track_id", trackId)
@@ -36,7 +36,7 @@ export function usePresave(trackId: string) {
         if (error) throw error;
         return false;
       }
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("track_presaves")
         .insert({ track_id: trackId, user_id: user.id, notify_on_release: true });
       if (error) throw error;

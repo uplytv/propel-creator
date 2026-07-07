@@ -25,7 +25,7 @@ export function useMusicChart(
   return useQuery({
     queryKey: ["music-chart", chartType, period, region, limit],
     queryFn: async () => {
-      const { data: latest, error: e1 } = await (supabase as any)
+      const { data: latest, error: e1 } = await supabase
         .from("music_chart_snapshots")
         .select("snapshot_date")
         .eq("chart_type", chartType)
@@ -37,7 +37,7 @@ export function useMusicChart(
       if (e1) throw e1;
       if (!latest) return [] as ChartEntry[];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_chart_snapshots")
         .select("*")
         .eq("chart_type", chartType)

@@ -23,7 +23,7 @@ export default function UpcomingEventsStrip({ creatorUserId, limit = 6 }: Props)
     queryKey: ["creator-upcoming-events", creatorUserId, limit],
     enabled: !!creatorUserId,
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("events")
         .select("id,title,starts_at,location_name,location_city,slug")
         .eq("creator_id", creatorUserId)

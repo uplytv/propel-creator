@@ -10,7 +10,7 @@ export function useAttendance() {
     queryKey: ["attendance", "mine", user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("attendance")
         .select("*")
         .eq("user_id", user.id)
@@ -30,7 +30,7 @@ export function useAttendance() {
       // For general "going out" without event, find existing record by date + null event
       if (!params.eventId) {
         // Delete any existing record for this date with no event
-        await (supabase as any)
+        await supabase
           .from("attendance")
           .delete()
           .eq("user_id", user.id)
@@ -38,7 +38,7 @@ export function useAttendance() {
           .is("event_id", null);
 
         // Insert new record
-        const { error } = await (supabase as any).from("attendance").insert({
+        const { error } = await supabase.from("attendance").insert({
           user_id: user.id,
           event_id: null,
           status: params.status,
@@ -46,7 +46,7 @@ export function useAttendance() {
         });
         if (error) throw error;
       } else {
-        const { error } = await (supabase as any).from("attendance").upsert(
+        const { error } = await supabase.from("attendance").upsert(
           {
             user_id: user.id,
             event_id: params.eventId,
@@ -66,7 +66,7 @@ export function useAttendance() {
   const clearAttendance = useMutation({
     mutationFn: async (params: { date: string; eventId?: string }) => {
       if (!user) return;
-      let query = (supabase as any)
+      let query = supabase
         .from("attendance")
         .delete()
         .eq("user_id", user.id)
@@ -87,7 +87,7 @@ export function useAttendance() {
   const removeAttendance = useMutation({
     mutationFn: async (eventId: string) => {
       if (!user) return;
-      await (supabase as any).from("attendance").delete().eq("user_id", user.id).eq("event_id", eventId);
+      await supabase.from("attendance").delete().eq("user_id", user.id).eq("event_id", eventId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
@@ -106,7 +106,7 @@ export function useAttendance() {
       const date = params.eventDate
         ? new Date(params.eventDate).toISOString().split("T")[0]
         : new Date().toISOString().split("T")[0];
-      const { error } = await (supabase as any).from("attendance").upsert(
+      const { error } = await supabase.from("attendance").upsert(
         {
           user_id: user.id,
           global_event_id: params.globalEventId,
@@ -128,7 +128,7 @@ export function useAttendance() {
   const removeGlobalAttendance = useMutation({
     mutationFn: async (globalEventId: string) => {
       if (!user) return;
-      await (supabase as any)
+      await supabase
         .from("attendance")
         .delete()
         .eq("user_id", user.id)
@@ -151,7 +151,7 @@ export function useAttendance() {
     );
 
   const getGlobalEventAttendees = async (globalEventId: string) => {
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("attendance")
       .select("*, profiles:user_id(display_name, avatar_url, username)")
       .eq("global_event_id", globalEventId);
@@ -159,7 +159,7 @@ export function useAttendance() {
   };
 
   const getAttendees = async (eventId: string) => {
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("attendance")
       .select("*, profiles:user_id(display_name, avatar_url, username)")
       .eq("event_id", eventId);
@@ -167,7 +167,7 @@ export function useAttendance() {
   };
 
   const getGoingOutCount = async (date: string) => {
-    const { count } = await (supabase as any)
+    const { count } = await supabase
       .from("attendance")
       .select("*", { count: "exact", head: true })
       .eq("attend_date", date)

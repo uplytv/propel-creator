@@ -86,7 +86,7 @@ export function usePresave() {
       platforms?: PresavePlatform[];
     }) => {
       if (!user?.id) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_presave_signups")
         .upsert(
           {

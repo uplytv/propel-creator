@@ -15,7 +15,7 @@ export default function MusicAnalyticsPage() {
     queryKey: ["my-music-tracks", user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const { data } = await (supabase as any)
+      const { data } = await (supabase as any) // cast: awaiting types regen (music_tracks)
         .from("music_tracks")
         .select("id, title, cover_url")
         .eq("artist_id", user.id)

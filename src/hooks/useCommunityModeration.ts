@@ -5,8 +5,6 @@ import { fetchProfileMap } from "@/lib/supabaseTyped";
 
 /**
  * Community moderation (migration 20260706153000_moderation.sql).
- * `content_reports` / `community_bans` are not in the generated types yet,
- * hence the (supabase as any) casts.
  */
 
 export type ReportContentType = "post" | "comment" | "chat";
@@ -40,7 +38,7 @@ export function useReportContent() {
       reason: string;
     }) => {
       if (!user) throw new Error("Not authenticated");
-      const { error } = await (supabase as any).from("content_reports").insert({
+      const { error } = await supabase.from("content_reports").insert({
         reporter_id: user.id,
         creator_id: report.creatorId,
         content_type: report.contentType,
@@ -61,7 +59,7 @@ export function useOpenReports(creatorId: string | undefined, enabled: boolean) 
     queryKey: ["community-reports", creatorId],
     enabled: !!creatorId && enabled,
     queryFn: async (): Promise<CommunityReport[]> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("content_reports")
         .select("*")
         .eq("creator_id", creatorId!)
@@ -128,7 +126,7 @@ export function useUpdateReportStatus() {
 
   return useMutation({
     mutationFn: async ({ reportId, status }: { reportId: string; status: ReportStatus }) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("content_reports")
         .update({ status })
         .eq("id", reportId);
@@ -148,7 +146,7 @@ export function useBanCommunityMember() {
   return useMutation({
     mutationFn: async ({ targetUserId, reason }: { targetUserId: string; reason?: string }) => {
       if (!user) throw new Error("Not authenticated");
-      const { error: banError } = await (supabase as any).from("community_bans").upsert(
+      const { error: banError } = await supabase.from("community_bans").upsert(
         {
           creator_id: user.id,
           target_user_id: targetUserId,

@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import type { Track } from "../types";
 
-const sb = supabase as any;
+const sb = supabase;
 
 export function useDownloadedTracks() {
   const { user } = useAuth();

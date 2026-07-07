@@ -91,7 +91,7 @@ export default function PrimetimeSection() {
     const next = scheduledStreams[0];
     const handleRemind = async () => {
       if (!user) { navigate("/auth"); return; }
-      const { error } = await (supabase as any).from("stream_reminders").insert({ stream_id: next.id, user_id: user.id }).select().single();
+      const { error } = await supabase.from("stream_reminders").insert({ stream_id: next.id, user_id: user.id }).select().single();
       if (!error) { setReminded(true); toast.success("You'll be reminded 15 min before!"); }
     };
 

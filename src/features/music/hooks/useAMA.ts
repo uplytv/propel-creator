@@ -103,7 +103,7 @@ export function useSubmitAMAQuestion() {
   return useMutation({
     mutationFn: async (input: { session_id: string; question: string }) => {
       if (!user?.id) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_ama_questions")
         .insert({ session_id: input.session_id, fan_id: user.id, question: input.question })
         .select()
@@ -131,7 +131,7 @@ export function useToggleAMAVote() {
           .eq("voter_id", user.id);
         if (error) throw error;
       } else {
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from("music_ama_question_votes")
           .insert({ question_id: input.question_id, voter_id: user.id });
         if (error) throw error;

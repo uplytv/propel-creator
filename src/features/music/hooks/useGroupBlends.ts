@@ -27,18 +27,18 @@ export function useGroupBlends() {
     queryKey: ["group-blends", user?.id],
     queryFn: async (): Promise<GroupBlend[]> => {
       if (!user) return [];
-      const { data: owned } = await (supabase as any)
+      const { data: owned } = await supabase
         .from("group_blends")
         .select("*")
         .eq("owner_id", user.id);
-      const { data: memberRows } = await (supabase as any)
+      const { data: memberRows } = await supabase
         .from("group_blend_members")
         .select("blend_id")
         .eq("user_id", user.id);
       const memberIds = (memberRows ?? []).map((r: any) => r.blend_id);
       let memberBlends: any[] = [];
       if (memberIds.length) {
-        const { data } = await (supabase as any)
+        const { data } = await supabase
           .from("group_blends")
           .select("*")
           .in("id", memberIds);
@@ -54,14 +54,14 @@ export function useGroupBlends() {
   const create = useMutation({
     mutationFn: async (name: string) => {
       if (!user) throw new Error("Sign in required");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("group_blends")
         .insert({ owner_id: user.id, name })
         .select()
         .single();
       if (error) throw error;
       // owner is implicit member
-      await (supabase as any).from("group_blend_members").insert({ blend_id: data.id, user_id: user.id });
+      await supabase.from("group_blend_members").insert({ blend_id: data.id, user_id: user.id });
       return data;
     },
     onSuccess: () => {
@@ -80,7 +80,7 @@ export function useGroupBlendMembers(blendId?: string) {
     queryKey: ["group-blend-members", blendId],
     queryFn: async (): Promise<GroupBlendMember[]> => {
       if (!blendId) return [];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("group_blend_members")
         .select("*")
         .eq("blend_id", blendId);
@@ -93,7 +93,7 @@ export function useGroupBlendMembers(blendId?: string) {
   const addMember = useMutation({
     mutationFn: async (userId: string) => {
       if (!blendId) throw new Error("No blend");
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("group_blend_members")
         .insert({ blend_id: blendId, user_id: userId });
       if (error) throw error;
@@ -106,7 +106,7 @@ export function useGroupBlendMembers(blendId?: string) {
 
   const removeMember = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from("group_blend_members").delete().eq("id", id);
+      const { error } = await supabase.from("group_blend_members").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["group-blend-members", blendId] }),

@@ -35,14 +35,14 @@ export function usePeopleSwipe() {
       if (!user) return [];
 
       // Get IDs already hey'd
-      const { data: sentHeys } = await (supabase as any)
+      const { data: sentHeys } = await supabase
         .from("heys")
         .select("recipient_id")
         .eq("sender_id", user.id);
       const heyedIds = new Set((sentHeys || []).map((h: any) => h.recipient_id));
 
       // Current user's attendance — for shared event detection
-      const { data: myAttendance } = await (supabase as any)
+      const { data: myAttendance } = await supabase
         .from("attendance")
         .select("event_id, global_event_id, event_title, events:event_id(title)")
         .eq("user_id", user.id)
@@ -61,7 +61,7 @@ export function usePeopleSwipe() {
       });
 
       // Build profile query (gender column not present yet — filter is a no-op for women_local/men_local)
-      const profileQuery = (supabase as any)
+      const profileQuery = supabase
         .from("profiles")
         .select(
           "user_id, display_name, avatar_url, age, location, interests, username, people_photos, show_in_people"
@@ -78,7 +78,7 @@ export function usePeopleSwipe() {
       // "By event" filter — only people attending the same event
       let attendeeIds: Set<string> | null = null;
       if (filter === "by_event" && (filterEventId || filterGlobalEventId)) {
-        const attQuery = (supabase as any)
+        const attQuery = supabase
           .from("attendance")
           .select("user_id")
           .eq("status", "going");
@@ -93,7 +93,7 @@ export function usePeopleSwipe() {
       const profileIds = filtered.map((p: any) => p.user_id);
       const attendanceByUser = new Map<string, any[]>();
       if (profileIds.length > 0) {
-        const { data: theirAttendance } = await (supabase as any)
+        const { data: theirAttendance } = await supabase
           .from("attendance")
           .select("user_id, event_id, global_event_id, event_title, events:event_id(title)")
           .in("user_id", profileIds)
@@ -106,7 +106,7 @@ export function usePeopleSwipe() {
       }
 
       const myInterests = new Set<string>();
-      const { data: myProfile } = await (supabase as any)
+      const { data: myProfile } = await supabase
         .from("profiles")
         .select("interests")
         .eq("user_id", user.id)
@@ -174,7 +174,7 @@ export function usePeopleSwipe() {
   const sendHey = useMutation({
     mutationFn: async (recipientId: string) => {
       if (!user) throw new Error("Not authenticated");
-      const { error } = await (supabase as any).from("heys").insert({
+      const { error } = await supabase.from("heys").insert({
         sender_id: user.id,
         recipient_id: recipientId,
         hey_type: "free",
@@ -184,7 +184,7 @@ export function usePeopleSwipe() {
         throw error;
       }
       // Create notification
-      await (supabase as any).from("notifications").insert({
+      await supabase.from("notifications").insert({
         user_id: recipientId,
         type: "hey",
         title: "Someone Heyed you 👋",
@@ -201,24 +201,24 @@ export function usePeopleSwipe() {
   const checkMutual = useCallback(
     async (recipientId: string): Promise<boolean> => {
       if (!user) return false;
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("heys")
         .select("id")
         .eq("sender_id", recipientId)
         .eq("recipient_id", user.id)
         .maybeSingle();
       if (data) {
-        await (supabase as any)
+        await supabase
           .from("heys")
           .update({ is_mutual: true })
           .eq("sender_id", recipientId)
           .eq("recipient_id", user.id);
-        await (supabase as any)
+        await supabase
           .from("heys")
           .update({ is_mutual: true })
           .eq("sender_id", user.id)
           .eq("recipient_id", recipientId);
-        await (supabase as any).from("notifications").insert({
+        await supabase.from("notifications").insert({
           user_id: recipientId,
           type: "hey_mutual",
           title: "It's a match! 💚",

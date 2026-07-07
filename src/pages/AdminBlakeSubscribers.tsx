@@ -64,7 +64,7 @@ export default function AdminBlakeSubscribers() {
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["admin-blake-subscribers"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("blake_subscribers")
         .select("*")
         .order("updated_at", { ascending: false });

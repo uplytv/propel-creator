@@ -35,7 +35,7 @@ export function useCarpools(concertLabel?: string) {
     queryKey: ["music-carpools", concertLabel],
     staleTime: 30_000,
     queryFn: async (): Promise<Carpool[]> => {
-      let q = (supabase as any)
+      let q = supabase
         .from("music_concert_carpools")
         .select("*")
         .order("departure_time", { ascending: true, nullsFirst: false })
@@ -54,7 +54,7 @@ export function useCarpoolRiders(carpoolId?: string) {
     enabled: !!carpoolId,
     staleTime: 15_000,
     queryFn: async (): Promise<CarpoolRider[]> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_carpool_riders")
         .select("*")
         .eq("carpool_id", carpoolId)
@@ -79,7 +79,7 @@ export function useCreateCarpool() {
     }) => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("Not signed in");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_concert_carpools")
         .insert({
           driver_id: u.user.id,
@@ -109,7 +109,7 @@ export function useJoinCarpool() {
     mutationFn: async (input: { carpool_id: string; note?: string }) => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("Not signed in");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_carpool_riders")
         .insert({
           carpool_id: input.carpool_id,
@@ -132,7 +132,7 @@ export function useUpdateRiderStatus() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: { id: string; carpool_id: string; status: RiderStatus }) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("music_carpool_riders")
         .update({ status: input.status })
         .eq("id", input.id);

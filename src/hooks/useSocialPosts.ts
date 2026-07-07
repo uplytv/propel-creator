@@ -20,7 +20,7 @@ export function useSocialPosts(options?: { friendsOnly?: boolean }) {
     queryKey: ["social-posts", user?.id, followingIds, options?.friendsOnly],
     queryFn: async ({ pageParam }) => {
       if (!user) return [] as any[];
-      let query = (supabase as any)
+      let query = supabase
         .from("social_posts")
         .select("*, profiles:user_id(display_name, avatar_url, username), events:event_id(title)")
         .order("created_at", { ascending: false })
@@ -48,7 +48,7 @@ export function useSocialPosts(options?: { friendsOnly?: boolean }) {
   const createPost = useMutation({
     mutationFn: async (params: { content: string; mediaUrls?: string[]; eventId?: string; postType?: string; mentionedUserIds?: string[] }) => {
       if (!user) throw new Error("Not authenticated");
-      const { data: inserted, error } = await (supabase as any).from("social_posts").insert({
+      const { data: inserted, error } = await supabase.from("social_posts").insert({
         user_id: user.id,
         content: params.content,
         media_urls: params.mediaUrls || [],
@@ -60,7 +60,7 @@ export function useSocialPosts(options?: { friendsOnly?: boolean }) {
       // Persist @mentions for the unified inbox
       const mentionIds = (params.mentionedUserIds ?? []).filter((id) => id && id !== user.id);
       if (inserted?.id && mentionIds.length > 0) {
-        await (supabase as any).from("mentions").insert(
+        await supabase.from("mentions").insert(
           [...new Set(mentionIds)].map((mentioned_user_id) => ({
             mentioned_user_id,
             actor_id: user.id,
@@ -80,7 +80,7 @@ export function useSocialPosts(options?: { friendsOnly?: boolean }) {
   const reactToPost = useMutation({
     mutationFn: async (params: { postId: string; reaction: string }) => {
       if (!user) throw new Error("Not authenticated");
-      const { data: existing } = await (supabase as any)
+      const { data: existing } = await supabase
         .from("social_post_reactions")
         .select("*")
         .eq("post_id", params.postId)
@@ -88,10 +88,10 @@ export function useSocialPosts(options?: { friendsOnly?: boolean }) {
         .maybeSingle();
 
       if (existing) {
-        await (supabase as any).from("social_post_reactions").delete()
+        await supabase.from("social_post_reactions").delete()
           .eq("post_id", params.postId).eq("user_id", user.id);
       } else {
-        await (supabase as any).from("social_post_reactions").insert({
+        await supabase.from("social_post_reactions").insert({
           post_id: params.postId,
           user_id: user.id,
           reaction: params.reaction,
@@ -106,7 +106,7 @@ export function useSocialPosts(options?: { friendsOnly?: boolean }) {
   const addComment = useMutation({
     mutationFn: async (params: { postId: string; content: string; mentionedUserIds?: string[] }) => {
       if (!user) throw new Error("Not authenticated");
-      const { data: inserted } = await (supabase as any).from("social_post_comments").insert({
+      const { data: inserted } = await supabase.from("social_post_comments").insert({
         post_id: params.postId,
         user_id: user.id,
         content: params.content,
@@ -114,7 +114,7 @@ export function useSocialPosts(options?: { friendsOnly?: boolean }) {
 
       const mentionIds = (params.mentionedUserIds ?? []).filter((id) => id && id !== user.id);
       if (inserted?.id && mentionIds.length > 0) {
-        await (supabase as any).from("mentions").insert(
+        await supabase.from("mentions").insert(
           [...new Set(mentionIds)].map((mentioned_user_id) => ({
             mentioned_user_id,
             actor_id: user.id,

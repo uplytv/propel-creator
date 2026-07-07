@@ -23,7 +23,7 @@ export default function MarketplaceComposer({ eventId, onClose }: Props) {
     mutationFn: async () => {
       if (!user) throw new Error("Sign in required");
       if (!content.trim()) throw new Error("Add a description");
-      const { error } = await (supabase as any).from("social_posts").insert({
+      const { error } = await supabase.from("social_posts").insert({
         user_id: user.id,
         event_id: eventId,
         content: content.trim(),

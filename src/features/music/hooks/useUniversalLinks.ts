@@ -26,7 +26,7 @@ export function useUniversalLinks(trackId?: string) {
     queryKey: ["universal-links", trackId],
     queryFn: async (): Promise<UniversalLink[]> => {
       if (!trackId) return [];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("track_universal_links")
         .select("*")
         .eq("track_id", trackId);
@@ -39,7 +39,7 @@ export function useUniversalLinks(trackId?: string) {
   const upsert = useMutation({
     mutationFn: async (input: { platform: string; url: string }) => {
       if (!trackId) throw new Error("No track");
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("track_universal_links")
         .upsert({ track_id: trackId, ...input }, { onConflict: "track_id,platform" });
       if (error) throw error;
@@ -52,7 +52,7 @@ export function useUniversalLinks(trackId?: string) {
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from("track_universal_links").delete().eq("id", id);
+      const { error } = await supabase.from("track_universal_links").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["universal-links", trackId] }),

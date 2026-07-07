@@ -24,7 +24,7 @@ export default function EventLiveStream() {
   useEffect(() => {
     if (!eventId) return;
     (async () => {
-      const { data: ev } = await (supabase as any)
+      const { data: ev } = await supabase
         .from("events")
         .select("id, title, slug, is_live, live_stream_id, creator_id, cover_image_url, starts_at")
         .eq("id", eventId)
@@ -43,12 +43,12 @@ export default function EventLiveStream() {
 
       // Access check (server-side).
       if (user) {
-        const { data: access } = await (supabase as any).rpc("has_event_livestream_access", { _event_id: eventId });
+        const { data: access } = await supabase.rpc("has_event_livestream_access", { _event_id: eventId });
         setHasAccess(!!access);
       }
 
       // PPV passes available for purchase (livestream tiers).
-      const { data: tiers } = await (supabase as any)
+      const { data: tiers } = await supabase
         .from("ticket_tiers")
         .select("id, name, price_cents, is_livestream")
         .eq("event_id", eventId)

@@ -55,7 +55,7 @@ export function useRecordListeningDay() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (artist_id: string) => {
-      const { data, error } = await (supabase as any).rpc("record_listening_day", {
+      const { data, error } = await supabase.rpc("record_listening_day", {
         _artist_id: artist_id,
       });
       if (error) throw error;

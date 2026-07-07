@@ -33,13 +33,13 @@ export default function SuperHeySheet({ person, onClose, onSuccess }: SuperHeySh
         window.open(data.url, "_blank");
       }
       // Insert the hey record
-      await (supabase as any).from("heys").upsert({
+      await supabase.from("heys").upsert({
         sender_id: user.id,
         recipient_id: person.user_id,
         hey_type: "super",
       }, { onConflict: "sender_id,recipient_id" });
 
-      await (supabase as any).from("notifications").insert({
+      await supabase.from("notifications").insert({
         user_id: person.user_id,
         type: "super_hey",
         title: "⚡ Someone sent you a Super Hey!",

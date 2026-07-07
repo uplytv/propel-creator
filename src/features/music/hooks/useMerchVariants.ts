@@ -31,7 +31,7 @@ export function useArtistMerch(artistId?: string) {
     queryKey: ["artist-merch", artistId],
     queryFn: async () => {
       if (!artistId) return [] as MerchProduct[];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("artist_merch")
         .select("*")
         .eq("artist_id", artistId)
@@ -47,7 +47,7 @@ export function useMerchVariants(merchId?: string) {
     queryKey: ["merch-variants", merchId],
     queryFn: async () => {
       if (!merchId) return [] as MerchVariant[];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("artist_merch_variants")
         .select("*")
         .eq("merch_id", merchId)
@@ -64,7 +64,7 @@ export function useUpsertVariant() {
     mutationFn: async (
       v: Partial<MerchVariant> & { merch_id: string },
     ) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("artist_merch_variants")
         .upsert(v)
         .select()
@@ -80,7 +80,7 @@ export function useDeleteVariant() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, merch_id }: { id: string; merch_id: string }) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("artist_merch_variants")
         .delete()
         .eq("id", id);
@@ -95,7 +95,7 @@ export function useDecrementVariantStock() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ variantId, qty = 1 }: { variantId: string; qty?: number }) => {
-      const { data, error } = await (supabase as any).rpc("decrement_merch_variant_stock", {
+      const { data, error } = await supabase.rpc("decrement_merch_variant_stock", {
         _variant_id: variantId,
         _qty: qty,
       });

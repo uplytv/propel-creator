@@ -46,7 +46,7 @@ export default function EventPromotersManager({ eventId, eventUrl }: { eventId: 
   const { data: promoters, isLoading } = useQuery({
     queryKey: ["event-promoters", eventId],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await (supabase as any) // cast: awaiting types regen (event_promoters)
         .from("event_promoters")
         .select("id, promoter_user_id, promoter_name, promoter_email, code, created_at")
         .eq("event_id", eventId)
@@ -74,7 +74,7 @@ export default function EventPromotersManager({ eventId, eventUrl }: { eventId: 
   const { data: sales } = useQuery({
     queryKey: ["event-promoter-sales", eventId],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await (supabase as any) // cast: awaiting types regen (event_promoter_sales)
         .from("event_promoter_sales")
         .select("promoter_id, amount_cents, tickets_count")
         .eq("event_id", eventId);
@@ -143,7 +143,7 @@ export default function EventPromotersManager({ eventId, eventUrl }: { eventId: 
       let lastError = "";
       for (let attempt = 0; attempt < 3 && !inserted; attempt++) {
         const code = makeCode(trimmedName || trimmedHandle);
-        const { error } = await (supabase as any).from("event_promoters").insert({
+        const { error } = await (supabase as any).from("event_promoters").insert({ // cast: awaiting types regen (event_promoters)
           event_id: eventId,
           creator_id: ev.creator_id,
           promoter_user_id: promoterUserId,
@@ -175,7 +175,7 @@ export default function EventPromotersManager({ eventId, eventUrl }: { eventId: 
   };
 
   const remove = async (id: string) => {
-    await (supabase as any).from("event_promoters").delete().eq("id", id);
+    await (supabase as any).from("event_promoters").delete().eq("id", id); // cast: awaiting types regen (event_promoters)
     qc.invalidateQueries({ queryKey: ["event-promoters", eventId] });
   };
 

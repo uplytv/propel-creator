@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-const sb = supabase as any;
+const sb = supabase;
 
 export interface EditorialSpotlight {
   id: string;

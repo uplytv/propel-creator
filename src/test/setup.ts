@@ -1,4 +1,20 @@
 import "@testing-library/jest-dom";
+import { vi } from "vitest";
+
+// @testing-library/react's asyncWrapper drains the microtask queue with a
+// real `setTimeout(..., 0)` and only advances fake timers when it detects
+// Jest (its `jestFakeTimersAreEnabled()` returns false when `typeof jest ===
+// "undefined"`). Under vitest + vi.useFakeTimers() that setTimeout never
+// fires, so every awaited userEvent / async act call deadlocks until the test
+// times out. Shim the single jest API RTL calls; RTL only invokes it while
+// sinon fake timers are installed (it checks `setTimeout.clock`), so this is
+// inert under real timers.
+(globalThis as unknown as {
+  jest?: { advanceTimersByTime: (ms: number) => void };
+}).jest = {
+  ...(globalThis as unknown as { jest?: object }).jest,
+  advanceTimersByTime: (ms: number) => vi.advanceTimersByTime(ms),
+};
 
 Object.defineProperty(window, "matchMedia", {
   writable: true,

@@ -60,7 +60,7 @@ function EventAnalyticsPanel({ event }: { event: EventRow }) {
   const { data: waitlistCount } = useQuery({
     queryKey: ["event-waitlist-count", event.id],
     queryFn: async () => {
-      const { count } = await (supabase as any).from("event_waitlist").select("*", { count: "exact", head: true }).eq("event_id", event.id);
+      const { count } = await supabase.from("event_waitlist").select("*", { count: "exact", head: true }).eq("event_id", event.id);
       return count || 0;
     },
   });

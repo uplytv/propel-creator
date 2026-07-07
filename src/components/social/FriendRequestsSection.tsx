@@ -22,7 +22,7 @@ export default function FriendRequestsSection() {
     enabled: !!user,
     queryFn: async () => {
       // Incoming: where I'm one of the users and the other person initiated
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("friend_connections")
         .select("*")
         .eq("status", "pending")
@@ -50,7 +50,7 @@ export default function FriendRequestsSection() {
 
   const accept = useMutation({
     mutationFn: async (otherId: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("friend_connections")
         .update({ status: "accepted", accepted_at: new Date().toISOString() })
         .or(`and(user_id.eq.${user!.id},friend_id.eq.${otherId}),and(user_id.eq.${otherId},friend_id.eq.${user!.id})`);
@@ -65,7 +65,7 @@ export default function FriendRequestsSection() {
 
   const decline = useMutation({
     mutationFn: async (otherId: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("friend_connections")
         .delete()
         .or(`and(user_id.eq.${user!.id},friend_id.eq.${otherId}),and(user_id.eq.${otherId},friend_id.eq.${user!.id})`);

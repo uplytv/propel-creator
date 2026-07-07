@@ -22,7 +22,7 @@ export default function StoryReactions({ storyId, storyOwnerId, onReply }: Story
   const handleReaction = async (emoji: string) => {
     if (!user) return;
     try {
-      await (supabase as any).from("story_reactions").upsert(
+      await (supabase as any).from("story_reactions").upsert( // cast: awaiting types regen (story_reactions)
         { story_id: storyId, user_id: user.id, emoji },
         { onConflict: "story_id,user_id,emoji" }
       );

@@ -37,7 +37,7 @@ export function usePresaveCampaign(trackId?: string) {
     queryKey: ["presave-campaign-by-track", trackId],
     enabled: !!trackId,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("presave_campaigns")
         .select("*")
         .eq("track_id", trackId!)
@@ -53,7 +53,7 @@ export function usePresaveCampaignBySlug(slug?: string) {
     queryKey: ["presave-campaign-by-slug", slug],
     enabled: !!slug,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("presave_campaigns")
         .select("*")
         .eq("campaign_url_slug", slug!)
@@ -69,7 +69,7 @@ export function usePresaveSubscriberCount(campaignId?: string) {
     queryKey: ["presave-subscribers-count", campaignId],
     enabled: !!campaignId,
     queryFn: async () => {
-      const { count, error } = await (supabase as any)
+      const { count, error } = await supabase
         .from("presave_subscribers")
         .select("id", { count: "exact", head: true })
         .eq("campaign_id", campaignId!);
@@ -90,7 +90,7 @@ export function useUpsertPresaveCampaign() {
         creator_id: user.id,
         spotify_track_uri: normalizeSpotifyUri(input.spotify_track_uri ?? null),
       };
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("presave_campaigns")
         .upsert(payload, { onConflict: "id" })
         .select()
@@ -124,7 +124,7 @@ export function usePresaveCampaignAnalytics(campaignId?: string, releaseAt?: str
     queryKey: ["presave-campaign-analytics", campaignId],
     enabled: !!campaignId,
     queryFn: async (): Promise<PresaveCampaignAnalytics> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("presave_subscribers")
         .select("platform, consent_save_track, consent_follow_artist, fulfilled, fulfilled_at, failure_reason")
         .eq("campaign_id", campaignId!);

@@ -157,7 +157,7 @@ function GroupChatView({ group, onBack }: { group: GroupConversation; onBack: ()
   const handleSend = async () => {
     if (!text.trim() || !user || sending) return;
     setSending(true);
-    await (supabase as any).from("group_messages").insert({
+    await supabase.from("group_messages").insert({
       conversation_id: group.id,
       user_id: user.id,
       content: text.trim(),

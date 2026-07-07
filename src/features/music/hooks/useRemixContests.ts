@@ -101,7 +101,7 @@ export function useCreateRemixSubmission() {
   return useMutation({
     mutationFn: async (input: { contest_id: string; title: string; audio_url: string; notes?: string }) => {
       if (!user?.id) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_remix_submissions")
         .insert({
           contest_id: input.contest_id,
@@ -133,7 +133,7 @@ export function useVoteForRemix() {
         .delete()
         .eq("contest_id", input.contest_id)
         .eq("voter_id", user.id);
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_remix_votes")
         .insert({
           contest_id: input.contest_id,

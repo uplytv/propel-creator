@@ -114,7 +114,7 @@ export default function LiveShopSetup({ streamId, products, onProductsChange, is
       }).then(({ data: aiData }) => {
         const pitch = aiData?.content?.[0]?.text || aiData?.message || "";
         if (pitch && (newProd as any).id) {
-          (supabase as any).from("live_products")
+          supabase.from("live_products")
             .update({ ai_pitch: pitch.slice(0, 200) })
             .eq("id", (newProd as any).id)
             .then(() => {});

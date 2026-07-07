@@ -31,7 +31,7 @@ export function useFanClubTiers(artistId?: string) {
     queryKey: ["fan-club-tiers", artistId],
     queryFn: async () => {
       if (!artistId) return [] as FanClubTier[];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("music_fan_club_tiers")
         .select("*")
         .eq("artist_id", artistId)
@@ -48,7 +48,7 @@ export function useFanClubExclusives(artistId?: string) {
     queryKey: ["fan-club-exclusives", artistId],
     queryFn: async () => {
       if (!artistId) return [] as FanClubExclusive[];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("music_fan_club_exclusives")
         .select("*")
         .eq("artist_id", artistId)
@@ -65,7 +65,7 @@ export function useMyFanClubSubscription(artistId?: string) {
     queryKey: ["my-fan-club-sub", artistId, user?.id],
     queryFn: async () => {
       if (!artistId || !user) return null;
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("music_fan_club_subscriptions")
         .select("*, tier:music_fan_club_tiers(*)")
         .eq("fan_id", user.id)
@@ -84,7 +84,7 @@ export function useHasFanClubAccess(artistId?: string, minTierId?: string | null
     queryKey: ["fan-club-access", artistId, minTierId, user?.id],
     queryFn: async () => {
       if (!artistId || !user) return false;
-      const { data, error } = await (supabase as any).rpc("has_fan_club_access", {
+      const { data, error } = await supabase.rpc("has_fan_club_access", {
         _artist_id: artistId,
         _tier_id: minTierId ?? null,
       });
@@ -101,7 +101,7 @@ export function useSubscribeToTier() {
   return useMutation({
     mutationFn: async ({ tierId, artistId }: { tierId: string; artistId: string }) => {
       if (!user) throw new Error("Sign in required");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_fan_club_subscriptions")
         .upsert({
           fan_id: user.id,

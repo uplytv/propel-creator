@@ -67,7 +67,7 @@ export default function ArtistBlogPage() {
     queryKey: ["artist-blog-posts-public", artist?.slug],
     enabled: !!artist,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("artist_blog_posts")
         .select("id, slug, title, excerpt, body, tag, read_time, published, published_at")
         .eq("artist_slug", artist!.slug)

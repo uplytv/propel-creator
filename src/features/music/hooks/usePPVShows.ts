@@ -81,7 +81,7 @@ export function usePurchasePPVTicket() {
   return useMutation({
     mutationFn: async (input: { show_id: string; amount_cents: number; currency?: string }) => {
       if (!user?.id) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_ppv_tickets")
         .insert({
           show_id: input.show_id,

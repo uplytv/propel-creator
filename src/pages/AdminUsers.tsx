@@ -68,7 +68,7 @@ export default function AdminUsers() {
       const [{ data: roles }, { data: referrals }, { data: inviteCounts }] = await Promise.all([
         supabase.from("user_roles").select("user_id, role").in("user_id", userIds),
         supabase.from("referrals").select("referrer_id, referred_id") as any,
-        (supabase as any).from("invite_codes").select("owner_id").in("owner_id", userIds),
+        supabase.from("invite_codes").select("owner_id").in("owner_id", userIds),
       ]);
 
       const inviteCountMap: Record<string, number> = {};

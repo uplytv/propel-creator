@@ -49,7 +49,7 @@ export default function TicketWallet() {
     queryKey: ["my-tickets", user?.id],
     enabled: !!user?.id,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("tickets")
         .select("id, qr_code_token, status, amount_paid, created_at, checked_in_at, scanned_at, events:event_id(id,title,starts_at,ends_at,cover_image_url,location_name,event_type)")
         .eq("buyer_id", user!.id)
@@ -410,7 +410,7 @@ function TicketQrModalBody({
 
     // Refetch on mount in case scanner updated while modal was closed
     (async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("tickets")
         .select("status, checked_in_at, scanned_at")
         .eq("id", ticket.id)
@@ -689,13 +689,13 @@ function ReentryRequestButton({
       if (eventId) {
         // Fetch organizer + guest profile in parallel
         const [{ data: ev }, { data: guestProfile }] = await Promise.all([
-          (supabase as any)
+          supabase
             .from("events")
             .select("creator_id, slug")
             .eq("id", eventId)
             .maybeSingle(),
           user?.id
-            ? (supabase as any)
+            ? supabase
                 .from("profiles")
                 .select("display_name, username")
                 .eq("user_id", user.id)
@@ -714,7 +714,7 @@ function ReentryRequestButton({
         const shortToken = ticket.qr_code_token.slice(0, 8);
 
         if (organizerId) {
-          const { data: inserted } = await (supabase as any)
+          const { data: inserted } = await supabase
             .from("notifications")
             .insert({
               user_id: organizerId,
@@ -742,7 +742,7 @@ function ReentryRequestButton({
 
           // Patch the link with the notification id so staff can focus it
           if (inserted?.id) {
-            await (supabase as any)
+            await supabase
               .from("notifications")
               .update({ link: `/staff/reentry-requests?request=${inserted.id}&ticket=${ticket.id}` })
               .eq("id", inserted.id);

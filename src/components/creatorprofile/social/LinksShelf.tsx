@@ -23,7 +23,7 @@ export default function LinksShelf({ profileId }: Props) {
     queryKey: ["bio-links-public", profileId],
     enabled: !!profileId,
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("bio_links")
         .select("id,title,url,icon,link_type,click_count,is_active,position")
         .eq("creator_id", profileId)
@@ -38,7 +38,7 @@ export default function LinksShelf({ profileId }: Props) {
 
   async function track(id: string, count: number) {
     try {
-      await (supabase as any)
+      await supabase
         .from("bio_links")
         .update({ click_count: (count || 0) + 1 })
         .eq("id", id);

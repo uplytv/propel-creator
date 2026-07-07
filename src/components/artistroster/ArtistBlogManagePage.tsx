@@ -64,7 +64,7 @@ export default function ArtistBlogManagePage() {
     queryKey: ["artist-blog-posts", artist?.slug],
     enabled: !!artist && !!isAdmin,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("artist_blog_posts")
         .select("*")
         .eq("artist_slug", artist!.slug)
@@ -96,7 +96,7 @@ export default function ArtistBlogManagePage() {
       if (p.id) payload.id = p.id;
       else payload.created_by = session!.user.id;
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("artist_blog_posts")
         .upsert(payload, { onConflict: "id" });
       if (error) throw error;
@@ -112,7 +112,7 @@ export default function ArtistBlogManagePage() {
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("artist_blog_posts")
         .delete()
         .eq("id", id);

@@ -49,7 +49,7 @@ export default function StoryCreator({ onClose }: StoryCreatorProps) {
         .getPublicUrl(uploadData.path);
       if (!urlData.publicUrl) throw new Error("Could not get public URL");
 
-      const { error: insertError } = await (supabase as any).from("stories").insert({
+      const { error: insertError } = await supabase.from("stories").insert({
         user_id: user.id,
         media_url: urlData.publicUrl,
         media_type: selectedFile.type.startsWith("video") ? "video" : "image",

@@ -12,9 +12,9 @@ export default function EventHypeMeter({ eventId, compact }: EventHypeMeterProps
     queryKey: ["event-hype", eventId],
     queryFn: async () => {
       const [going, maybe, stories] = await Promise.all([
-        (supabase as any).from("attendance").select("*", { count: "exact", head: true }).eq("event_id", eventId).eq("status", "going"),
-        (supabase as any).from("attendance").select("*", { count: "exact", head: true }).eq("event_id", eventId).eq("status", "maybe"),
-        (supabase as any).from("stories").select("*", { count: "exact", head: true }).eq("event_id", eventId),
+        supabase.from("attendance").select("*", { count: "exact", head: true }).eq("event_id", eventId).eq("status", "going"),
+        supabase.from("attendance").select("*", { count: "exact", head: true }).eq("event_id", eventId).eq("status", "maybe"),
+        supabase.from("stories").select("*", { count: "exact", head: true }).eq("event_id", eventId),
       ]);
       return {
         going: going.count || 0,

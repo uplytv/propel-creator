@@ -58,7 +58,7 @@ function useUpcomingUplyEvents(limit = 12) {
           .from("profiles_public")
           .select("user_id, username, display_name, avatar_url")
           .in("user_id", creatorIds),
-        (supabase as any)
+        supabase
           .from("ticket_tiers")
           .select("event_id, price_cents")
           .in("event_id", eventIds),

@@ -23,7 +23,7 @@ export default function PinnedGrid({ creatorProfileId }: Props) {
     queryKey: ["creator-pinned", creatorProfileId],
     enabled: !!creatorProfileId,
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("creator_works")
         .select("id,title,thumbnail_url,media_url,display_order")
         .eq("creator_id", creatorProfileId)

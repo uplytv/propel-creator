@@ -24,7 +24,7 @@ export default function AddFriendButton({
     queryKey: ["friend-status", user?.id, targetUserId],
     enabled: !!user && !!targetUserId && user?.id !== targetUserId,
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("friend_connections")
         .select("status, initiated_by, user_id, friend_id")
         .or(
@@ -44,7 +44,7 @@ export default function AddFriendButton({
       if (!user) throw new Error("Sign in required");
       // Always sort to satisfy primary key uniqueness
       const [a, b] = [user.id, targetUserId].sort();
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("friend_connections")
         .insert({ user_id: a, friend_id: b, initiated_by: user.id, status: "pending" });
       if (error) throw error;
@@ -58,7 +58,7 @@ export default function AddFriendButton({
 
   const cancel = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("friend_connections")
         .delete()
         .or(

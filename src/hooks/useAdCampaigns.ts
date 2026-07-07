@@ -8,10 +8,6 @@ import { useAuth } from "@/context/AuthContext";
  * v1 stores drafts only. `external_id` is set exclusively by the Phase 2 platform
  * API layer (Google Ads API / Meta Marketing API) when a campaign is really
  * published — its presence is what distinguishes a live campaign from a draft.
- *
- * Uses `(supabase as any)` because types.ts has not yet been regenerated for the
- * new table (per CLAUDE.md: regenerate types after deploying the migration, then
- * drop these casts).
  */
 
 export type AdPlatform = "google" | "facebook" | "instagram";
@@ -52,7 +48,7 @@ export function useAdCampaigns() {
   const query = useQuery({
     queryKey: key,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("ad_campaigns")
         .select("*")
         .order("created_at", { ascending: false });
@@ -67,7 +63,7 @@ export function useAdCampaigns() {
   const createCampaign = useMutation({
     mutationFn: async (draft: AdCampaignDraft) => {
       if (!user) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("ad_campaigns")
         .insert({ ...draft, creator_id: user.id })
         .select()
@@ -80,7 +76,7 @@ export function useAdCampaigns() {
 
   const updateCampaign = useMutation({
     mutationFn: async ({ id, ...patch }: Partial<AdCampaignRow> & { id: string }) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("ad_campaigns")
         .update(patch)
         .eq("id", id);
@@ -93,7 +89,7 @@ export function useAdCampaigns() {
     mutationFn: async (source: AdCampaignRow) => {
       if (!user) throw new Error("Not authenticated");
       const { id, creator_id, created_at, updated_at, external_id, ...rest } = source;
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("ad_campaigns")
         .insert({
           ...rest,
@@ -109,7 +105,7 @@ export function useAdCampaigns() {
 
   const deleteCampaign = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from("ad_campaigns").delete().eq("id", id);
+      const { error } = await supabase.from("ad_campaigns").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: invalidate,

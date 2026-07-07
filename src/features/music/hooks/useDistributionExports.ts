@@ -33,7 +33,7 @@ export function useDistributionExports(trackId?: string) {
     queryKey: ["distribution-exports", trackId],
     queryFn: async (): Promise<DistributionExport[]> => {
       if (!trackId) return [];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("track_distribution_exports")
         .select("*")
         .eq("track_id", trackId)
@@ -47,7 +47,7 @@ export function useDistributionExports(trackId?: string) {
   const requestExport = useMutation({
     mutationFn: async (platform: string) => {
       if (!trackId || !user) throw new Error("Not ready");
-      const { error } = await (supabase as any).from("track_distribution_exports").insert({
+      const { error } = await supabase.from("track_distribution_exports").insert({
         track_id: trackId,
         artist_id: user.id,
         platform,

@@ -43,7 +43,7 @@ export default function MyPlansCard() {
     const missing = eventIds.filter((id) => !eventMap[id]);
     if (!missing.length) return;
     (async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("events")
         .select("id, title, starts_at, location_name, location_city, slug")
         .in("id", missing);

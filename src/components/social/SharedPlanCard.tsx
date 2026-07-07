@@ -21,7 +21,7 @@ export default function SharedPlanCard({ eventId, eventTitle }: SharedPlanCardPr
     queryKey: ["shared-plan", eventId, user?.id],
     queryFn: async () => {
       if (!user || !eventId) return null;
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("shared_plans")
         .select("*, shared_plan_members(*)")
         .eq("owner_id", user.id)
@@ -36,13 +36,13 @@ export default function SharedPlanCard({ eventId, eventTitle }: SharedPlanCardPr
     queryKey: ["invited-plans", eventId, user?.id],
     queryFn: async () => {
       if (!user || !eventId) return [];
-      const { data: memberships } = await (supabase as any)
+      const { data: memberships } = await supabase
         .from("shared_plan_members")
         .select("plan_id, status")
         .eq("member_id", user.id);
       if (!memberships?.length) return [];
       const planIds = memberships.map((m: any) => m.plan_id);
-      const { data: plans } = await (supabase as any)
+      const { data: plans } = await supabase
         .from("shared_plans")
         .select("*, shared_plan_members(*)")
         .in("id", planIds)
@@ -56,7 +56,7 @@ export default function SharedPlanCard({ eventId, eventTitle }: SharedPlanCardPr
     if (!user || !eventId) return;
     setCreating(true);
     try {
-      await (supabase as any).from("shared_plans").insert({
+      await supabase.from("shared_plans").insert({
         owner_id: user.id,
         event_id: eventId,
         title: eventTitle ? `Plan for ${eventTitle}` : "My Plan",
@@ -72,7 +72,7 @@ export default function SharedPlanCard({ eventId, eventTitle }: SharedPlanCardPr
 
   const respondToInvite = async (planId: string, status: "accepted" | "declined") => {
     if (!user) return;
-    await (supabase as any)
+    await supabase
       .from("shared_plan_members")
       .update({ status })
       .eq("plan_id", planId)

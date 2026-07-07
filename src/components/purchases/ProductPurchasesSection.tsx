@@ -52,7 +52,7 @@ export default function ProductPurchasesSection({
     queryKey: ["purchases-products", user?.id],
     enabled: !!user?.id,
     queryFn: async (): Promise<PurchaseRow[]> => {
-      const { data: rows, error } = await (supabase as any)
+      const { data: rows, error } = await supabase
         .from("product_purchases")
         .select("id, amount, created_at, status, stripe_payment_intent_id, product_id, creator_id")
         .eq("buyer_id", user!.id)
@@ -64,13 +64,13 @@ export default function ProductPurchasesSection({
 
       const [productsRes, profilesRes] = await Promise.all([
         productIds.length
-          ? (supabase as any)
+          ? supabase
               .from("products")
               .select("id, name, image_url, type, download_url")
               .in("id", productIds)
           : Promise.resolve({ data: [] }),
         creatorIds.length
-          ? (supabase as any)
+          ? supabase
               .from("profiles")
               .select("user_id, display_name, username")
               .in("user_id", creatorIds)

@@ -16,7 +16,7 @@ export function usePlaylistFolders() {
     queryKey: ["playlist-folders", user?.id],
     queryFn: async () => {
       if (!user) return [] as PlaylistFolder[];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("music_playlist_folders")
         .select("*")
         .eq("user_id", user.id)
@@ -33,7 +33,7 @@ export function useCreateFolder() {
   return useMutation({
     mutationFn: async (name: string) => {
       if (!user) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("music_playlist_folders")
         .insert({ user_id: user.id, name })
         .select()
@@ -50,7 +50,7 @@ export function useDeleteFolder() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from("music_playlist_folders").delete().eq("id", id);
+      const { error } = await supabase.from("music_playlist_folders").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -65,7 +65,7 @@ export function useAssignPlaylistFolder() {
   const { user } = useAuth();
   return useMutation({
     mutationFn: async ({ playlistId, folderId }: { playlistId: string; folderId: string | null }) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("music_playlists")
         .update({ folder_id: folderId })
         .eq("id", playlistId);

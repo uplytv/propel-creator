@@ -20,7 +20,7 @@ export default function StickyJoinCTA({ creatorUserId, creatorName, avatarUrl, i
     queryKey: ["creator-cheapest-tier-cta", creatorUserId],
     enabled: !!creatorUserId,
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("subscription_tiers")
         .select("price_monthly")
         .eq("creator_id", creatorUserId)

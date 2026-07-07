@@ -52,7 +52,7 @@ export default function TrackPage() {
   const peaks = (track as any).waveform_peaks as number[] | null | undefined;
 
   const setAllowDownload = async (next: boolean) => {
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from('tracks')
       .update({ allow_download: next })
       .eq('id', track.id);

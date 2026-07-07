@@ -37,7 +37,7 @@ export default function SocialFriends() {
       const items: FeedItem[] = [];
 
       // 1. Attendance from friends
-      const { data: attendance } = await (supabase as any)
+      const { data: attendance } = await supabase
         .from("attendance")
         .select("*, profiles:user_id(display_name, avatar_url, username), events:event_id(title)")
         .in("user_id", followingIds)
@@ -60,7 +60,7 @@ export default function SocialFriends() {
       });
 
       // 2. Stories from friends
-      const { data: stories } = await (supabase as any)
+      const { data: stories } = await supabase
         .from("stories")
         .select("*, profiles:user_id(display_name, avatar_url, username)")
         .in("user_id", followingIds)
@@ -84,7 +84,7 @@ export default function SocialFriends() {
       });
 
       // 3. Social posts from friends
-      const { data: posts } = await (supabase as any)
+      const { data: posts } = await supabase
         .from("social_posts")
         .select("*, profiles:user_id(display_name, avatar_url, username), events:event_id(title)")
         .in("user_id", followingIds)
