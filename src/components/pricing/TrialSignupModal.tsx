@@ -228,6 +228,15 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
   // the email already carries a live paid plan (already_subscribed).
   const [guestCheckout, setGuestCheckout] = useState(false);
 
+  // Signals Landing's authed-redirect to stand down while the trial is mid-flow
+  // (Step 1 creates a session; redirecting would unmount the modal before the
+  // Step 2 card capture ever renders — e2e-caught P0).
+  useEffect(() => {
+    if (open) sessionStorage.setItem("uply_trial_in_progress", "1");
+    else sessionStorage.removeItem("uply_trial_in_progress");
+    return () => sessionStorage.removeItem("uply_trial_in_progress");
+  }, [open]);
+
   /** Existing account detected mid-signup → continue as guest checkout unless
    *  the account already has a live paid plan (then sign-in is required). */
   const redirectExistingAccount = async () => {

@@ -53,11 +53,15 @@ export default function Landing() {
     restDelta: 0.001,
   });
 
-  // Redirect authenticated users away from landing
+  // Redirect authenticated users away from landing.
+  // EXCEPT while the trial signup modal is mid-flow: Step 1 creates a session,
+  // and redirecting here unmounted the modal before Step 2 (card capture)
+  // could render — dumping paying signups into the application funnel.
   useEffect(() => {
     if (authLoading || !user) return;
+    if (sessionStorage.getItem("uply_trial_in_progress") === "1") return;
     const redirect = async () => {
-      const { data: profile } = await (supabase as any)
+      const { data: profile } = await supabase
         .from("profiles")
         .select("onboarding_complete, is_approved, account_type")
         .eq("user_id", user.id)
