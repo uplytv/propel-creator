@@ -29,10 +29,20 @@ export function PricingTab({ creatorId }: PricingTabProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [priceYearly, setPriceYearly] = useState("");
+  const [welcomeMessage, setWelcomeMessage] = useState("");
   const [creating, setCreating] = useState(false);
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [purchaseOverlayTier, setPurchaseOverlayTier] = useState<any>(null);
+  const [overlayInterval, setOverlayInterval] = useState<"month" | "year">("month");
+  // Member-side billing period toggle (shown when any tier offers annual)
+  const [billing, setBilling] = useState<"month" | "year">("month");
+  // Owner-side inline editor for annual price + welcome message on existing tiers
+  const [editingTierId, setEditingTierId] = useState<string | null>(null);
+  const [editYearly, setEditYearly] = useState("");
+  const [editWelcome, setEditWelcome] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const { data: stripeAccount } = useQuery({
     queryKey: ["stripe-account", creatorId],
@@ -143,7 +153,13 @@ export function PricingTab({ creatorId }: PricingTabProps) {
     setCreating(true);
     try {
       const { data, error } = await supabase.functions.invoke("stripe-create-tier", {
-        body: { name, description, price_monthly: parseFloat(price) },
+        body: {
+          name,
+          description,
+          price_monthly: parseFloat(price),
+          price_yearly: priceYearly ? parseFloat(priceYearly) : undefined,
+          welcome_message: welcomeMessage.trim() ? welcomeMessage.trim().slice(0, 1000) : undefined,
+        },
       });
       if (error) throw error;
       toast.success("Tier created", { description: `${name} is now live` });
@@ -152,10 +168,49 @@ export function PricingTab({ creatorId }: PricingTabProps) {
       setName("");
       setDescription("");
       setPrice("");
+      setPriceYearly("");
+      setWelcomeMessage("");
     } catch (err: any) {
       toast.error("Error", { description: err.message });
     }
     setCreating(false);
+  };
+
+  // Owner: update annual price / welcome message on an existing tier.
+  // Direct table update under "Creators manage own tiers" RLS; the yearly
+  // Stripe price is created lazily by stripe-create-checkout on first annual
+  // checkout, so no edge-function round trip is needed here.
+  const handleSaveTierExtras = async (tierId: string) => {
+    setSavingEdit(true);
+    try {
+      const yearly = editYearly ? parseFloat(editYearly) : null;
+      if (yearly !== null && (!isFinite(yearly) || yearly <= 0)) {
+        throw new Error("Annual price must be a positive number");
+      }
+      const { error } = await (supabase as any)
+        .from("subscription_tiers")
+        .update({
+          price_yearly: yearly,
+          // Clear the cached yearly Stripe price so checkout recreates it at the new amount
+          stripe_price_id_yearly: null,
+          welcome_message: editWelcome.trim() ? editWelcome.trim().slice(0, 1000) : null,
+        })
+        .eq("id", tierId);
+      if (error) throw error;
+      toast.success("Tier updated");
+      queryClient.invalidateQueries({ queryKey: ["subscription-tiers"] });
+      setEditingTierId(null);
+    } catch (err: any) {
+      toast.error("Error", { description: err.message });
+    }
+    setSavingEdit(false);
+  };
+
+  const annualSavingsPct = (tier: any) => {
+    const monthly = Number(tier.price_monthly) || 0;
+    const yearly = Number((tier as any).price_yearly) || 0;
+    if (monthly <= 0 || yearly <= 0) return 0;
+    return Math.max(0, Math.round((1 - yearly / (monthly * 12)) * 100));
   };
 
   const handleDeactivate = async (tierId: string, tierName: string) => {
@@ -178,7 +233,11 @@ export function PricingTab({ creatorId }: PricingTabProps) {
       return;
     }
     const tier = tiers?.find((t: any) => t.id === tierId);
+    // Annual only applies when toggled on AND this tier offers a yearly price
+    const interval: "month" | "year" =
+      billing === "year" && Number((tier as any)?.price_yearly) > 0 ? "year" : "month";
     if (tier) {
+      setOverlayInterval(interval);
       setPurchaseOverlayTier(tier);
     } else {
       // Fallback to redirect
@@ -186,7 +245,7 @@ export function PricingTab({ creatorId }: PricingTabProps) {
       setCheckoutLoading(true);
       try {
         const { data, error } = await supabase.functions.invoke("stripe-create-checkout", {
-          body: { tier_id: tierId, creator_id: creatorId },
+          body: { tier_id: tierId, creator_id: creatorId, interval },
         });
         if (error) throw error;
         if (data?.url) window.location.href = data.url;
@@ -197,6 +256,8 @@ export function PricingTab({ creatorId }: PricingTabProps) {
       setSelectedTier(null);
     }
   };
+
+  const hasAnnual = (tiers || []).some((t: any) => Number(t.price_yearly) > 0);
 
   const requiresPaidJoin = (tiers?.length || 0) > 0 || space?.is_free === false || Number(space?.price || 0) > 0;
 
@@ -251,10 +312,37 @@ export function PricingTab({ creatorId }: PricingTabProps) {
           <p className="text-xs text-muted-foreground mt-1">Unlock exclusive content, courses, and community access</p>
         </div>
 
+        {/* Monthly / Annual toggle — only when at least one tier offers annual */}
+        {hasAnnual && (
+          <div className="flex justify-center">
+            <div className="inline-flex rounded-lg border border-border bg-secondary/40 p-0.5">
+              <button
+                onClick={() => setBilling("month")}
+                className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                  billing === "month" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setBilling("year")}
+                className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                  billing === "year" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Annual
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-3">
           {tiers.map((tier: any, idx: number) => {
             const isCurrentPlan = activeSub?.tier_id === tier.id;
             const isPopular = idx === Math.min(1, tiers.length - 1) && tiers.length > 1;
+            const tierHasAnnual = Number(tier.price_yearly) > 0;
+            const showAnnual = billing === "year" && tierHasAnnual;
+            const savePct = annualSavingsPct(tier);
             return (
               <motion.div
                 key={tier.id}
@@ -293,8 +381,25 @@ export function PricingTab({ creatorId }: PricingTabProps) {
                     )}
                   </div>
                   <div className="text-right">
-                    <span className="text-2xl font-bold text-primary">${tier.price_monthly}</span>
-                    <span className="text-xs text-muted-foreground">/mo</span>
+                    {showAnnual ? (
+                      <>
+                        <span className="text-2xl font-bold text-primary">${tier.price_yearly}</span>
+                        <span className="text-xs text-muted-foreground">/yr</span>
+                        {savePct > 0 && (
+                          <div className="mt-1 inline-block px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold">
+                            Save {savePct}%
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-2xl font-bold text-primary">${tier.price_monthly}</span>
+                        <span className="text-xs text-muted-foreground">/mo</span>
+                        {billing === "year" && !tierHasAnnual && (
+                          <p className="text-[10px] text-muted-foreground mt-1">Monthly only</p>
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="mt-4">
@@ -337,10 +442,10 @@ export function PricingTab({ creatorId }: PricingTabProps) {
               toast.success("Welcome to the community! 🎉");
             }}
             purchaseType="subscription"
-            purchaseParams={{ tier_id: purchaseOverlayTier.id, creator_id: creatorId }}
-            title={`Subscribe to ${purchaseOverlayTier.name}`}
+            purchaseParams={{ tier_id: purchaseOverlayTier.id, creator_id: creatorId, interval: overlayInterval }}
+            title={`Subscribe to ${purchaseOverlayTier.name}${overlayInterval === "year" ? " (Annual)" : ""}`}
             description={purchaseOverlayTier.description || undefined}
-            price={purchaseOverlayTier.price_monthly}
+            price={overlayInterval === "year" ? (purchaseOverlayTier as any).price_yearly : purchaseOverlayTier.price_monthly}
           />
         )}
       </div>
@@ -365,13 +470,15 @@ export function PricingTab({ creatorId }: PricingTabProps) {
             const subCount = subscriberCounts[tier.id] || 0;
             const hasSubscribers = subCount > 0;
             const gatedN = gatedLessonsUnlockedBy(tier, idx);
+            const isEditing = editingTierId === tier.id;
             return (
               <motion.div
                 key={tier.id}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="glass-card p-4 flex items-center justify-between"
+                className="glass-card p-4 space-y-3"
               >
+                <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                     <Tag className="w-5 h-5 text-primary" />
@@ -385,10 +492,34 @@ export function PricingTab({ creatorId }: PricingTabProps) {
                     {gatedN > 0 && (
                       <p className="text-[10px] text-muted-foreground mt-0.5">Unlocks {gatedN} gated lesson{gatedN !== 1 ? "s" : ""}</p>
                     )}
+                    {tier.welcome_message && (
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Welcome message set</p>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-bold text-primary">${tier.price_monthly}/mo</span>
+                  <div className="text-right">
+                    <span className="text-sm font-bold text-primary">${tier.price_monthly}/mo</span>
+                    {Number(tier.price_yearly) > 0 && (
+                      <p className="text-[10px] text-muted-foreground">${tier.price_yearly}/yr</p>
+                    )}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground"
+                    onClick={() => {
+                      if (isEditing) {
+                        setEditingTierId(null);
+                      } else {
+                        setEditingTierId(tier.id);
+                        setEditYearly(Number(tier.price_yearly) > 0 ? String(tier.price_yearly) : "");
+                        setEditWelcome(tier.welcome_message || "");
+                      }
+                    }}
+                  >
+                    {isEditing ? "Close" : "Edit"}
+                  </Button>
                   {hasSubscribers ? (
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
@@ -419,6 +550,43 @@ export function PricingTab({ creatorId }: PricingTabProps) {
                     </Button>
                   )}
                 </div>
+                </div>
+
+                {/* Inline editor: annual price + welcome message */}
+                {isEditing && (
+                  <div className="border-t border-border pt-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">$</span>
+                      <input
+                        value={editYearly}
+                        onChange={(e) => setEditYearly(e.target.value.replace(/[^0-9.]/g, ""))}
+                        placeholder="Annual price (optional)"
+                        className="w-40 rounded-lg bg-secondary/40 border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      />
+                      <span className="text-sm text-muted-foreground">/year</span>
+                    </div>
+                    {Number(tier.price_monthly) > 0 && (
+                      <p className="text-[11px] text-muted-foreground">
+                        Tip: 2 months free would be ${(Number(tier.price_monthly) * 10).toFixed(2)}/yr
+                      </p>
+                    )}
+                    <textarea
+                      value={editWelcome}
+                      onChange={(e) => setEditWelcome(e.target.value.slice(0, 1000))}
+                      placeholder="Welcome message — sent to new members when they join (optional)"
+                      rows={3}
+                      maxLength={1000}
+                      className="w-full rounded-lg bg-secondary/40 border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+                    />
+                    <div className="flex items-center justify-between">
+                      <p className="text-[10px] text-muted-foreground">{editWelcome.length}/1000</p>
+                      <Button size="sm" onClick={() => handleSaveTierExtras(tier.id)} disabled={savingEdit} className="gap-1.5">
+                        {savingEdit ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                        Save
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </motion.div>
             );
           })}
@@ -463,6 +631,32 @@ export function PricingTab({ creatorId }: PricingTabProps) {
                 />
                 <span className="text-sm text-muted-foreground">/month</span>
               </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">$</span>
+                <input
+                  value={priceYearly}
+                  onChange={(e) => setPriceYearly(e.target.value.replace(/[^0-9.]/g, ""))}
+                  placeholder="Annual price (optional)"
+                  className="w-44 rounded-lg bg-secondary/40 border border-border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+                <span className="text-sm text-muted-foreground">/year</span>
+              </div>
+              {parseFloat(price) > 0 && (
+                <p className="text-[11px] text-muted-foreground -mt-1">
+                  Tip: 2 months free would be ${(parseFloat(price) * 10).toFixed(2)}/yr
+                </p>
+              )}
+              <textarea
+                value={welcomeMessage}
+                onChange={(e) => setWelcomeMessage(e.target.value.slice(0, 1000))}
+                placeholder="Welcome message — sent to new members when they join (optional)"
+                rows={3}
+                maxLength={1000}
+                className="w-full rounded-lg bg-secondary/40 border border-border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+              />
+              {welcomeMessage.length > 0 && (
+                <p className="text-[10px] text-muted-foreground -mt-1">{welcomeMessage.length}/1000</p>
+              )}
               <div className="flex gap-2 pt-1">
                 <Button onClick={handleCreate} disabled={creating || !name || !price} size="sm" className="gap-1.5">
                   {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}

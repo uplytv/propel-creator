@@ -10,6 +10,7 @@ interface Tier {
   name: string;
   description: string;
   price_monthly: number;
+  price_yearly?: number | null;
   stripe_price_id: string;
 }
 
@@ -23,13 +24,27 @@ interface Props {
 export default function TierSelectionModal({ open, onClose, tiers, creatorId }: Props) {
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [billing, setBilling] = useState<"month" | "year">("month");
+
+  const hasAnnual = tiers.some((t) => Number(t.price_yearly) > 0);
+
+  const savingsPct = (tier: Tier) => {
+    const monthly = Number(tier.price_monthly) || 0;
+    const yearly = Number(tier.price_yearly) || 0;
+    if (monthly <= 0 || yearly <= 0) return 0;
+    return Math.max(0, Math.round((1 - yearly / (monthly * 12)) * 100));
+  };
 
   const handleJoin = async () => {
     if (!selectedTier) return;
     setLoading(true);
     try {
+      const tier = tiers.find((t) => t.id === selectedTier);
+      // Annual only when toggled on AND the chosen tier offers a yearly price
+      const interval: "month" | "year" =
+        billing === "year" && Number(tier?.price_yearly) > 0 ? "year" : "month";
       const { data, error } = await supabase.functions.invoke("stripe-create-checkout", {
-        body: { tier_id: selectedTier, creator_id: creatorId },
+        body: { tier_id: selectedTier, creator_id: creatorId, interval },
       });
       if (error) throw error;
       if (data?.url) {
@@ -69,32 +84,78 @@ export default function TierSelectionModal({ open, onClose, tiers, creatorId }: 
                 </button>
               </div>
               <div className="p-5 space-y-3">
-                {tiers.map((tier) => (
-                  <button
-                    key={tier.id}
-                    onClick={() => setSelectedTier(tier.id)}
-                    className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
-                      selectedTier === tier.id
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-primary/30"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-2">
-                        <Tag className="w-4 h-4 text-primary" />
-                        <span className="font-semibold text-foreground">{tier.name}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg font-bold text-primary">${tier.price_monthly}</span>
-                        <span className="text-xs text-muted-foreground">/mo</span>
-                        {selectedTier === tier.id && <Check className="w-4 h-4 text-primary" />}
-                      </div>
+                {/* Monthly / Annual toggle — only when a tier offers annual */}
+                {hasAnnual && (
+                  <div className="flex justify-center">
+                    <div className="inline-flex rounded-lg border border-border bg-secondary/40 p-0.5">
+                      <button
+                        onClick={() => setBilling("month")}
+                        className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                          billing === "month" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Monthly
+                      </button>
+                      <button
+                        onClick={() => setBilling("year")}
+                        className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                          billing === "year" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Annual
+                      </button>
                     </div>
-                    {tier.description && (
-                      <p className="text-xs text-muted-foreground mt-1">{tier.description}</p>
-                    )}
-                  </button>
-                ))}
+                  </div>
+                )}
+
+                {tiers.map((tier) => {
+                  const tierHasAnnual = Number(tier.price_yearly) > 0;
+                  const showAnnual = billing === "year" && tierHasAnnual;
+                  const savePct = savingsPct(tier);
+                  return (
+                    <button
+                      key={tier.id}
+                      onClick={() => setSelectedTier(tier.id)}
+                      className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                        selectedTier === tier.id
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/30"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <Tag className="w-4 h-4 text-primary" />
+                          <span className="font-semibold text-foreground">{tier.name}</span>
+                          {showAnnual && savePct > 0 && (
+                            <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold">
+                              Save {savePct}%
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {showAnnual ? (
+                            <>
+                              <span className="text-lg font-bold text-primary">${tier.price_yearly}</span>
+                              <span className="text-xs text-muted-foreground">/yr</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-lg font-bold text-primary">${tier.price_monthly}</span>
+                              <span className="text-xs text-muted-foreground">/mo</span>
+                            </>
+                          )}
+                          {selectedTier === tier.id && <Check className="w-4 h-4 text-primary" />}
+                        </div>
+                      </div>
+                      {tier.description && (
+                        <p className="text-xs text-muted-foreground mt-1">{tier.description}</p>
+                      )}
+                      {billing === "year" && !tierHasAnnual && (
+                        <p className="text-[10px] text-muted-foreground mt-1">Monthly billing only</p>
+                      )}
+                    </button>
+                  );
+                })}
                 <Button
                   onClick={handleJoin}
                   disabled={!selectedTier || loading}

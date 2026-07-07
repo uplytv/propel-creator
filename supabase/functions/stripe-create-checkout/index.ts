@@ -34,9 +34,12 @@ serve(async (req) => {
 
     const user = userData.user;
     const body = await req.json();
-    const { tier_id, creator_id, creator_username, space_id, success_url, cancel_url, embedded } = body;
+    const { tier_id, creator_id, creator_username, space_id, success_url, cancel_url, embedded, interval } = body;
 
-    logStep("Request received", { tier_id, creator_id, userId: user.id });
+    // Additive billing-interval param: 'year' | 'month'. Anything else = month (legacy default).
+    const billingInterval: "month" | "year" = interval === "year" ? "year" : "month";
+
+    logStep("Request received", { tier_id, creator_id, userId: user.id, interval: billingInterval });
 
     if (!tier_id || !creator_id) throw new Error("tier_id and creator_id required");
 
@@ -63,10 +66,14 @@ serve(async (req) => {
       .single();
 
     if (!tier) throw new Error("Tier not found");
-    logStep("Tier found", { name: tier.name, price: tier.price_monthly, stripe_price_id: tier.stripe_price_id });
+    logStep("Tier found", { name: tier.name, price: tier.price_monthly, price_yearly: tier.price_yearly, stripe_price_id: tier.stripe_price_id });
+
+    if (billingInterval === "year" && !(Number(tier.price_yearly) > 0)) {
+      throw new Error("Annual billing is not available for this tier");
+    }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    let stripePriceId = tier.stripe_price_id;
+    let stripePriceId = billingInterval === "year" ? tier.stripe_price_id_yearly : tier.stripe_price_id;
 
     // Check if creator has Stripe Connect
     const { data: stripeAccount } = await supabase
@@ -79,28 +86,42 @@ serve(async (req) => {
     logStep("Creator Stripe status", { hasConnect, accountId: stripeAccount?.stripe_account_id });
 
     if (!stripePriceId) {
-      logStep("No stripe_price_id, creating product and price on-the-fly");
+      logStep("No stripe price for interval, creating on-the-fly", { interval: billingInterval });
 
-      const product = await stripe.products.create({
-        name: tier.name,
-        description: tier.description || undefined,
-      });
+      // Reuse the tier's existing Stripe product when present (e.g. yearly
+      // price added to a tier that already has a monthly product).
+      let productId = tier.stripe_product_id as string | null;
+      if (!productId) {
+        const product = await stripe.products.create({
+          name: tier.name,
+          description: tier.description || undefined,
+        });
+        productId = product.id;
+      }
+
+      const unitAmount = billingInterval === "year"
+        ? Math.round(Number(tier.price_yearly) * 100)
+        : Math.round(tier.price_monthly * 100);
 
       const price = await stripe.prices.create({
-        product: product.id,
-        unit_amount: Math.round(tier.price_monthly * 100),
+        product: productId,
+        unit_amount: unitAmount,
         currency: "usd",
-        recurring: { interval: "month" },
+        recurring: { interval: billingInterval },
       });
 
       stripePriceId = price.id;
 
       await supabase
         .from("subscription_tiers")
-        .update({ stripe_price_id: price.id, stripe_product_id: product.id })
+        .update(
+          billingInterval === "year"
+            ? { stripe_price_id_yearly: price.id, stripe_product_id: productId }
+            : { stripe_price_id: price.id, stripe_product_id: productId }
+        )
         .eq("id", tier_id);
 
-      logStep("Created Stripe product/price", { productId: product.id, priceId: price.id });
+      logStep("Created Stripe product/price", { productId, priceId: price.id, interval: billingInterval });
     }
 
     // Check for existing customer
@@ -127,6 +148,7 @@ serve(async (req) => {
         creator_id,
         tier_id,
         space_id: space_id || "",
+        interval: billingInterval,
       },
     };
 

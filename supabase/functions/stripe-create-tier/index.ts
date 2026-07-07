@@ -29,8 +29,16 @@ serve(async (req) => {
     if (userError || !userData.user) throw new Error("Unauthorized");
     const userId = userData.user.id;
 
-    const { name, description, price_monthly } = await req.json();
+    const { name, description, price_monthly, price_yearly, welcome_message } = await req.json();
     if (!name || !price_monthly) throw new Error("name and price_monthly required");
+
+    // Optional annual price (null = annual not offered)
+    const yearlyAmount = price_yearly != null && Number(price_yearly) > 0 ? Number(price_yearly) : null;
+    // Optional welcome message, capped at 1000 chars (DB CHECK enforces too)
+    const welcomeMsg =
+      typeof welcome_message === "string" && welcome_message.trim().length > 0
+        ? welcome_message.trim().slice(0, 1000)
+        : null;
 
     // Get creator's Stripe account
     const { data: stripeAccount } = await supabase
@@ -55,6 +63,18 @@ serve(async (req) => {
       recurring: { interval: "month" },
     });
 
+    // Optional yearly price on the same product
+    let yearlyPriceId: string | null = null;
+    if (yearlyAmount) {
+      const yearlyPrice = await stripe.prices.create({
+        product: product.id,
+        unit_amount: Math.round(yearlyAmount * 100),
+        currency: "usd",
+        recurring: { interval: "year" },
+      });
+      yearlyPriceId = yearlyPrice.id;
+    }
+
     const { data: tier, error: tierError } = await supabase
       .from("subscription_tiers")
       .insert({
@@ -62,8 +82,11 @@ serve(async (req) => {
         name,
         description: description || "",
         price_monthly,
+        price_yearly: yearlyAmount,
+        welcome_message: welcomeMsg,
         stripe_product_id: product.id,
         stripe_price_id: price.id,
+        stripe_price_id_yearly: yearlyPriceId,
       })
       .select()
       .single();
