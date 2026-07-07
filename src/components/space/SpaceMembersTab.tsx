@@ -1,5 +1,8 @@
 import { useState } from "react";
-import { Search, UserPlus, UserCheck, FileText, CalendarDays } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { Search, UserPlus, UserCheck, FileText, CalendarDays, MessageCircle, Loader2 } from "lucide-react";
+import { getOrCreateDmThread } from "@/lib/dm";
 import { useCommunityMembers } from "@/hooks/useCommunityMembers";
 import { useMemberCommunityProfile } from "@/hooks/useCommunityDepth";
 import { useMemberPointTotals } from "@/hooks/useMemberLevels";
@@ -103,13 +106,28 @@ export default function SpaceMembersTab({ creatorId }: Props) {
 
 function MemberProfileSheet({ member, creatorId, xp, onClose }: { member: any; creatorId: string; xp: number; onClose: () => void }) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { follow, unfollow, isFollowing } = useFollows();
   const { data, isLoading } = useMemberCommunityProfile(member?.user_id, creatorId);
+  const [messageLoading, setMessageLoading] = useState(false);
   const profile = data?.profile as any;
   const postCount = data?.postCount ?? 0;
 
   const isSelf = !!user && !!member && user.id === member.user_id;
   const following = member ? isFollowing(member.user_id) : false;
+
+  const handleMessage = async () => {
+    if (!user || !member || messageLoading) return;
+    setMessageLoading(true);
+    try {
+      const threadId = await getOrCreateDmThread(user.id, member.user_id);
+      navigate(`/dm?c=${threadId}`);
+    } catch {
+      toast.error("Couldn't start this conversation");
+    } finally {
+      setMessageLoading(false);
+    }
+  };
 
   return (
     <Sheet open={!!member} onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -168,19 +186,32 @@ function MemberProfileSheet({ member, creatorId, xp, onClose }: { member: any; c
               </p>
             </div>
 
-            {/* Follow */}
+            {/* Message + Follow */}
             {user && !isSelf && (
-              <Button
-                variant={following ? "outline" : "default"}
-                className="w-full mt-4 font-semibold"
-                onClick={() => (following ? unfollow(member.user_id) : follow(member.user_id))}
-              >
-                {following ? (
-                  <><UserCheck className="w-4 h-4 mr-2" /> Following</>
-                ) : (
-                  <><UserPlus className="w-4 h-4 mr-2" /> Follow</>
-                )}
-              </Button>
+              <div className="mt-4 space-y-2">
+                <Button
+                  className="w-full font-semibold"
+                  onClick={handleMessage}
+                  disabled={messageLoading}
+                >
+                  {messageLoading ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Opening…</>
+                  ) : (
+                    <><MessageCircle className="w-4 h-4 mr-2" /> Message</>
+                  )}
+                </Button>
+                <Button
+                  variant={following ? "outline" : "secondary"}
+                  className="w-full font-semibold"
+                  onClick={() => (following ? unfollow(member.user_id) : follow(member.user_id))}
+                >
+                  {following ? (
+                    <><UserCheck className="w-4 h-4 mr-2" /> Following</>
+                  ) : (
+                    <><UserPlus className="w-4 h-4 mr-2" /> Follow</>
+                  )}
+                </Button>
+              </div>
             )}
           </div>
         )}
