@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import DOMPurify from "dompurify";
 import Hls from "hls.js";
-import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical, Trash2, Pencil, Loader2, AlertCircle, BookOpen, Clock, Layers, ImagePlus, Youtube, Link2, ExternalLink, Upload, RefreshCw, X, Film, Crown, Award, CalendarClock } from "lucide-react";
+import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical, Trash2, Pencil, Loader2, AlertCircle, BookOpen, Clock, Layers, ImagePlus, Youtube, Link2, ExternalLink, Upload, RefreshCw, X, Film, Crown, Award, CalendarClock, BarChart3 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UPLYMuxPlayer } from "@/components/MuxPlayer";
@@ -12,6 +12,7 @@ import { useDripLockedModules, dripCountdownLabel, useResumePosition, formatResu
 import LessonQuiz from "@/components/space/LessonQuiz";
 import LessonQuizEditor from "@/components/space/LessonQuizEditor";
 import CourseCertificate from "@/components/space/CourseCertificate";
+import CourseInsightsDialog from "@/components/space/CourseInsightsDialog";
 import RichTextEditor from "@/components/email/RichTextEditor";
 import ContentGate from "@/components/ContentGate";
 import { Button } from "@/components/ui/button";
@@ -426,6 +427,8 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   const [editingModule, setEditingModule] = useState<any>(null);
   const [editingLesson, setEditingLesson] = useState<any>(null);
   const [showCertificate, setShowCertificate] = useState(false);
+  // Owner-only "Course insights" dialog (per-lesson engagement aggregates).
+  const [showInsights, setShowInsights] = useState(false);
 
   // Drip-locked modules (member only): invisible under RLS, listed as teaser
   // rows with a countdown via the SECURITY DEFINER my_drip_locked_modules RPC.
@@ -907,9 +910,12 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
         )}
 
         {isOwner && (
-          <div className="px-4 pt-4">
+          <div className="px-4 pt-4 space-y-2">
             <Button onClick={() => setShowAddModule(true)} variant="outline" className="w-full font-semibold">
               <Plus className="w-4 h-4 mr-2" /> Add Module
+            </Button>
+            <Button onClick={() => setShowInsights(true)} variant="ghost" className="w-full font-semibold">
+              <BarChart3 className="w-4 h-4 mr-2 text-primary" /> Course insights
             </Button>
           </div>
         )}
@@ -920,6 +926,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
         {editingModule && <EditModuleDialog open={!!editingModule} onClose={() => setEditingModule(null)} module={editingModule} />}
         {editingLesson && <EditLessonDialog open={!!editingLesson} onClose={() => setEditingLesson(null)} lesson={editingLesson} />}
         <CourseCertificate open={showCertificate} onClose={() => setShowCertificate(false)} creatorId={creatorId} lessonIds={allLessons.map((l: any) => l.id)} />
+        {isOwner && <CourseInsightsDialog creatorId={creatorId} open={showInsights} onClose={() => setShowInsights(false)} />}
       </div>
     );
   }
@@ -928,6 +935,14 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
 
   const renderSidebar = () => (
     <div className="flex flex-col h-full">
+      {isOwner && (
+        <button
+          onClick={() => setShowInsights(true)}
+          className="flex items-center gap-2 px-4 py-2.5 border-b border-border text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+        >
+          <BarChart3 className="w-3.5 h-3.5 text-primary" /> Course insights
+        </button>
+      )}
       {renderProgressHero("sidebar")}
 
       <div className="flex-1 overflow-y-auto">
@@ -1198,6 +1213,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
       {editingModule && <EditModuleDialog open={!!editingModule} onClose={() => setEditingModule(null)} module={editingModule} />}
       {editingLesson && <EditLessonDialog open={!!editingLesson} onClose={() => setEditingLesson(null)} lesson={editingLesson} />}
       <CourseCertificate open={showCertificate} onClose={() => setShowCertificate(false)} creatorId={creatorId} lessonIds={allLessons.map((l: any) => l.id)} />
+      {isOwner && <CourseInsightsDialog creatorId={creatorId} open={showInsights} onClose={() => setShowInsights(false)} />}
     </div>
   );
 }

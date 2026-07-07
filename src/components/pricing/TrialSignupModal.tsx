@@ -25,6 +25,7 @@ import {
   SETUP_CALL_URL,
   TRIAL_DAYS,
   TRIAL_INTENT_STORAGE_KEY,
+  TRIAL_PROFILE_STORAGE_KEY,
   TRIAL_RISK_REVERSAL,
   type PlatformPlanKey,
 } from "./plans";
@@ -167,6 +168,57 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
     } catch {
       // localStorage unavailable (private mode) — flow still works without the stash.
     }
+    stashProfile();
+  };
+
+  /** Step-1 answers stashed for the profiles write-back on the first
+   *  authenticated Dashboard visit — the guest-checkout and email-confirm
+   *  flows can't write another account's profiles row from here. */
+  const stashProfile = () => {
+    try {
+      localStorage.setItem(
+        TRIAL_PROFILE_STORAGE_KEY,
+        JSON.stringify({
+          company: company.trim(),
+          full_name: fullName.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+        })
+      );
+    } catch {
+      // localStorage unavailable — non-critical.
+    }
+  };
+
+  /** Persist Step-1 answers onto the signed-in user's own profiles row.
+   *  Fire-and-forget: the trial flow must never block or fail on this.
+   *  phone/company_name are additive columns not yet in generated types. */
+  const persistStep1Profile = async (userId: string) => {
+    try {
+      const patch: Record<string, string> = {};
+      if (phone.trim()) patch.phone = phone.trim();
+      if (company.trim()) patch.company_name = company.trim();
+      if (fullName.trim()) {
+        // Only fill display_name when empty — never clobber a chosen name.
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (!prof?.display_name) patch.display_name = fullName.trim();
+      }
+      if (Object.keys(patch).length === 0) return;
+      const { error } = await (supabase as any).from("profiles").update(patch).eq("user_id", userId);
+      if (!error) {
+        try {
+          localStorage.removeItem(TRIAL_PROFILE_STORAGE_KEY);
+        } catch {
+          /* noop */
+        }
+      }
+    } catch {
+      // Non-critical — the Dashboard stash write-back is the fallback.
+    }
   };
 
   // Guest checkout: the email already has an UPLY account but NO paid plan —
@@ -212,6 +264,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
     } catch {
       /* noop */
     }
+    void persistStep1Profile(data.session.user.id);
     setStep(2);
   };
 
@@ -219,6 +272,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
     if (!validateStep1() || creatingAccount) return;
 
     if (isAuthed) {
+      if (user) void persistStep1Profile(user.id);
       setStep(2);
       return;
     }
@@ -290,6 +344,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
         } catch {
           /* noop */
         }
+        void persistStep1Profile(data.session.user.id);
       } else {
         // Email confirmation required by the Supabase project — stash the
         // intent so TrialIntentResume relaunches checkout after they confirm.

@@ -37,6 +37,8 @@ import FounderOffersPricing from "@/components/founderoffers/FounderOffersPricin
 import AICoachWidget from "@/components/dashboard/AICoachWidget";
 import { useMilestoneTracker } from "@/hooks/useMilestoneTracker";
 import MilestoneProgressPill from "@/components/onboarding/MilestoneProgressPill";
+import SetupCallCard from "@/components/dashboard/SetupCallCard";
+import { TRIAL_PROFILE_STORAGE_KEY } from "@/components/pricing/plans";
 
 function PlatformUpgradeBanner() {
   const { user } = useAuth();
@@ -105,6 +107,63 @@ export default function Dashboard() {
     const qs = params.toString();
     window.history.replaceState({}, "", window.location.pathname + (qs ? `?${qs}` : ""));
   }, []);
+
+  // Trial Step-1 write-back: the signup modal stashes {company, full_name,
+  // email, phone} when it can't write the profile itself (guest checkout on an
+  // existing account, or the email-confirmation flow). On the first
+  // authenticated Dashboard visit, persist those answers onto the user's OWN
+  // profiles row — guarded by an email match so a different account signing in
+  // on this browser never absorbs someone else's answers.
+  useEffect(() => {
+    if (!user) return;
+    let raw: string | null = null;
+    try {
+      raw = localStorage.getItem(TRIAL_PROFILE_STORAGE_KEY);
+    } catch {
+      return;
+    }
+    if (!raw) return;
+
+    let stash: { company?: string; full_name?: string; email?: string; phone?: string } = {};
+    try {
+      stash = JSON.parse(raw);
+    } catch {
+      localStorage.removeItem(TRIAL_PROFILE_STORAGE_KEY);
+      return;
+    }
+    if (stash.email && user.email && stash.email.toLowerCase() !== user.email.toLowerCase()) {
+      // Stash belongs to a different email — discard, never cross-write.
+      localStorage.removeItem(TRIAL_PROFILE_STORAGE_KEY);
+      return;
+    }
+
+    (async () => {
+      const patch: Record<string, string> = {};
+      if (stash.phone?.trim()) patch.phone = stash.phone.trim();
+      if (stash.company?.trim()) patch.company_name = stash.company.trim();
+      if (stash.full_name?.trim()) {
+        // Only fill display_name when empty — never clobber a chosen name.
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (!prof?.display_name) patch.display_name = stash.full_name.trim();
+      }
+      if (Object.keys(patch).length > 0) {
+        // phone/company_name are additive columns not yet in generated types.
+        const { error } = await (supabase as any).from("profiles").update(patch).eq("user_id", user.id);
+        if (error) return; // keep the stash — retry on the next visit
+      }
+      try {
+        localStorage.removeItem(TRIAL_PROFILE_STORAGE_KEY);
+      } catch {
+        /* noop */
+      }
+    })().catch(() => {
+      /* non-critical — retried on the next dashboard visit */
+    });
+  }, [user]);
 
   useEffect(() => {
     if (!user || wizardDone) return;
@@ -256,6 +315,7 @@ export default function Dashboard() {
         {/* ── 3. Everything else — secondary stack ── */}
         <div className="mt-10 space-y-6">
           <div className="px-4 md:px-8 space-y-4">
+            <SetupCallCard />
             <RevenueGoalTracker />
             <OnboardingChecklist />
             <DiscoveryInsights />

@@ -72,6 +72,16 @@ export const TRIAL_DAYS = 14;
 
 export const TRIAL_INTENT_STORAGE_KEY = "uply_trial_intent";
 
+/**
+ * Step-1 answers ({company, full_name, email, phone}) stashed for write-back
+ * onto the profiles row on the first authenticated Dashboard visit. Separate
+ * from TRIAL_INTENT_STORAGE_KEY on purpose: the intent key is consumed by
+ * TrialIntentResume (it relaunches checkout) and is cleared the moment a
+ * checkout completes — this key must survive a guest checkout until its owner
+ * signs in.
+ */
+export const TRIAL_PROFILE_STORAGE_KEY = "uply_trial_profile";
+
 /** Owner's exact risk-reversal wording — shown near every trial CTA. */
 export const TRIAL_RISK_REVERSAL = "14 days free · No obligation · Cancel at any time";
 
