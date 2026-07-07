@@ -126,6 +126,19 @@ commit, then progressively retire the `(supabase as any)` casts.
 (`src/components/pricing/plans.ts:82`); compress the two 1.4 MB PNGs; Meta/Google ad API tokens
 (Phase-2 ad publishing); Mux signing key (PPV hardening).
 
+### Wave 4–5 addendum (2026-07-07) — second publish round
+Waves 1–3 were published and verified live. The following shipped after that publish and need one
+more round (same commands as Steps 1–2, or the one-sentence Lovable instruction):
+- **Migrations (7):** course_depth (drip/quiz/certs/resume) · event_promoters · annual_tiers +
+  welcome messages · levels_digest · direct_messages hardening + blocks · coupons + order bumps ·
+  onboarding_analytics (profile persistence + course insights).
+- **Functions (6):** purchase-ticket · finalize-ticket-order · stripe-create-checkout ·
+  stripe-create-tier · stripe-create-product-checkout · notification-digest *(new)*.
+- **Post-publish:** regenerate types.ts again — retires the remaining ~58 tagged casts.
+- **Also since the report:** e2e suite (`npm run test:e2e`) caught and fixed a P0 (homepage trial
+  signups were redirected away before card capture); full unit suite now 372 passed / 0 failed;
+  entry chunk −140 kB and precache −1.1 MB; nav restructured into clusters; member DMs at /dm.
+
 ---
 
 ## 7. Post-publish smoke tests (15 minutes)
