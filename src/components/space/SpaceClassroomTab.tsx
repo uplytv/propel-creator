@@ -1,13 +1,17 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import DOMPurify from "dompurify";
 import Hls from "hls.js";
-import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical, Trash2, Pencil, Loader2, AlertCircle, BookOpen, Clock, Layers, ImagePlus, Youtube, Link2, ExternalLink, Upload, RefreshCw, X, Film, Crown } from "lucide-react";
+import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical, Trash2, Pencil, Loader2, AlertCircle, BookOpen, Clock, Layers, ImagePlus, Youtube, Link2, ExternalLink, Upload, RefreshCw, X, Film, Crown, Award, CalendarClock } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UPLYMuxPlayer } from "@/components/MuxPlayer";
 import { useAuth } from "@/context/AuthContext";
 import { useClassroomModules, useClassroomLessons, useLessonCompletions, useCompleteLesson, useCreateModule, useCreateLesson, useReorderModules, useReorderLessons, useDeleteModule, useDeleteLesson, useUpdateModule, useUpdateLesson, useLessonMediaSources, useSelfHealLessonMedia, resolveLessonMedia, extractYouTubeId, extractVimeoId, type LessonMedia } from "@/hooks/useClassroom";
 import { useCreatorTiers, requiredTierForRank, effectiveLessonMinRank, type CreatorTier } from "@/hooks/useTierGating";
+import { useDripLockedModules, dripCountdownLabel, useResumePosition, formatResumeTime, type DripLockedModule } from "@/hooks/useCourseDepth";
+import LessonQuiz from "@/components/space/LessonQuiz";
+import LessonQuizEditor from "@/components/space/LessonQuizEditor";
+import CourseCertificate from "@/components/space/CourseCertificate";
 import RichTextEditor from "@/components/email/RichTextEditor";
 import ContentGate from "@/components/ContentGate";
 import { Button } from "@/components/ui/button";
@@ -76,7 +80,7 @@ function SortableLesson({ lesson, children, isOwner }: { lesson: any; children: 
 }
 
 /* ── HLS fallback (for .m3u8 that isn't a Mux playback id) ── */
-function HlsVideo({ src, title }: { src: string; title?: string }) {
+function HlsVideo({ src, title, onVideoEl }: { src: string; title?: string; onVideoEl?: (el: HTMLVideoElement | null) => void }) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     const video = ref.current;
@@ -96,7 +100,10 @@ function HlsVideo({ src, title }: { src: string; title?: string }) {
   }, [src]);
   return (
     <div className="w-full aspect-video bg-black">
-      <video ref={ref} controls autoPlay playsInline title={title} className="w-full h-full object-contain" />
+      <video
+        ref={(el) => { (ref as any).current = el; onVideoEl?.(el); }}
+        controls autoPlay playsInline title={title} className="w-full h-full object-contain"
+      />
     </div>
   );
 }
@@ -105,7 +112,7 @@ function HlsVideo({ src, title }: { src: string; title?: string }) {
    Renders from a pre-resolved `media` object (see resolveLessonMedia). Never
    falls through to a blank <video src="upload:…">: every state — ready,
    processing, failed, empty — has a clear, deliberate UI. */
-function LessonPlayer({ lesson, media, isOwner, onReupload }: { lesson: any; media: LessonMedia; isOwner?: boolean; onReupload?: () => void }) {
+function LessonPlayer({ lesson, media, isOwner, onReupload, onVideoEl }: { lesson: any; media: LessonMedia; isOwner?: boolean; onReupload?: () => void; onVideoEl?: (el: HTMLVideoElement | null) => void }) {
   if (media.status === "ready") {
     if (media.kind === "youtube" && media.youtubeId) {
       return (
@@ -134,12 +141,12 @@ function LessonPlayer({ lesson, media, isOwner, onReupload }: { lesson: any; med
       );
     }
     if (media.kind === "mux" && media.playbackId) {
-      return <UPLYMuxPlayer playbackId={media.playbackId} title={lesson.title} />;
+      return <UPLYMuxPlayer playbackId={media.playbackId} title={lesson.title} onVideoRef={onVideoEl} />;
     }
     if (media.kind === "direct" && media.directUrl) {
       return media.isHls
-        ? <HlsVideo src={media.directUrl} title={lesson.title} />
-        : <div className="w-full aspect-video bg-black"><video src={media.directUrl} controls playsInline className="w-full h-full object-contain" /></div>;
+        ? <HlsVideo src={media.directUrl} title={lesson.title} onVideoEl={onVideoEl} />
+        : <div className="w-full aspect-video bg-black"><video ref={(el) => onVideoEl?.(el)} src={media.directUrl} controls playsInline className="w-full h-full object-contain" /></div>;
     }
   }
 
@@ -274,6 +281,101 @@ function MinTierSelect({ creatorId, value, onChange }: { creatorId: string; valu
   );
 }
 
+/* ── Drip scheduling UI ──
+   DripSelect lets the creator delay a module N days after a member joins;
+   DripCountdownChip renders the member-facing "Unlocks in N days" countdown
+   (server computes unlock_at from their join date; chip re-derives per minute). */
+const DRIP_PRESETS = [1, 2, 3, 5, 7, 10, 14, 21, 30, 45, 60, 90];
+
+function DripSelect({ value, onChange }: { value: number | null; onChange: (v: number | null) => void }) {
+  const options = value != null && !DRIP_PRESETS.includes(value)
+    ? [...DRIP_PRESETS, value].sort((a, b) => a - b)
+    : DRIP_PRESETS;
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-lg bg-muted px-3 py-2.5">
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-foreground">Drip</p>
+        <p className="text-xs text-muted-foreground truncate">
+          {value == null ? "Available as soon as a member joins" : `Unlocks ${value} day${value === 1 ? "" : "s"} after joining`}
+        </p>
+      </div>
+      <Select
+        value={value == null ? "now" : String(value)}
+        onValueChange={(v) => onChange(v === "now" ? null : parseInt(v, 10))}
+      >
+        <SelectTrigger className="w-[160px] flex-shrink-0 border-0 bg-secondary h-8 text-xs font-semibold">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="now">Immediately</SelectItem>
+          {options.map((d) => (
+            <SelectItem key={d} value={String(d)}>
+              {d} day{d === 1 ? "" : "s"} after joining
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+function DripCountdownChip({ unlockAt }: { unlockAt: string }) {
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setTick((x) => x + 1), 60_000);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary whitespace-nowrap flex-shrink-0">
+      <CalendarClock className="w-2.5 h-2.5" /> {dripCountdownLabel(unlockAt)}
+    </span>
+  );
+}
+
+/** Member-facing locked module row (desktop sidebar). Drip-locked modules are
+    invisible under RLS, so these rows come from the my_drip_locked_modules RPC. */
+function DripLockedSidebarRow({ mod }: { mod: DripLockedModule }) {
+  return (
+    <div className="border-b border-border flex items-center gap-2.5 px-3 py-3 opacity-80">
+      <span className="text-xs font-bold flex-shrink-0 w-5 h-5 rounded flex items-center justify-center bg-muted text-muted-foreground">
+        <Lock className="w-3 h-3" />
+      </span>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-muted-foreground truncate">{mod.title}</p>
+        <p className="text-[11px] text-muted-foreground">{mod.lesson_count} lesson{mod.lesson_count !== 1 ? "s" : ""}</p>
+      </div>
+      <DripCountdownChip unlockAt={mod.unlock_at} />
+    </div>
+  );
+}
+
+/** Member-facing locked module card (mobile course list). */
+function DripLockedMobileCard({ mod }: { mod: DripLockedModule }) {
+  return (
+    <div className="border-b border-border">
+      <div className="relative w-full aspect-[16/9] bg-secondary overflow-hidden">
+        {mod.cover_image_url ? (
+          <img src={mod.cover_image_url} alt={mod.title} className="w-full h-full object-cover opacity-50" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-secondary to-secondary/50" />
+        )}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-background/40">
+          <Lock className="w-6 h-6 text-foreground/70" />
+          <DripCountdownChip unlockAt={mod.unlock_at} />
+        </div>
+      </div>
+      <div className="px-4 py-3">
+        <div className="flex items-center gap-2">
+          <h3 className="text-base font-bold text-muted-foreground">{mod.title}</h3>
+        </div>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          {mod.lesson_count} lesson{mod.lesson_count !== 1 ? "s" : ""} · {dripCountdownLabel(mod.unlock_at).toLowerCase()}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════════════
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════ */
@@ -323,6 +425,18 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   const [showAddLesson, setShowAddLesson] = useState<string | null>(null);
   const [editingModule, setEditingModule] = useState<any>(null);
   const [editingLesson, setEditingLesson] = useState<any>(null);
+  const [showCertificate, setShowCertificate] = useState(false);
+
+  // Drip-locked modules (member only): invisible under RLS, listed as teaser
+  // rows with a countdown via the SECURITY DEFINER my_drip_locked_modules RPC.
+  const { data: dripLockedData } = useDripLockedModules(creatorId, !isOwner);
+  const dripLockedModules: DripLockedModule[] = (!isOwner && dripLockedData) || [];
+
+  // Resume position — throttled writes from the active player + one-time seek.
+  const resume = useResumePosition(selectedLesson?.id);
+  const selectedMedia = selectedLesson ? (mediaMap[selectedLesson.id] || { status: "none", kind: "none" as const }) : null;
+  const resumable = !!selectedMedia && selectedMedia.status === "ready" && (selectedMedia.kind === "mux" || selectedMedia.kind === "direct");
+  const showResumeChip = resumable && resume.savedSeconds > 10;
 
   useState(() => {
     if (modules.length > 0 && expandedModules.size === 0) {
@@ -383,6 +497,10 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   // Skool-style "Continue" target: first uncompleted lesson (or the first lesson).
   const firstIncompleteLesson = allLessons.find((l: any) => !(completions as Set<string>).has(l.id)) || allLessons[0] || null;
 
+  // The whole course is complete when every visible lesson is done AND nothing
+  // is still drip-locked (locked modules hide their lessons from the count).
+  const courseComplete = totalLessons > 0 && completedCount === totalLessons && dripLockedModules.length === 0;
+
   const renderProgressHero = (variant: "sidebar" | "mobile") => {
     if (totalLessons === 0) return null;
     const remaining = totalLessons - completedCount;
@@ -399,6 +517,11 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
           <Button size="sm" className="w-full gap-1.5 font-semibold" onClick={() => setSelectedLesson(firstIncompleteLesson)}>
             <Play className="w-3.5 h-3.5" />
             {completedCount === 0 ? "Start course" : remaining === 0 ? "Review lessons" : "Continue learning"}
+          </Button>
+        )}
+        {user && courseComplete && (
+          <Button size="sm" variant="outline" className="w-full gap-1.5 font-semibold mt-2" onClick={() => setShowCertificate(true)}>
+            <Award className="w-3.5 h-3.5 text-primary" /> Get your certificate
           </Button>
         )}
       </div>
@@ -462,7 +585,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
       <ContentGate creatorId={creatorId} type="lesson" isFree={selectedLesson.is_free} minTierRank={lessonMinRank(selectedLesson)}>
         <div className="min-h-[60vh]">
           {/* Video player */}
-          <LessonPlayer lesson={selectedLesson} media={mediaFor(selectedLesson)} isOwner={isOwner} onReupload={() => setEditingLesson(selectedLesson)} />
+          <LessonPlayer lesson={selectedLesson} media={mediaFor(selectedLesson)} isOwner={isOwner} onReupload={() => setEditingLesson(selectedLesson)} onVideoEl={resume.bindVideo} />
 
           {/* ← Menu / Next → bar */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
@@ -485,11 +608,29 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
 
           {/* Lesson content */}
           <div className="px-4 py-5 space-y-5">
-            <h1 className="text-xl font-bold text-foreground">{selectedLesson.title}</h1>
+            <div className="space-y-1.5">
+              <h1 className="text-xl font-bold text-foreground">{selectedLesson.title}</h1>
+              {showResumeChip && (
+                <button
+                  onClick={() => resume.seekTo(resume.savedSeconds)}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-semibold"
+                >
+                  <Play className="w-3 h-3" /> Resume at {formatResumeTime(resume.savedSeconds)}
+                </button>
+              )}
+            </div>
 
             <LessonDescription text={selectedLesson.description} />
 
             <LessonResources links={selectedLesson.lesson_links} />
+
+            {/* Quiz (passing auto-completes the lesson) */}
+            <LessonQuiz
+              key={selectedLesson.id}
+              lessonId={selectedLesson.id}
+              isCompleted={(completions as Set<string>).has(selectedLesson.id)}
+              onPass={() => handleComplete(selectedLesson.id)}
+            />
 
             {/* Complete button */}
             {user && !(completions as Set<string>).has(selectedLesson.id) ? (
@@ -623,7 +764,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
     return (
       <div className="pb-24">
         {renderProgressHero("mobile")}
-        {modules.length === 0 ? (
+        {modules.length === 0 && dripLockedModules.length === 0 ? (
           <div className="p-8 text-center">
             <BookOpen className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
             <p className="text-base font-semibold text-foreground mb-1">No courses yet</p>
@@ -758,6 +899,13 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
           </DndContext>
         )}
 
+        {/* Drip-locked modules (members): teaser cards with a countdown */}
+        {dripLockedModules.length > 0 && (
+          <div className="space-y-4 px-0 mt-4">
+            {dripLockedModules.map((m) => <DripLockedMobileCard key={m.module_id} mod={m} />)}
+          </div>
+        )}
+
         {isOwner && (
           <div className="px-4 pt-4">
             <Button onClick={() => setShowAddModule(true)} variant="outline" className="w-full font-semibold">
@@ -771,6 +919,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
         {showAddLesson && <AddLessonDialog open={!!showAddLesson} onClose={() => setShowAddLesson(null)} moduleId={showAddLesson} creatorId={creatorId} />}
         {editingModule && <EditModuleDialog open={!!editingModule} onClose={() => setEditingModule(null)} module={editingModule} />}
         {editingLesson && <EditLessonDialog open={!!editingLesson} onClose={() => setEditingLesson(null)} lesson={editingLesson} />}
+        <CourseCertificate open={showCertificate} onClose={() => setShowCertificate(false)} creatorId={creatorId} lessonIds={allLessons.map((l: any) => l.id)} />
       </div>
     );
   }
@@ -782,7 +931,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
       {renderProgressHero("sidebar")}
 
       <div className="flex-1 overflow-y-auto">
-        {modules.length === 0 ? (
+        {modules.length === 0 && dripLockedModules.length === 0 ? (
           <div className="p-8 text-center">
             <BookOpen className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
             <p className="text-sm font-medium text-foreground mb-1">No courses yet</p>
@@ -922,6 +1071,9 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
           </DndContext>
         )}
 
+        {/* Drip-locked modules (members): teaser rows with a countdown */}
+        {dripLockedModules.map((m) => <DripLockedSidebarRow key={m.module_id} mod={m} />)}
+
         {isOwner && (
           <button onClick={() => setShowAddModule(true)} className={`w-full flex items-center gap-2 px-4 py-3 text-sm font-semibold hover:bg-secondary/50 transition-colors text-primary ${modules.length > 0 ? "border-t border-border" : ""}`}>
             <Plus className="w-4 h-4" /> Add Module
@@ -981,11 +1133,27 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
     return (
       <div className="h-full overflow-y-auto">
         <ContentGate creatorId={creatorId} type="lesson" isFree={selectedLesson.is_free} minTierRank={lessonMinRank(selectedLesson)}>
-        <LessonPlayer lesson={selectedLesson} media={mediaFor(selectedLesson)} isOwner={isOwner} onReupload={() => setEditingLesson(selectedLesson)} />
+        <LessonPlayer lesson={selectedLesson} media={mediaFor(selectedLesson)} isOwner={isOwner} onReupload={() => setEditingLesson(selectedLesson)} onVideoEl={resume.bindVideo} />
         <div className="max-w-3xl mx-auto p-6 space-y-6">
-          <h1 className="text-2xl font-bold text-foreground">{selectedLesson.title}</h1>
+          <div className="space-y-1.5">
+            <h1 className="text-2xl font-bold text-foreground">{selectedLesson.title}</h1>
+            {showResumeChip && (
+              <button
+                onClick={() => resume.seekTo(resume.savedSeconds)}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-semibold hover:bg-primary/20 transition-colors"
+              >
+                <Play className="w-3 h-3" /> Resume at {formatResumeTime(resume.savedSeconds)}
+              </button>
+            )}
+          </div>
           <LessonDescription text={selectedLesson.description} />
           <LessonResources links={selectedLesson.lesson_links} />
+          <LessonQuiz
+            key={selectedLesson.id}
+            lessonId={selectedLesson.id}
+            isCompleted={(completions as Set<string>).has(selectedLesson.id)}
+            onPass={() => handleComplete(selectedLesson.id)}
+          />
           <div className="flex items-center justify-between pt-4 border-t border-border">
             <button onClick={() => prevLesson && setSelectedLesson(prevLesson)} disabled={!prevLesson} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-secondary/50 ${prevLesson ? "text-foreground" : "text-muted-foreground/30"}`}>
               <ArrowLeft className="w-4 h-4" /> Previous
@@ -1029,6 +1197,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
       {showAddLesson && <AddLessonDialog open={!!showAddLesson} onClose={() => setShowAddLesson(null)} moduleId={showAddLesson} creatorId={creatorId} />}
       {editingModule && <EditModuleDialog open={!!editingModule} onClose={() => setEditingModule(null)} module={editingModule} />}
       {editingLesson && <EditLessonDialog open={!!editingLesson} onClose={() => setEditingLesson(null)} lesson={editingLesson} />}
+      <CourseCertificate open={showCertificate} onClose={() => setShowCertificate(false)} creatorId={creatorId} lessonIds={allLessons.map((l: any) => l.id)} />
     </div>
   );
 }
@@ -1042,12 +1211,13 @@ function AddModuleDialog({ open, onClose, creatorId }: { open: boolean; onClose:
   const [description, setDescription] = useState("");
   const [isFree, setIsFree] = useState(true);
   const [minTierRank, setMinTierRank] = useState<number | null>(null);
+  const [dripDays, setDripDays] = useState<number | null>(null);
   const createModule = useCreateModule();
   const handleSubmit = async () => {
     if (!title.trim()) return;
-    // Free modules never carry a tier requirement (free stays free).
-    await createModule.mutateAsync({ title, description, creatorId, is_free: isFree, min_tier_rank: isFree ? null : minTierRank });
-    setTitle(""); setDescription(""); setIsFree(true); setMinTierRank(null);
+    // Free modules never carry a tier requirement or drip window (free stays free).
+    await createModule.mutateAsync({ title, description, creatorId, is_free: isFree, min_tier_rank: isFree ? null : minTierRank, drip_days: isFree ? null : dripDays });
+    setTitle(""); setDescription(""); setIsFree(true); setMinTierRank(null); setDripDays(null);
     onClose();
     toast.success("Module added!");
   };
@@ -1080,6 +1250,7 @@ function AddModuleDialog({ open, onClose, creatorId }: { open: boolean; onClose:
             </div>
           </div>
           {!isFree && <MinTierSelect creatorId={creatorId} value={minTierRank} onChange={setMinTierRank} />}
+          {!isFree && <DripSelect value={dripDays} onChange={setDripDays} />}
           <Button onClick={handleSubmit} disabled={!title.trim()} className="w-full font-semibold">Add Module</Button>
         </div>
       </DialogContent>
@@ -1103,11 +1274,12 @@ function EditModuleDialog({ open, onClose, module: mod }: { open: boolean; onClo
   const [title, setTitle] = useState(mod.title);
   const [description, setDescription] = useState(mod.description || "");
   const [minTierRank, setMinTierRank] = useState<number | null>(mod.min_tier_rank ?? null);
+  const [dripDays, setDripDays] = useState<number | null>(mod.drip_days ?? null);
   const updateModule = useUpdateModule();
   const handleSubmit = async () => {
     if (!title.trim()) return;
-    // Free modules never carry a tier requirement (free stays free).
-    await updateModule.mutateAsync({ id: mod.id, title, description, min_tier_rank: mod.is_free ? null : minTierRank });
+    // Free modules never carry a tier requirement or drip window (free stays free).
+    await updateModule.mutateAsync({ id: mod.id, title, description, min_tier_rank: mod.is_free ? null : minTierRank, drip_days: mod.is_free ? null : dripDays });
     onClose();
     toast.success("Module updated!");
   };
@@ -1120,6 +1292,7 @@ function EditModuleDialog({ open, onClose, module: mod }: { open: boolean; onClo
           <Input placeholder="Module title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 bg-muted" />
           <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 bg-muted" />
           {!mod.is_free && <MinTierSelect creatorId={mod.creator_id} value={minTierRank} onChange={setMinTierRank} />}
+          {!mod.is_free && <DripSelect value={dripDays} onChange={setDripDays} />}
           <Button onClick={handleSubmit} disabled={!title.trim()} className="w-full font-semibold">Save Changes</Button>
         </div>
       </DialogContent>
@@ -1354,6 +1527,18 @@ function LessonEditorForm({
         <button onClick={() => setLinks([...links, { label: "", url: "" }])} className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline">
           <Plus className="w-3.5 h-3.5" /> Add link
         </button>
+      </div>
+
+      {/* Quiz (saved independently of the lesson — needs an existing lesson id) */}
+      <div className="space-y-1.5">
+        <label className="text-xs font-semibold text-foreground">Quiz</label>
+        {mode === "edit" && lesson?.id ? (
+          <LessonQuizEditor lessonId={lesson.id} />
+        ) : (
+          <p className="text-[11px] text-muted-foreground rounded-lg bg-muted px-3 py-2.5">
+            Save the lesson first, then edit it to add a quiz.
+          </p>
+        )}
       </div>
 
       {/* Access */}

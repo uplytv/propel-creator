@@ -281,7 +281,7 @@ export function useCreateModule() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ title, description, creatorId, is_free, min_tier_rank }: { title: string; description: string; creatorId: string; is_free?: boolean; min_tier_rank?: number | null }) => {
+    mutationFn: async ({ title, description, creatorId, is_free, min_tier_rank, drip_days }: { title: string; description: string; creatorId: string; is_free?: boolean; min_tier_rank?: number | null; drip_days?: number | null }) => {
       if (!user) throw new Error("Not authenticated");
       const { data: existing } = await supabase
         .from("classroom_modules")
@@ -290,10 +290,10 @@ export function useCreateModule() {
         .order("position", { ascending: false })
         .limit(1);
       const nextPos = existing && (existing as any[]).length > 0 ? (existing as any[])[0].position + 1 : 0;
-      // (supabase as any): min_tier_rank is a new column not yet in generated types
+      // (supabase as any): min_tier_rank / drip_days are new columns not yet in generated types
       const { data, error } = await (supabase as any)
         .from("classroom_modules")
-        .insert({ creator_id: creatorId, title, description, position: nextPos, is_free: is_free ?? true, min_tier_rank: min_tier_rank ?? null })
+        .insert({ creator_id: creatorId, title, description, position: nextPos, is_free: is_free ?? true, min_tier_rank: min_tier_rank ?? null, drip_days: drip_days ?? null })
         .select()
         .maybeSingle();
       if (error) {
@@ -355,9 +355,10 @@ export function useCreateLesson() {
 export function useUpdateModule() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, title, description, min_tier_rank }: { id: string; title: string; description: string; min_tier_rank?: number | null }) => {
+    mutationFn: async ({ id, title, description, min_tier_rank, drip_days }: { id: string; title: string; description: string; min_tier_rank?: number | null; drip_days?: number | null }) => {
       const patch: any = { title, description };
       if (min_tier_rank !== undefined) patch.min_tier_rank = min_tier_rank; // new column — only send when provided
+      if (drip_days !== undefined) patch.drip_days = drip_days; // new column — only send when provided
       const { error } = await (supabase as any)
         .from("classroom_modules")
         .update(patch)
