@@ -122,7 +122,7 @@ test.describe("trial funnel (money path — boundary only)", () => {
 
     // Step 2 — plan radios + terms visible.
     await expect(dialog.getByRole("radio")).toHaveCount(3, { timeout: 30_000 });
-    await expect(dialog.getByText(/uply starter/i)).toBeVisible();
+    await expect(dialog.getByText(/uply starter/i).first()).toBeVisible();
     await expect(dialog.getByText(/day free trial — then \$/i).first()).toBeVisible();
 
     const terms = dialog.getByRole("checkbox");
