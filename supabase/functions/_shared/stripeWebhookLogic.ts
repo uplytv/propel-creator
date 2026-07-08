@@ -157,6 +157,171 @@ export function extractRefundIdentifier(charge: {
   return `${charge.id || "unknown_charge"}:${charge.amount_refunded ?? 0}`;
 }
 
+// ── BUG 1: live_purchases keyed by checkout SESSION id, not the payment intent ──
+
+export interface LivePurchaseKeyPlan {
+  /** value to STORE in live_purchases.stripe_payment_intent_id on completion */
+  storeId: string | null;
+  /** ordered lookup keys for locating rows by stripe_payment_intent_id */
+  lookupOrder: string[];
+}
+
+/**
+ * Extracts the payment-intent id from checkout session payload shapes:
+ * a plain string (unexpanded webhook payload), an expanded object ({ id }),
+ * or null (e.g. subscription-mode sessions / unpaid sessions).
+ */
+export function extractPaymentIntentId(pi: unknown): string | null {
+  if (typeof pi === "string" && pi.length > 0) return pi;
+  if (pi && typeof pi === "object") {
+    const id = (pi as { id?: unknown }).id;
+    if (typeof id === "string" && id.length > 0) return id;
+  }
+  return null;
+}
+
+/**
+ * BUG 1 FIX. live_purchases rows are created (status 'pending') by
+ * stripe-create-live-purchase with the checkout SESSION id in
+ * stripe_payment_intent_id — the real payment intent doesn't exist yet at
+ * insert time. The webhook's completion path must:
+ *   * STORE the real payment intent (storeId) so refund/dispute paths that
+ *     look up by PI can find live purchases, and
+ *   * LOOK UP with the real PI first, falling back to the legacy session id
+ *     (lookupOrder) so both upgraded rows and pre-fix/pending rows resolve.
+ * When the session has no PI (should not happen for paid payment-mode
+ * sessions), the session id is kept — never null out an existing key.
+ */
+export function planLivePurchaseKeys(input: {
+  sessionId?: string | null;
+  paymentIntentId?: unknown;
+}): LivePurchaseKeyPlan {
+  const sessionId = input.sessionId || null;
+  const paymentIntentId = extractPaymentIntentId(input.paymentIntentId);
+  const lookupOrder: string[] = [];
+  for (const key of [paymentIntentId, sessionId]) {
+    if (key && !lookupOrder.includes(key)) lookupOrder.push(key);
+  }
+  return { storeId: paymentIntentId ?? sessionId, lookupOrder };
+}
+
+// ── BUG 2: sold-out ticket path credited the creator + confirmed the buyer ──
+
+export interface SoldOutOutcome {
+  /** credit the creator wallet (95/5 via updateWallet) */
+  creditWallet: boolean;
+  /** send "Ticket Confirmed!" to the buyer + "New Ticket Sale!" to the creator */
+  confirmTickets: boolean;
+  /** issue a programmatic full refund of the payment intent */
+  issueRefund: boolean;
+  buyerNotification: "ticket_confirmed" | "sold_out_refunded";
+  /** surface an admin-visible alert (notify_admin) */
+  notifyAdmin: boolean;
+}
+
+/**
+ * BUG 2 FIX. When reserve_event_ticket fails (sold out under concurrency),
+ * the creator must NOT be credited for zero tickets and the buyer must NOT
+ * see "Ticket Confirmed!". Instead: refund the payment intent (once —
+ * refundAlreadyIssued reflects the per-PI guard claim), tell the buyer the
+ * truth, and alert admins. reserved=true keeps today's happy path exactly.
+ */
+export function soldOutOutcome(input: {
+  reserved: boolean;
+  refundAlreadyIssued?: boolean;
+}): SoldOutOutcome {
+  if (input.reserved) {
+    return {
+      creditWallet: true,
+      confirmTickets: true,
+      issueRefund: false,
+      buyerNotification: "ticket_confirmed",
+      notifyAdmin: false,
+    };
+  }
+  return {
+    creditWallet: false,
+    confirmTickets: false,
+    issueRefund: !input.refundAlreadyIssued,
+    buyerNotification: "sold_out_refunded",
+    notifyAdmin: true,
+  };
+}
+
+// ── BUG 3: read-then-write wallet credit loses concurrent updates ──
+
+export interface WalletCreditRpcArgs {
+  p_user_id: string;
+  p_net: number;
+  p_gross: number;
+  p_fee: number;
+  p_description: string;
+  p_payment_intent_id: string | null;
+}
+
+/**
+ * BUG 3 — the per-payment-intent idempotency guard, replicated EXACTLY from
+ * updateWallet: a completed transactions row with the same PI (any wallet)
+ * short-circuits; a null PI runs no guard at all. This is the webhook's
+ * per-PI guard — finalize-cart-order's guard is intentionally different
+ * (scoped per (PI, wallet), one cart PI legitimately credits several
+ * creators) and is NOT covered by this contract.
+ */
+export function walletCreditGuard(input: {
+  paymentIntentId: string | null;
+  duplicateCompletedTxExists: boolean;
+}): "skip" | "credit" {
+  if (input.paymentIntentId && input.duplicateCompletedTxExists) return "skip";
+  return "credit";
+}
+
+/**
+ * Argument shape for the credit_wallet_atomic RPC
+ * (migration 20260707100000_atomic_wallet_credit.sql).
+ * p_net = amount - fee, exactly as updateWallet computes today, rounded to
+ * cents to keep float dust out of the ledger — the 95/5 SPLIT ITSELF IS
+ * COMPUTED AT THE CALL SITES AND IS UNTOUCHED.
+ */
+export function buildWalletCreditRpcArgs(input: {
+  creatorId: string;
+  amount: number;
+  fee: number;
+  description: string;
+  paymentIntentId: string | null;
+}): WalletCreditRpcArgs {
+  return {
+    p_user_id: input.creatorId,
+    p_net: round2(input.amount - input.fee),
+    p_gross: input.amount,
+    p_fee: input.fee,
+    p_description: input.description,
+    p_payment_intent_id: input.paymentIntentId,
+  };
+}
+
+/**
+ * True when an RPC error means "the function does not exist" — i.e. migration
+ * 20260707100000 has not been applied yet. The webhook then falls back to the
+ * legacy read-then-write credit so a mid-deploy window never breaks payments.
+ *   * 42883    — Postgres undefined_function
+ *   * PGRST202 — PostgREST: function not found in the schema cache
+ *   * message match — belt-and-braces for proxies that rewrite codes
+ */
+export function isMissingRpcError(
+  err: { code?: string | null; message?: string | null } | null | undefined,
+  fnName: string,
+): boolean {
+  if (!err) return false;
+  if (err.code === "42883" || err.code === "PGRST202") return true;
+  const msg = (err.message || "").toLowerCase();
+  if (!msg.includes(fnName.toLowerCase())) return false;
+  return (
+    msg.includes("does not exist") ||
+    msg.includes("could not find") ||
+    msg.includes("schema cache")
+  );
+}
+
 // ── Change 1: charge.dispute.created planning ──
 
 export interface DisputeInfo {

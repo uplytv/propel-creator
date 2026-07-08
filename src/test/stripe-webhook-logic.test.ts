@@ -5,6 +5,11 @@ import {
   computeRefundWalletAdjustment,
   extractRefundIdentifier,
   planDisputeActions,
+  planLivePurchaseKeys,
+  soldOutOutcome,
+  walletCreditGuard,
+  buildWalletCreditRpcArgs,
+  isMissingRpcError,
 } from "../../supabase/functions/_shared/stripeWebhookLogic";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -246,6 +251,195 @@ describe("extractRefundIdentifier (per-refund idempotency key)", () => {
     const secondRedelivered = extractRefundIdentifier({ id: "ch_1", amount_refunded: 10000 });
     expect(first).not.toBe(second);
     expect(second).toBe(secondRedelivered);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BUG 1 — live purchases keyed by SESSION id instead of the payment intent.
+// Completion must STORE the real PI; lookups must try the real PI first and
+// fall back to the legacy session id so existing rows keep working.
+// ═══════════════════════════════════════════════════════════════════════════
+describe("planLivePurchaseKeys (BUG 1: PI-vs-session-id column decision)", () => {
+  it("stores the REAL payment intent on the completion path (not the session id)", () => {
+    const plan = planLivePurchaseKeys({ sessionId: "cs_123", paymentIntentId: "pi_456" });
+    expect(plan.storeId).toBe("pi_456");
+  });
+
+  it("looks up by the real PI first, then falls back to the legacy session id", () => {
+    const plan = planLivePurchaseKeys({ sessionId: "cs_123", paymentIntentId: "pi_456" });
+    expect(plan.lookupOrder).toEqual(["pi_456", "cs_123"]);
+  });
+
+  it("extracts the id from an expanded payment_intent object", () => {
+    const plan = planLivePurchaseKeys({
+      sessionId: "cs_123",
+      paymentIntentId: { id: "pi_789" },
+    });
+    expect(plan.storeId).toBe("pi_789");
+    expect(plan.lookupOrder).toEqual(["pi_789", "cs_123"]);
+  });
+
+  it("keeps the session id when the session carries no payment intent", () => {
+    const plan = planLivePurchaseKeys({ sessionId: "cs_123", paymentIntentId: null });
+    expect(plan.storeId).toBe("cs_123");
+    expect(plan.lookupOrder).toEqual(["cs_123"]);
+  });
+
+  it("dedupes identical keys and tolerates fully-empty input", () => {
+    expect(planLivePurchaseKeys({ sessionId: "x", paymentIntentId: "x" }).lookupOrder).toEqual(["x"]);
+    expect(planLivePurchaseKeys({ sessionId: null, paymentIntentId: null })).toEqual({
+      storeId: null,
+      lookupOrder: [],
+    });
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BUG 2 — sold-out ticket path: creator was credited and buyer told
+// "Ticket Confirmed!" even when reserve_event_ticket failed.
+// ═══════════════════════════════════════════════════════════════════════════
+describe("soldOutOutcome (BUG 2: sold-out outcome matrix)", () => {
+  it("reserved=true → credit the wallet and confirm the tickets (happy path unchanged)", () => {
+    const o = soldOutOutcome({ reserved: true });
+    expect(o.creditWallet).toBe(true);
+    expect(o.confirmTickets).toBe(true);
+    expect(o.issueRefund).toBe(false);
+    expect(o.buyerNotification).toBe("ticket_confirmed");
+    expect(o.notifyAdmin).toBe(false);
+  });
+
+  it("reserved=false → NEVER credits the creator wallet (zero tickets were issued)", () => {
+    const o = soldOutOutcome({ reserved: false });
+    expect(o.creditWallet).toBe(false);
+  });
+
+  it("reserved=false → no 'Ticket Confirmed!'; the buyer gets the honest sold-out message", () => {
+    const o = soldOutOutcome({ reserved: false });
+    expect(o.confirmTickets).toBe(false);
+    expect(o.buyerNotification).toBe("sold_out_refunded");
+  });
+
+  it("reserved=false → issues a programmatic refund and alerts admins", () => {
+    const o = soldOutOutcome({ reserved: false });
+    expect(o.issueRefund).toBe(true);
+    expect(o.notifyAdmin).toBe(true);
+  });
+
+  it("refund already issued → no double refund, still no credit, still honest notify", () => {
+    const o = soldOutOutcome({ reserved: false, refundAlreadyIssued: true });
+    expect(o.issueRefund).toBe(false);
+    expect(o.creditWallet).toBe(false);
+    expect(o.confirmTickets).toBe(false);
+    expect(o.buyerNotification).toBe("sold_out_refunded");
+    expect(o.notifyAdmin).toBe(true);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BUG 3 — atomic wallet credit contract (credit_wallet_atomic RPC).
+// The RPC replicates updateWallet's per-PI idempotency guard exactly and the
+// 95/5 net math is untouched. Mid-deploy (RPC missing) falls back to the
+// legacy read-then-write path.
+// ═══════════════════════════════════════════════════════════════════════════
+describe("atomic wallet credit contract (BUG 3)", () => {
+  it("guard short-circuits a duplicate payment intent (same semantics as updateWallet)", () => {
+    expect(
+      walletCreditGuard({ paymentIntentId: "pi_1", duplicateCompletedTxExists: true }),
+    ).toBe("skip");
+  });
+
+  it("credits when the payment intent has no completed transaction yet", () => {
+    expect(
+      walletCreditGuard({ paymentIntentId: "pi_1", duplicateCompletedTxExists: false }),
+    ).toBe("credit");
+  });
+
+  it("a null payment intent bypasses the guard entirely (updateWallet parity)", () => {
+    expect(
+      walletCreditGuard({ paymentIntentId: null, duplicateCompletedTxExists: false }),
+    ).toBe("credit");
+    expect(
+      walletCreditGuard({ paymentIntentId: null, duplicateCompletedTxExists: true }),
+    ).toBe("credit");
+  });
+
+  // 95/5 math at 3 price points — fee computed EXACTLY as every webhook call
+  // site does today: Math.round(amount * 0.05 * 100) / 100.
+  it("net math unchanged: $100.00 → fee $5.00, net $95.00", () => {
+    const amount = 100;
+    const fee = Math.round(amount * 0.05 * 100) / 100;
+    const args = buildWalletCreditRpcArgs({
+      creatorId: "creator_1",
+      amount,
+      fee,
+      description: "Product sale: Test",
+      paymentIntentId: "pi_100",
+    });
+    expect(args).toEqual({
+      p_user_id: "creator_1",
+      p_net: 95,
+      p_gross: 100,
+      p_fee: 5,
+      p_description: "Product sale: Test",
+      p_payment_intent_id: "pi_100",
+    });
+  });
+
+  it("net math unchanged: $33.33 → fee $1.67, net $31.66", () => {
+    const amount = 33.33;
+    const fee = Math.round(amount * 0.05 * 100) / 100;
+    const args = buildWalletCreditRpcArgs({
+      creatorId: "creator_1",
+      amount,
+      fee,
+      description: "Tip from viewer",
+      paymentIntentId: "pi_33",
+    });
+    expect(fee).toBe(1.67);
+    expect(args.p_net).toBe(31.66);
+    expect(args.p_gross).toBe(33.33);
+    expect(args.p_fee).toBe(1.67);
+  });
+
+  it("net math unchanged: $19.99 → fee $1.00, net $18.99", () => {
+    const amount = 19.99;
+    const fee = Math.round(amount * 0.05 * 100) / 100;
+    const args = buildWalletCreditRpcArgs({
+      creatorId: "creator_1",
+      amount,
+      fee,
+      description: "Subscription payment",
+      paymentIntentId: "pi_19",
+    });
+    expect(fee).toBe(1);
+    expect(args.p_net).toBe(18.99);
+    expect(args.p_gross).toBe(19.99);
+    expect(args.p_fee).toBe(1);
+  });
+
+  it("detects a missing RPC (migration not deployed) so the webhook falls back to read-then-write", () => {
+    // PostgREST: function absent from the schema cache
+    expect(
+      isMissingRpcError(
+        { code: "PGRST202", message: "Could not find the function public.credit_wallet_atomic(p_description, p_fee, p_gross, p_net, p_payment_intent_id, p_user_id) in the schema cache" },
+        "credit_wallet_atomic",
+      ),
+    ).toBe(true);
+    // Postgres: undefined_function
+    expect(
+      isMissingRpcError(
+        { code: "42883", message: "function public.credit_wallet_atomic(uuid, numeric, numeric, numeric, text, text) does not exist" },
+        "credit_wallet_atomic",
+      ),
+    ).toBe(true);
+  });
+
+  it("does NOT classify ordinary errors as missing-RPC", () => {
+    expect(
+      isMissingRpcError({ code: "23505", message: "duplicate key value violates unique constraint" }, "credit_wallet_atomic"),
+    ).toBe(false);
+    expect(isMissingRpcError(null, "credit_wallet_atomic")).toBe(false);
+    expect(isMissingRpcError({ code: "PGRST301", message: "JWT expired" }, "credit_wallet_atomic")).toBe(false);
   });
 });
 
