@@ -6,6 +6,11 @@ import {
   computeRefundWalletAdjustment,
   extractRefundIdentifier,
   planDisputeActions,
+  planLivePurchaseKeys,
+  soldOutOutcome,
+  extractPaymentIntentId,
+  buildWalletCreditRpcArgs,
+  isMissingRpcError,
 } from "../_shared/stripeWebhookLogic.ts";
 
 const corsHeaders = {
@@ -56,7 +61,52 @@ function buildNewSubscriberEmailHtml(subscriberName: string, tierName: string, a
 </html>`;
 }
 
+// BUG 3 FIX: the wallet credit is now a single-statement atomic increment via
+// the SECURITY DEFINER RPC credit_wallet_atomic (migration 20260707100000).
+// The RPC replicates the exact semantics below (per-PI idempotency guard,
+// same transactions row shape, wallet resolution) but does guard + insert +
+// increment in ONE database transaction, so concurrent webhook deliveries
+// for the same creator can never lose a credit to a read-then-write race.
+// Signature unchanged — all call sites are untouched. If the RPC is missing
+// (migration not yet applied mid-deploy), we fall back to the legacy path.
 async function updateWallet(supabase: any, creatorId: string, amount: number, fee: number, description: string, paymentIntentId: string | null) {
+  const { data: rpcResult, error: rpcError } = await supabase.rpc(
+    "credit_wallet_atomic",
+    buildWalletCreditRpcArgs({ creatorId, amount, fee, description, paymentIntentId }),
+  );
+
+  if (!rpcError) {
+    if (rpcResult && rpcResult.credited === false) {
+      logStep("Wallet update skipped (already credited)", { paymentIntentId });
+    }
+    return;
+  }
+
+  if (isMissingRpcError(rpcError, "credit_wallet_atomic")) {
+    logStep("WARN credit_wallet_atomic missing — legacy read-then-write fallback", {
+      migration: "20260707100000_atomic_wallet_credit.sql",
+      paymentIntentId,
+      error: rpcError?.message,
+    });
+  } else {
+    // Unknown RPC failure: nothing was applied (the RPC is transactional), so
+    // the legacy path below is safe — its per-PI guard re-checks first and a
+    // credit that DID land would short-circuit it.
+    logStep("WARN credit_wallet_atomic failed — legacy read-then-write fallback", {
+      paymentIntentId,
+      code: rpcError?.code,
+      error: rpcError?.message,
+    });
+  }
+
+  await legacyReadThenWriteCredit(supabase, creatorId, amount, fee, description, paymentIntentId);
+}
+
+// LEGACY PATH — byte-for-byte the pre-fix updateWallet body. Only used when
+// the credit_wallet_atomic RPC is unavailable. Known (accepted) limitation:
+// read-then-write, so it keeps today's behavior including the race the RPC
+// eliminates. Do not extend.
+async function legacyReadThenWriteCredit(supabase: any, creatorId: string, amount: number, fee: number, description: string, paymentIntentId: string | null) {
   // Guard: skip if already credited for this payment intent (idempotency)
   if (paymentIntentId) {
     const { data: existingTx } = await supabase
@@ -393,9 +443,8 @@ Deno.serve(async (req) => {
 
           // Atomic reserve to guarantee no oversell under concurrent webhooks
           const { data: reserved } = await supabase.rpc("reserve_event_ticket", { p_event_id: event_id, p_qty: qty });
-          if (!reserved) {
-            logStep("Event sold out — refund needed", { event_id, buyer_id });
-          } else {
+
+          if (reserved) {
             const perTicketAmount = amount / qty;
             const perTicketFee = fee / qty;
             for (let i = 0; i < qty; i++) {
@@ -418,28 +467,131 @@ Deno.serve(async (req) => {
             }
           }
 
+          // BUG 2 FIX: on reservation failure the handler used to FALL THROUGH
+          // to the wallet credit and "Ticket Confirmed!" anyway — creator paid
+          // for zero tickets, buyer told a lie. Decision matrix is pure/tested
+          // (soldOutOutcome); the refund is guarded per payment intent.
+          const ticketPi = extractPaymentIntentId(session.payment_intent);
+          const soldOutRefundKey = `soldout:${ticketPi || session.id}`;
+
+          let refundAlreadyIssued = false;
+          if (!reserved) {
+            // Per-PI idempotency claim — same UNIQUE(refund_id) pattern as the
+            // charge.refunded clawback guard (migration 20260706180000).
+            const { data: refundClaim, error: refundClaimErr } = await supabase
+              .from("stripe_refund_clawbacks")
+              .insert({
+                refund_id: soldOutRefundKey,
+                stripe_payment_intent_id: ticketPi,
+              })
+              .select("id")
+              .maybeSingle();
+            if (!refundClaim && (refundClaimErr?.code === "23505" || refundClaimErr?.message?.includes("duplicate"))) {
+              const { data: existingClaim } = await supabase
+                .from("stripe_refund_clawbacks")
+                .select("clawback_amount")
+                .eq("refund_id", soldOutRefundKey)
+                .maybeSingle();
+              // Non-NULL applied amount marks a refund that fully went through;
+              // NULL means a prior attempt crashed before refunding — retry.
+              refundAlreadyIssued = !!existingClaim && existingClaim.clawback_amount !== null;
+            }
+            // Any other claim failure (e.g. guard table missing): proceed with
+            // the refund anyway — the Stripe idempotency key plus
+            // charge_already_refunded handling below make it single-shot.
+          }
+
+          const outcome = soldOutOutcome({ reserved: !!reserved, refundAlreadyIssued });
+
           const { data: evt } = await supabase.from("events").select("title").eq("id", event_id).single();
-          await updateWallet(supabase, creator_id, amount, fee, `Event ticket: ${evt?.title || "Event"}`, session.payment_intent as string);
 
-          await supabase.from("notifications").insert({
-            user_id: buyer_id,
-            type: "event_ticket",
-            title: "Ticket Confirmed! 🎟️",
-            message: `Your ticket for "${evt?.title}" is confirmed.`,
-            link: firstToken ? `/tickets/${firstToken}` : "/wallet",
-          });
+          if (outcome.creditWallet) {
+            await updateWallet(supabase, creator_id, amount, fee, `Event ticket: ${evt?.title || "Event"}`, session.payment_intent as string);
+          }
 
-          const { data: buyerProfile } = await supabase.from("profiles").select("display_name").eq("user_id", buyer_id).maybeSingle();
-          await supabase.from("notifications").insert({
-            user_id: creator_id,
-            type: "event_ticket_sale",
-            title: "New Ticket Sale! 🎉",
-            message: `${buyerProfile?.display_name || "Someone"} bought a ticket to "${evt?.title}" — $${amount.toFixed(2)}`,
-            actor_id: buyer_id,
-            link: "/events",
-          });
+          if (outcome.confirmTickets) {
+            await supabase.from("notifications").insert({
+              user_id: buyer_id,
+              type: "event_ticket",
+              title: "Ticket Confirmed! 🎟️",
+              message: `Your ticket for "${evt?.title}" is confirmed.`,
+              link: firstToken ? `/tickets/${firstToken}` : "/wallet",
+            });
 
-          logStep("Event ticket processed", { event_id, buyer_id, amount });
+            const { data: buyerProfile } = await supabase.from("profiles").select("display_name").eq("user_id", buyer_id).maybeSingle();
+            await supabase.from("notifications").insert({
+              user_id: creator_id,
+              type: "event_ticket_sale",
+              title: "New Ticket Sale! 🎉",
+              message: `${buyerProfile?.display_name || "Someone"} bought a ticket to "${evt?.title}" — $${amount.toFixed(2)}`,
+              actor_id: buyer_id,
+              link: "/events",
+            });
+
+            logStep("Event ticket processed", { event_id, buyer_id, amount });
+          } else {
+            // ── Sold out: refund the buyer, never credit the creator ──
+            let refundSucceeded = refundAlreadyIssued;
+            if (outcome.issueRefund && ticketPi) {
+              // Wrapped so a refund failure NEVER throws the handler — the
+              // event still acks 200 and admins get a manual-refund alert.
+              try {
+                try {
+                  await stripe.refunds.create(
+                    { payment_intent: ticketPi },
+                    // Stripe-side idempotency: a redelivered event re-requests
+                    // the SAME refund instead of creating a second one.
+                    { idempotencyKey: `soldout-refund-${ticketPi}` },
+                  );
+                } catch (refundErr: any) {
+                  if (refundErr?.code !== "charge_already_refunded") throw refundErr;
+                }
+                refundSucceeded = true;
+                // Record the applied amount on the guard row (non-NULL = done)
+                await supabase.from("stripe_refund_clawbacks")
+                  .update({ clawback_amount: amount, wallet_decrement: 0, shortfall: 0 })
+                  .eq("refund_id", soldOutRefundKey);
+                logStep("Sold-out refund issued", { event_id, buyer_id, paymentIntent: ticketPi, amount });
+              } catch (refundErr: any) {
+                logStep("Sold-out refund FAILED — manual refund required", {
+                  event_id, buyer_id, paymentIntent: ticketPi, amount, error: refundErr?.message,
+                });
+              }
+            } else if (outcome.issueRefund && !ticketPi) {
+              logStep("Sold-out refund impossible — session has no payment intent", { event_id, buyer_id, sessionId: session.id });
+            }
+
+            // Honest buyer notification — never "Ticket Confirmed!"
+            await supabase.from("notifications").insert({
+              user_id: buyer_id,
+              type: "event_ticket",
+              title: refundSucceeded ? "Event Sold Out — Payment Refunded" : "Event Sold Out",
+              message: refundSucceeded
+                ? `"${evt?.title || "The event"}" sold out before your payment completed. Your payment has been refunded in full.`
+                : `"${evt?.title || "The event"}" sold out before your payment completed. Your refund is being processed — contact support if it doesn't arrive within 5-10 business days.`,
+              link: "/wallet",
+            });
+
+            // Admin visibility — same notify_admin batching/dedup pattern as
+            // the charge.dispute.created branch.
+            const { error: soldOutAdminErr } = await supabase.rpc("notify_admin", {
+              p_title: refundSucceeded ? "Sold-out ticket auto-refunded" : "🚨 Sold-out refund FAILED — refund manually",
+              p_body: `Event ${evt?.title || event_id} oversold: buyer ${buyer_id} paid $${amount.toFixed(2)} (PI ${ticketPi || "unknown"}) after capacity ran out. ` +
+                (refundSucceeded ? "Refund issued automatically; no wallet credit was made." : "Automatic refund FAILED — issue it manually in Stripe. No wallet credit was made."),
+              p_type: "sold_out_refund",
+              p_link: "/admin",
+              p_metadata: { event_id, buyer_id, payment_intent: ticketPi, session_id: session.id, refunded: refundSucceeded },
+              p_amount: amount,
+              p_dedup_key: soldOutRefundKey,
+            });
+            if (soldOutAdminErr) {
+              logStep("notify_admin failed (non-fatal)", { error: soldOutAdminErr.message });
+            }
+
+            logStep("Event ticket sold out — buyer refunded, creator NOT credited", {
+              event_id, buyer_id, amount, refunded: refundSucceeded,
+            });
+          }
 
         } else if (branch === "credits") {
           const { buyer_id } = metadata;
@@ -644,18 +796,38 @@ Deno.serve(async (req) => {
             break;
           }
 
-          // Mark purchase completed
-          await supabase.from("live_purchases")
-            .update({ status: "completed" })
-            .eq("stripe_payment_intent_id", session.id)
-            .eq("live_product_id", live_product_id);
+          // BUG 1 FIX: pending rows are created by stripe-create-live-purchase
+          // with the checkout SESSION id in stripe_payment_intent_id (the real
+          // PI doesn't exist at insert time). Completion now locates the row
+          // via dual lookup (real PI first, legacy session id fallback — so
+          // existing rows keep working) and stores the REAL payment intent, so
+          // refund/dispute paths that look up by PI can find live purchases.
+          const lpKeys = planLivePurchaseKeys({
+            sessionId: session.id,
+            paymentIntentId: session.payment_intent,
+          });
 
-          // Get the purchase record for address/fulfillment
-          const { data: purchase } = await supabase
-            .from("live_purchases")
-            .select("id")
-            .eq("stripe_payment_intent_id", session.id)
-            .maybeSingle();
+          let purchase: { id: string } | null = null;
+          for (const lookupKey of lpKeys.lookupOrder) {
+            const { data: foundPurchase } = await supabase
+              .from("live_purchases")
+              .select("id")
+              .eq("stripe_payment_intent_id", lookupKey)
+              .eq("live_product_id", live_product_id)
+              .maybeSingle();
+            if (foundPurchase) { purchase = foundPurchase; break; }
+          }
+
+          // Mark purchase completed + upgrade the key to the real payment intent
+          if (purchase) {
+            await supabase.from("live_purchases")
+              .update({ status: "completed", stripe_payment_intent_id: lpKeys.storeId })
+              .eq("id", purchase.id);
+          } else {
+            logStep("live_purchases row not found for completion", {
+              live_product_id, session_id: session.id, payment_intent: lpKeys.storeId,
+            });
+          }
 
           if (purchase) {
             // Save shipping address if collected by Stripe
@@ -968,6 +1140,25 @@ Deno.serve(async (req) => {
           dpProductPurchases = pp || [];
           dpTickets = tks || [];
           dpLivePurchases = lps || [];
+
+          // BUG 1 fallback: live_purchases rows completed BEFORE the PI fix
+          // carry the checkout SESSION id in stripe_payment_intent_id. If the
+          // real PI matched nothing, resolve its session id from Stripe and
+          // retry (best-effort — a lookup failure must never fail the event).
+          if (dpLivePurchases.length === 0) {
+            try {
+              const piSessions = await stripe.checkout.sessions.list({ payment_intent: disputePi, limit: 1 });
+              const legacySessionId = piSessions.data?.[0]?.id;
+              if (legacySessionId) {
+                const { data: legacyLps } = await supabase
+                  .from("live_purchases").select("id, creator_id")
+                  .eq("stripe_payment_intent_id", legacySessionId);
+                dpLivePurchases = legacyLps || [];
+              }
+            } catch (fallbackErr: any) {
+              logStep("Dispute legacy session-id fallback failed (non-fatal)", { error: fallbackErr?.message });
+            }
+          }
         }
 
         const plan = planDisputeActions(
