@@ -20,6 +20,7 @@ import TechnicalTab from "@/components/admin/TechnicalTab";
 import AdminWaitlistTab from "@/components/waitlist/AdminWaitlistTab";
 import AdminNotificationBell from "@/components/admin/AdminNotificationBell";
 import CriticalAlertBanner from "@/components/admin/CriticalAlertBanner";
+import SystemHealthCard from "@/components/admin/SystemHealthCard";
 
 const DATE_RANGES: { label: string; value: DateRange }[] = [
   { label: "Today", value: "today" },
@@ -114,6 +115,9 @@ export default function AdminDashboard() {
             </Button>
           </div>
         </div>
+
+        {/* System Health (live probe via health-check edge function) */}
+        <SystemHealthCard />
 
         {/* Main Tabs */}
         <Tabs defaultValue="overview" className="space-y-4">
