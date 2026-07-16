@@ -5,6 +5,7 @@ import { ARTIST_ROSTER, type ArtistBlogPost } from "@/data/artistRoster";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import ArtistSectionNav from "./ArtistSectionNav";
+import ArtistDisclaimers from "./ArtistDisclaimers";
 
 interface DbPost {
   id: string;
@@ -122,6 +123,7 @@ export default function ArtistBlogPage() {
           <div className="mt-10 space-y-5 text-[17px] leading-[1.75] text-white/85">
             {post.body.split("\n\n").map((para, i) => <p key={i}>{para}</p>)}
           </div>
+          <ArtistDisclaimers artist={artist} className="mt-12 pt-6 border-t border-white/10" />
         </article>
       </main>
     );
@@ -177,6 +179,7 @@ export default function ArtistBlogPage() {
             </div>
           </Link>
         ))}
+        <ArtistDisclaimers artist={artist} className="pt-6" />
       </div>
     </main>
   );

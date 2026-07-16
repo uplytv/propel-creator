@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { ARTIST_ROSTER } from "@/data/artistRoster";
 import ArtistSectionNav from "./ArtistSectionNav";
+import ArtistDisclaimers from "./ArtistDisclaimers";
 import { Check, Users } from "lucide-react";
 
 export default function ArtistCommunityPage() {
@@ -78,6 +79,7 @@ export default function ArtistCommunityPage() {
           <p className="mt-3 text-center text-[11px] opacity-50">
             Powered by UPLY · cancel anytime
           </p>
+          <ArtistDisclaimers artist={artist} className="mt-5 pt-4 border-t border-white/10" />
         </div>
       </div>
     </main>

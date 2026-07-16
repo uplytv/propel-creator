@@ -152,6 +152,13 @@ export interface ArtistRosterEntry {
   competitionSlug?: string;
   /** Override the section chips shown on the /roster hub card (defaults derive from posts/community/courses). */
   sectionsOverride?: string[];
+  /**
+   * Compliance / responsible-use lines rendered footer-level on the shared
+   * roster surfaces (site, blog, community, courses). Required for regulated
+   * niches — e.g. trading ("not financial advice") and sports betting
+   * ("21+ · bet responsibly"). Omit for artists that don't need them.
+   */
+  disclaimers?: string[];
 }
 
 
@@ -1157,6 +1164,187 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
           "How UPLY is being shaped in real time",
         ],
       },
+    ],
+  },
+
+  // ============================================================
+  // BLAKE THE GREAT — trader & sports-betting educator
+  // NOTE: numbers/claims are [Blake: …] placeholders pending his
+  // sign-off — see BLAKE-ONBOARDING.md. Never fill these in for him.
+  // His legacy bespoke pages (/blake, /blake-the-great/*) stay live.
+  // ============================================================
+  {
+    slug: "blake",
+    aliases: ["blakethegreat", "blakethegreat1312"],
+    displayName: "Blake The Great",
+    eyebrow: "Trader · Sports-Betting Educator · California",
+    tagline: "Risk first. Discipline always. Markets and the sportsbook, taught straight.",
+    bio:
+      "Blake The Great is a California-based trader and sports-betting educator who teaches one thing above everything else: decide what you're willing to lose before you ever think about what you might win.\n\n" +
+      "His teaching runs on two tracks — the Stock Trading Floor, where the curriculum is process, position sizing, and stop-loss discipline; and the Betting Desk, where it's bankroll units, line value, and knowing when to walk away. Different arenas, same rule: the downside gets sized first.\n\n" +
+      "Everything Blake publishes is education, not advice. Trading involves risk of loss. Sports-betting content is for entertainment and education only — 21+, where legal, bet responsibly.",
+    gradient: { from: "#241703", to: "#0a0a0a" },
+    accent: "#E8A33D",
+    portraitUrl: "/__l5e/assets-v1/47618b4d-72f6-486b-a722-c97b7abdb8a2/blake-portrait.jpg",
+    socials: [
+      { kind: "instagram", label: "Instagram", sub: "@blakethegreat1312", href: "https://www.instagram.com/blakethegreat1312", handle: "blakethegreat1312" },
+      { kind: "website", label: "X / Twitter", sub: "Trade & bet education threads", href: "https://x.com/search?q=blakethegreat1312" },
+      { kind: "email", label: "Email Blake", sub: "blake@blakethegreat.com", href: "mailto:blake@blakethegreat.com" },
+    ],
+    videos: [
+      { title: "Latest from @blakethegreat1312", instagramUrl: "https://www.instagram.com/blakethegreat1312/" },
+    ],
+    searchKeywords: [
+      "blake", "blake the great", "blakethegreat", "blakethegreat1312",
+      "trading educator", "risk management", "position sizing", "stop loss",
+      "bankroll management", "sports betting education", "responsible gambling",
+      "trader", "war room",
+    ],
+    verified: false,
+    creatorType: "Trader",
+    joinedAt: "2026-07-01",
+    bookingEmail: "blake@blakethegreat.com",
+    location: "California",
+    heroChip: "Blake's War Room — founding members now enrolling",
+    bookingTagline:
+      "Workshops, speaking, podcasts, and creator collabs on trading discipline and responsible-betting education. Tell me the audience and the goal — replies within the week.",
+    marquee: [
+      "RISK FIRST · ALWAYS",
+      "SIZE THE LOSS BEFORE THE WIN",
+      "MARKETS · SPORTSBOOK · ONE DISCIPLINE",
+      "EDUCATION ONLY — NOT FINANCIAL ADVICE",
+    ],
+    milestones: [
+      { year: "[Blake: year]", text: "[Blake: when and how you started trading — one line in your words.]" },
+      { year: "[Blake: year]", text: "[Blake: the moment risk management became rule #1 — one line.]" },
+      { year: "[Blake: year]", text: "[Blake: when the sportsbook entered the picture, and why discipline carried over.]" },
+      { year: "2026", text: "Launched Blake's War Room on UPLY — trading and betting education under one roof." },
+    ],
+    stats: [
+      { k: "Years trading", v: "[Blake: #]" },
+      { k: "Teaching", v: "Risk-first process" },
+      { k: "Tracks", v: "Markets · Sportsbook" },
+      { k: "Based in", v: "California" },
+    ],
+    featuredPostSlug: "risk-first-the-only-trading-lesson",
+    posts: [
+      {
+        slug: "risk-first-the-only-trading-lesson",
+        title: "Risk first: the only trading lesson that matters",
+        excerpt:
+          "Most new traders study entries. Blake teaches the opposite order: decide your exit, size your loss, and let the entry be the last thing you think about.",
+        readTime: "5 min read",
+        publishedAt: "2026-07-10",
+        tag: "Trading",
+        body:
+          "Ask a new trader what they're studying and you'll hear the same answers: chart patterns, indicators, entries. Ask them what they're risking on their next trade and you'll usually get silence, or worse — a shrug. That order is backwards, and it's the reason most people who open a brokerage account never make it through their first year with their capital intact.\n\n" +
+          "Here's the order I teach in the War Room: exit, size, then entry. Last, not first.\n\n" +
+          "Start with the exit because the exit is the only part of a trade you fully control. The market decides whether your idea was right. You decide — in advance, in writing — the price where the idea is proven wrong. That's your stop. If you can't name the price where you're wrong, you don't have a trade; you have a hope with a ticker symbol attached.\n\n" +
+          "Then size the position from the stop, not from your conviction. The math is simple and it never changes: pick the fraction of your account you're willing to lose if the stop gets hit, measure the distance between your entry and your stop, and let those two numbers set your share count. Conviction doesn't get a vote. The most dangerous phrase in trading is 'I'm really sure about this one' — because that's the trade people oversize, and the oversized trade is the one that ends accounts.\n\n" +
+          "Notice what this does psychologically. When your worst case is decided and small, you can actually follow your plan. You're not staring at every tick, because the question 'what if it goes against me?' was answered before you clicked buy. Losing trades stop being emergencies and start being what they actually are: a routine business expense, budgeted in advance.\n\n" +
+          "And when the stop hits, you take it. No moving it 'just this once.' No averaging down to make the pain stop. A stop you won't honor is worse than no stop at all, because it lets you pretend you have a risk plan while you're actually just gambling with extra steps.\n\n" +
+          "Will risk-first trading make you money? I can't promise that, and you should sprint away from anyone who does. What it will do is keep you in the game long enough to learn — and staying in the game is the entire fight for a new trader. Nobody develops judgment in six weeks. Your first job isn't to win. Your first job is to survive your own education.\n\n" +
+          "That's the foundation of everything I teach on the Stock Trading Floor inside Blake's War Room, and it's the first module of my Trading Foundations course. If you want to learn process instead of predictions, join at /blake/community — bring a notebook, not a wishlist.\n\n" +
+          "Educational content only — not financial advice; trading involves risk of loss. Never trade with money you cannot afford to lose.",
+      },
+      {
+        slug: "bankroll-management-is-the-whole-game",
+        title: "Bankroll management is the whole game",
+        excerpt:
+          "Units, expected value, and the discipline to stop — why the boring math of bankroll management matters more than any pick you'll ever make.",
+        readTime: "5 min read",
+        publishedAt: "2026-07-08",
+        tag: "Betting",
+        body:
+          "Everyone wants picks. Nobody wants a ledger. And that, right there, is why most people who bet on sports lose more than they planned to — not because their picks were terrible, but because they never decided what a bet was worth before they placed it.\n\n" +
+          "Let's fix the order of operations.\n\n" +
+          "First: your bankroll is entertainment money, full stop. It's an amount you set aside that your life does not need — not rent, not savings, not the credit card. If losing the entire bankroll would change your month, the bankroll is too big. This isn't a footnote; it's the first rule of the Betting Desk, and I don't teach anything else until it's settled.\n\n" +
+          "Second: units, not dollars, not feelings. A unit is a small, fixed slice of your bankroll — commonly one or two percent — and it becomes the only language you bet in. One unit on a standard play. Never a pile because you're 'sure,' never double because you're down. The moment your bet size starts responding to your emotions instead of your system, you've stopped betting and started chasing — and chasing is how a bad weekend becomes a bad year.\n\n" +
+          "Third: understand what you're actually up against. The book charges you a fee on every bet — the vig — which means a coin-flip bet at standard odds needs to win more than half the time just to break even. This is expected value, and it's the most sobering math in sports. Most bets available on any given night are negative expected value for you. The number on the screen isn't a prediction; it's a price. Learning to ask 'is this price wrong?' instead of 'who's going to win?' is the entire difference between betting as a discipline and betting as a lottery ticket.\n\n" +
+          "Fourth: write everything down. Every bet, every unit, every result, in a ledger you review weekly. Not because the spreadsheet makes you money — because it makes you honest. Memory is a salesman; it remembers the parlay that hit and forgets the eleven that didn't. The ledger remembers everything, and what it usually says is: bet less, bet slower.\n\n" +
+          "And fifth — the rule that sits above all the others: know when to stop. Set a loss limit for the week before the week starts, and when you hit it, you're done until the next one. Done means done. Betting should be something you do for enjoyment with money you've budgeted for it. The moment it stops feeling like entertainment and starts feeling like a need, that's not a betting problem to manage — it's a signal to step away and talk to someone.\n\n" +
+          "Inside Blake's War Room, the Betting Desk teaches exactly this — units, value, record-keeping, and limits — with templates you can use from day one. Join at /blake/community if you want the discipline, not the lottery ticket.\n\n" +
+          "Entertainment and education only · 21+ · where legal · bet responsibly. If gambling is affecting you or someone you care about, call 1-800-GAMBLER.",
+      },
+      {
+        slug: "why-i-teach-both-markets-and-the-sportsbook",
+        title: "Why I teach both markets and the sportsbook",
+        excerpt:
+          "Two arenas, one discipline. Blake on why trading and betting education belong in the same room — and what the War Room's two desks actually cover.",
+        readTime: "4 min read",
+        publishedAt: "2026-07-06",
+        tag: "Community",
+        body:
+          "People ask me why I teach trading and sports betting side by side, as if they're two different personalities fighting over one account. They're not. They are the same skill wearing two different jerseys — and teaching them together is the fastest way I know to make the skill stick.\n\n" +
+          "Here's what both arenas actually are, stripped of the highlights and the screenshots: making decisions with real money under uncertainty, where the outcome of any single decision tells you almost nothing, and only your process — repeated hundreds of times — tells you the truth.\n\n" +
+          "In the market, the discipline is called position sizing and stop-losses. At the book, it's called units and loss limits. Different vocabulary, identical spine: decide the downside first, keep every single risk small, write everything down, and never let a result — good or bad — change the size of your next decision. Someone who learns risk-first thinking on a stock chart recognizes it instantly in a bankroll ledger, and vice versa. Teach the spine once and both arenas make sense; teach picks and signals and neither ever will.\n\n" +
+          "There's a second reason I teach both, and it's the more honest one: the crossover crowd already exists. The same person trading on their phone at lunch is firing a parlay on Sunday. Most of the content aimed at that person is engineered to make them feel one inch away from easy money in both arenas at once. I'd rather be the voice in that feed saying the unglamorous thing — the downside comes first, the math is against the impatient, and anyone selling certainty is selling something else.\n\n" +
+          "So that's what Blake's War Room is. One community, two desks. The Stock Trading Floor covers markets education: process, position sizing, risk management, trade journaling. The Betting Desk covers sports-betting discipline: bankroll units, what a line is really telling you, expected value, record-keeping, and — non-negotiable — limits and responsible play. Same room, same rule set, because it's the same skill.\n\n" +
+          "If you want structured versions of both tracks, the two courses are live at /blake/courses — Trading Foundations for the markets side, Smart Betting 101 for the sportsbook side. If you want the ongoing room — the breakdowns, the worksheets, the live Q&As — the front door is /blake/community.\n\n" +
+          "One more thing before you join: I don't sell wins, I teach discipline. Trading content is educational only — not financial advice, and trading involves risk of loss. Betting content is entertainment and education only — 21+, where legal, bet responsibly, and if it ever stops being fun, call 1-800-GAMBLER. If that framing disappoints you, the War Room isn't your room — and that's exactly how I want it.",
+      },
+    ],
+    community: {
+      name: "Blake's War Room",
+      description:
+        "One community, two desks. The Stock Trading Floor: markets education built on process, position sizing, and risk management. The Betting Desk: sports-betting discipline built on bankroll units, line value, and limits. Education only — never financial advice; betting content 21+ · where legal · bet responsibly.",
+      membersLabel: "Founding members — now enrolling",
+      perks: [
+        "Trading Floor · weekly market-process breakdowns (education, not signals)",
+        "Trading Floor · position-sizing and stop-loss worksheets",
+        "Betting Desk · bankroll and unit-tracking templates",
+        "Betting Desk · reading lines and finding value — education only",
+        "Both desks · live monthly Q&A with Blake",
+        "Both desks · members-only feed, archive, and trade/bet journals",
+      ],
+      // Placeholder price pending Blake's sign-off — mirrors his legacy
+      // Blueprint membership ($97/mo) so surfaces stay consistent.
+      priceUsd: 97,
+    },
+    courses: [
+      {
+        slug: "trading-foundations",
+        title: "Trading Foundations",
+        level: "Beginner",
+        lessons: 8,
+        duration: "[TBC]",
+        priceUsd: 149,
+        summary:
+          "Blake's risk-first introduction to the markets — exits before entries, position sizing before conviction, and the discipline to survive long enough to learn. Educational content only — not financial advice; trading involves risk of loss.",
+        outline: [
+          "The risk-first mindset: why the downside gets decided first",
+          "Position sizing: let the stop set the share count, not your conviction",
+          "Stop-losses that actually stop you — and why moving them ends accounts",
+          "Reading a chart without fooling yourself",
+          "The written trade plan: one page, no exceptions",
+          "The trade journal: your only honest teacher",
+          "Tilt, revenge trades, and the discipline to walk away",
+          "Full process walk-through: a trade from idea to journal entry",
+        ],
+      },
+      {
+        slug: "smart-betting-101",
+        title: "Smart Betting 101",
+        level: "Beginner",
+        lessons: 7,
+        duration: "[TBC]",
+        priceUsd: 99,
+        summary:
+          "Bankroll discipline for people who bet on sports — units, expected value, record-keeping, and hard limits. Entertainment and education only · 21+ · where legal · bet responsibly. If gambling stops being fun, call 1-800-GAMBLER.",
+        outline: [
+          "Betting as entertainment: setting a bankroll your life doesn't need",
+          "Units: the sizing math that keeps you in the game",
+          "What a line is actually telling you (it's a price, not a prediction)",
+          "Expected value and the vig: why 'locks' don't exist",
+          "Line shopping: paying less for the same bet",
+          "The ledger: tracking every bet like a business expense",
+          "Limits, cool-offs, and knowing when to stop — responsible play, always",
+        ],
+      },
+    ],
+    disclaimers: [
+      "Trading content: educational content only — not financial advice; trading involves risk of loss. Never trade with money you cannot afford to lose.",
+      "Sports-betting content: entertainment and education only · 21+ · where legal · bet responsibly. Problem gambling help: call 1-800-GAMBLER.",
     ],
   },
 

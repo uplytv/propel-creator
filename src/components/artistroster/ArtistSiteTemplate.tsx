@@ -31,6 +31,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getSiteUrl } from "@/lib/siteUrl";
 import SEOHead, { buildPersonSchema } from "@/components/SEOHead";
 import ArtistSectionNav from "./ArtistSectionNav";
+import ArtistDisclaimers from "./ArtistDisclaimers";
 import { trackEvent } from "@/lib/posthog";
 
 /**
@@ -847,6 +848,7 @@ function ArtistSiteBody({
 
       {/* FOOTER */}
       <footer className="border-t border-white/5">
+        <ArtistDisclaimers artist={artist} className="mx-auto max-w-3xl px-5 pt-8" />
         <div className="mx-auto max-w-6xl px-5 py-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/50">
           <div>© {new Date().getFullYear()} {artist.displayName}. All rights reserved.</div>
           <Link to="/" className="hover:text-white/80 inline-flex items-center gap-2">

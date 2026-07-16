@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { ARTIST_ROSTER } from "@/data/artistRoster";
 import ArtistSectionNav from "./ArtistSectionNav";
+import ArtistDisclaimers from "./ArtistDisclaimers";
 import { Clock, GraduationCap, PlayCircle } from "lucide-react";
 
 export default function ArtistCoursesPage() {
@@ -101,6 +102,7 @@ export default function ArtistCoursesPage() {
               </>
             );
           })()}
+          <ArtistDisclaimers artist={artist} className="mt-12 pt-6 border-t border-white/10" />
         </article>
       </main>
     );
@@ -156,6 +158,7 @@ export default function ArtistCoursesPage() {
             </div>
           </Link>
         ))}
+        <ArtistDisclaimers artist={artist} className="col-span-full pt-6" />
       </div>
     </main>
   );
