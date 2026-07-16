@@ -11,6 +11,9 @@ import {
   extractPaymentIntentId,
   buildWalletCreditRpcArgs,
   isMissingRpcError,
+  moneyEventRow,
+  logMoneyEventSafe,
+  type MoneyEventFields,
 } from "../_shared/stripeWebhookLogic.ts";
 
 const corsHeaders = {
@@ -22,6 +25,18 @@ const logStep = (step: string, details?: any) => {
   const d = details ? ` - ${JSON.stringify(details)}` : "";
   console.log(`[STRIPE-WEBHOOK] ${step}${d}`);
 };
+
+// ── Money-event audit trail (ADDITIVE, fire-and-forget) ─────────────────────
+// Writes to money_events via the never-throw SECURITY DEFINER RPC
+// log_money_event (migration 20260707110000). Called AFTER each successful
+// money operation; logMoneyEventSafe swallows every failure mode (throw,
+// rejection, returned { error }), so these calls can NEVER affect the money
+// path they follow. Zero behavioral coupling — pure observation.
+const logMoney = (supabase: any, eventType: string, fields: MoneyEventFields) =>
+  logMoneyEventSafe(
+    () => supabase.rpc("log_money_event", moneyEventRow("stripe-webhook", eventType, fields)),
+    (msg) => logStep(`money_events audit skipped (non-fatal): ${msg}`),
+  );
 
 function buildNewSubscriberEmailHtml(subscriberName: string, tierName: string, amount: number): string {
   return `<!DOCTYPE html>
@@ -334,6 +349,11 @@ Deno.serve(async (req) => {
 
             if (creator_id) {
               await updateWallet(supabase, creator_id, amount, fee, "Track unlock", pi);
+              await logMoney(supabase, "wallet_credit", {
+                stripeEventId: event.id, paymentIntentId: pi, userId: buyer_id, creatorId: creator_id,
+                amountCents: amount * 100, feeCents: fee * 100, referenceId: track_id,
+                metadata: { purchase_type: "track" },
+              });
             }
             logStep("Track unlock processed", { buyer_id, track_id, amount });
           } else {
@@ -354,6 +374,11 @@ Deno.serve(async (req) => {
           });
 
           await updateWallet(supabase, creator_id, tipAmount, fee, "Tip from viewer", session.payment_intent as string);
+          await logMoney(supabase, "wallet_credit", {
+            stripeEventId: event.id, paymentIntentId: extractPaymentIntentId(session.payment_intent),
+            userId: sender_id, creatorId: creator_id, amountCents: tipAmount * 100, feeCents: fee * 100,
+            metadata: { purchase_type: "tip", stream_id: stream_id || null },
+          });
           logStep("Tip processed", { sender_id, creator_id, amount: tipAmount });
 
         } else if (branch === "product_course") {
@@ -428,6 +453,11 @@ Deno.serve(async (req) => {
           });
 
           await updateWallet(supabase, creator_id, amount, fee, `Product sale: ${productName}`, session.payment_intent as string);
+          await logMoney(supabase, "wallet_credit", {
+            stripeEventId: event.id, paymentIntentId: extractPaymentIntentId(session.payment_intent),
+            userId: buyer_id, creatorId: creator_id, amountCents: amount * 100, feeCents: fee * 100,
+            referenceId: product_id, metadata: { purchase_type: purchaseType },
+          });
           logStep("Product/course purchase processed", { buyer_id, product_id, amount });
 
         } else if (branch === "event_ticket") {
@@ -507,6 +537,11 @@ Deno.serve(async (req) => {
 
           if (outcome.creditWallet) {
             await updateWallet(supabase, creator_id, amount, fee, `Event ticket: ${evt?.title || "Event"}`, session.payment_intent as string);
+            await logMoney(supabase, "wallet_credit", {
+              stripeEventId: event.id, paymentIntentId: ticketPi, userId: buyer_id, creatorId: creator_id,
+              amountCents: amount * 100, feeCents: fee * 100, referenceId: event_id,
+              metadata: { purchase_type: "event_ticket", quantity: qty },
+            });
           }
 
           if (outcome.confirmTickets) {
@@ -587,6 +622,12 @@ Deno.serve(async (req) => {
             if (soldOutAdminErr) {
               logStep("notify_admin failed (non-fatal)", { error: soldOutAdminErr.message });
             }
+
+            await logMoney(supabase, "sold_out_refund", {
+              stripeEventId: event.id, paymentIntentId: ticketPi, userId: buyer_id, creatorId: creator_id,
+              amountCents: amount * 100, referenceId: event_id,
+              metadata: { refunded: refundSucceeded, session_id: session.id },
+            });
 
             logStep("Event ticket sold out — buyer refunded, creator NOT credited", {
               event_id, buyer_id, amount, refunded: refundSucceeded,
@@ -700,6 +741,12 @@ Deno.serve(async (req) => {
             const fee = Math.round(amount * 0.05 * 100) / 100;
 
             await updateWallet(supabase, creator_id, amount, fee, "Subscription payment", session.payment_intent as string);
+            await logMoney(supabase, "wallet_credit", {
+              stripeEventId: event.id, paymentIntentId: extractPaymentIntentId(session.payment_intent),
+              userId: member_id, creatorId: creator_id, amountCents: amount * 100, feeCents: fee * 100,
+              referenceId: tier_id || null,
+              metadata: { purchase_type: "subscription", subscription_id: session.subscription || null },
+            });
 
             // Get subscriber info for notification email
             const { data: subscriberProfile } = await supabase
@@ -866,6 +913,11 @@ Deno.serve(async (req) => {
           const lpAmount = (session.amount_total || 0) / 100;
           const lpFee = Math.round(lpAmount * 0.05 * 100) / 100;
           await updateWallet(supabase, creator_id, lpAmount, lpFee, "Live product sale", session.payment_intent as string);
+          await logMoney(supabase, "wallet_credit", {
+            stripeEventId: event.id, paymentIntentId: lpKeys.storeId, userId: buyer_id, creatorId: creator_id,
+            amountCents: lpAmount * 100, feeCents: lpFee * 100, referenceId: live_product_id,
+            metadata: { purchase_type: "live_product" },
+          });
 
           // Notify creator of sale
           const { data: lpBuyerProfile } = await supabase.from("profiles").select("display_name").eq("user_id", buyer_id).maybeSingle();
@@ -1022,6 +1074,12 @@ Deno.serve(async (req) => {
             }).eq("stripe_subscription_id", invoice.subscription as string);
 
             await updateWallet(supabase, memberSub.creator_id, amount, fee, "Subscription renewal", invoice.payment_intent as string);
+            await logMoney(supabase, "wallet_credit", {
+              stripeEventId: event.id, paymentIntentId: extractPaymentIntentId(invoice.payment_intent),
+              userId: memberSub.member_id, creatorId: memberSub.creator_id,
+              amountCents: amount * 100, feeCents: fee * 100,
+              metadata: { purchase_type: "subscription_renewal", invoice_id: invoice.id },
+            });
 
             // Notify creator
             const { data: memberProfile } = await supabase
@@ -1201,6 +1259,11 @@ Deno.serve(async (req) => {
           logStep("notify_admin failed (non-fatal)", { error: disputeAdminErr.message });
         }
 
+        await logMoney(supabase, "dispute", {
+          stripeEventId: event.id, paymentIntentId: disputePi, amountCents: dispute.amount,
+          metadata: { dispute_id: dispute.id, reason: dispute.reason || null, identified: plan.identified },
+        });
+
         logStep("Dispute recorded", {
           disputeId: dispute.id,
           paymentIntent: disputePi,
@@ -1350,6 +1413,12 @@ Deno.serve(async (req) => {
               }
             }
           }
+
+          await logMoney(supabase, "refund", {
+            stripeEventId: event.id, paymentIntentId,
+            amountCents: charge.amount_refunded,
+            metadata: { charge_id: charge.id, refund_id: refundId, clawback_attempted: proceedWithClawback },
+          });
         }
         break;
       }
