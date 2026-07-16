@@ -322,6 +322,111 @@ export function isMissingRpcError(
   );
 }
 
+// ── Money-event audit trail (migration 20260707110000_money_events_health) ──
+
+export interface MoneyEventFields {
+  stripeEventId?: string | null;
+  paymentIntentId?: string | null;
+  userId?: string | null;
+  creatorId?: string | null;
+  /** cents; fractional inputs are rounded to the nearest cent */
+  amountCents?: number | null;
+  feeCents?: number | null;
+  currency?: string | null;
+  /** uuid of the domain object; non-uuid identifiers are moved into metadata */
+  referenceId?: string | null;
+  metadata?: Record<string, unknown> | null;
+}
+
+/** Exact named-argument payload for supabase.rpc("log_money_event", ...) */
+export interface MoneyEventRpcArgs {
+  _source: string;
+  _event_type: string;
+  _stripe_event_id: string | null;
+  _payment_intent_id: string | null;
+  _user_id: string | null;
+  _creator_id: string | null;
+  _amount_cents: number | null;
+  _fee_cents: number | null;
+  _currency: string;
+  _reference_id: string | null;
+  _metadata: Record<string, unknown>;
+}
+
+const UUID_SHAPE =
+  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
+function centsOrNull(n: number | null | undefined): number | null {
+  if (typeof n !== "number" || !Number.isFinite(n)) return null;
+  return Math.round(n);
+}
+
+/**
+ * Builds the argument payload for the log_money_event RPC (SECURITY DEFINER,
+ * never-throw — migration 20260707110000). Pure: callers hand the result to
+ * supabase.rpc("log_money_event", ...) via logMoneyEventSafe, fire-and-forget
+ * AFTER the money operation it describes — zero behavioral coupling.
+ * money_events.reference_id is a uuid column, so non-uuid identifiers (Stripe
+ * refund/charge ids) are moved into metadata.reference instead of risking a
+ * cast error rejecting the whole row.
+ */
+export function moneyEventRow(
+  source: string,
+  eventType: string,
+  fields: MoneyEventFields = {},
+): MoneyEventRpcArgs {
+  const metadata: Record<string, unknown> = { ...(fields.metadata || {}) };
+  let referenceId: string | null = null;
+  if (fields.referenceId) {
+    if (UUID_SHAPE.test(fields.referenceId)) referenceId = fields.referenceId;
+    else metadata.reference = fields.referenceId;
+  }
+  return {
+    _source: source,
+    _event_type: eventType,
+    _stripe_event_id: fields.stripeEventId || null,
+    _payment_intent_id: fields.paymentIntentId || null,
+    _user_id: fields.userId || null,
+    _creator_id: fields.creatorId || null,
+    _amount_cents: centsOrNull(fields.amountCents),
+    _fee_cents: centsOrNull(fields.feeCents),
+    _currency: fields.currency || "usd",
+    _reference_id: referenceId,
+    _metadata: metadata,
+  };
+}
+
+type MoneyEventRpcResult = { error?: { message?: string | null } | null } | null | void;
+
+/**
+ * Swallow-proof executor for audit logging. Awaits the injected rpc call (so
+ * the edge runtime never kills an in-flight request) but absorbs EVERY
+ * failure mode — a synchronous throw, a rejected promise, or a returned
+ * PostgREST { error } — because audit logging must never break a money path.
+ * Effect-free combinator: the only I/O is the injected callback's. NEVER
+ * throws, even when the warn callback itself throws.
+ */
+export async function logMoneyEventSafe(
+  rpcCall: () => PromiseLike<MoneyEventRpcResult> | MoneyEventRpcResult,
+  onWarn?: (message: string) => void,
+): Promise<void> {
+  const warn = (message: string) => {
+    try {
+      onWarn?.(message);
+    } catch {
+      /* even the warner must not throw */
+    }
+  };
+  try {
+    const result = await rpcCall();
+    const error = (result as { error?: { message?: string | null } | null } | null | undefined)
+      ?.error;
+    if (error) warn(`log_money_event failed: ${error.message ?? "unknown rpc error"}`);
+  } catch (e) {
+    warn(`log_money_event threw: ${e instanceof Error ? e.message : String(e)}`);
+  }
+}
+
 // ── Change 1: charge.dispute.created planning ──
 
 export interface DisputeInfo {

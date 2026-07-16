@@ -10,6 +10,8 @@ import {
   walletCreditGuard,
   buildWalletCreditRpcArgs,
   isMissingRpcError,
+  moneyEventRow,
+  logMoneyEventSafe,
 } from "../../supabase/functions/_shared/stripeWebhookLogic";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -440,6 +442,157 @@ describe("atomic wallet credit contract (BUG 3)", () => {
     ).toBe(false);
     expect(isMissingRpcError(null, "credit_wallet_atomic")).toBe(false);
     expect(isMissingRpcError({ code: "PGRST301", message: "JWT expired" }, "credit_wallet_atomic")).toBe(false);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MONEY AUDIT TRAIL — moneyEventRow payload shape + logMoneyEventSafe
+// swallow-proofing (migration 20260707110000_money_events_health).
+// ═══════════════════════════════════════════════════════════════════════════
+describe("moneyEventRow (log_money_event rpc payload shape)", () => {
+  const UUID = "123e4567-e89b-42d3-a456-426614174000";
+
+  it("builds the exact named-argument payload for log_money_event", () => {
+    expect(
+      moneyEventRow("stripe-webhook", "wallet_credit", {
+        stripeEventId: "evt_1",
+        paymentIntentId: "pi_1",
+        userId: "11111111-2222-4333-8444-555555555555",
+        creatorId: "66666666-7777-4888-9999-aaaaaaaaaaaa",
+        amountCents: 10000,
+        feeCents: 500,
+        referenceId: UUID,
+        metadata: { purchase_type: "product" },
+      }),
+    ).toEqual({
+      _source: "stripe-webhook",
+      _event_type: "wallet_credit",
+      _stripe_event_id: "evt_1",
+      _payment_intent_id: "pi_1",
+      _user_id: "11111111-2222-4333-8444-555555555555",
+      _creator_id: "66666666-7777-4888-9999-aaaaaaaaaaaa",
+      _amount_cents: 10000,
+      _fee_cents: 500,
+      _currency: "usd",
+      _reference_id: UUID,
+      _metadata: { purchase_type: "product" },
+    });
+  });
+
+  it("defaults every optional field (null ids, null amounts, usd, empty metadata)", () => {
+    expect(moneyEventRow("backfill-live-purchase-pis", "backfill_pi")).toEqual({
+      _source: "backfill-live-purchase-pis",
+      _event_type: "backfill_pi",
+      _stripe_event_id: null,
+      _payment_intent_id: null,
+      _user_id: null,
+      _creator_id: null,
+      _amount_cents: null,
+      _fee_cents: null,
+      _currency: "usd",
+      _reference_id: null,
+      _metadata: {},
+    });
+  });
+
+  it("rounds fractional cents (dollar-amount * 100 float dust) to integers", () => {
+    const row = moneyEventRow("stripe-webhook", "wallet_credit", {
+      amountCents: 33.33 * 100, // 3332.9999999999995
+      feeCents: 1.67 * 100, // 167.00000000000003
+    });
+    expect(row._amount_cents).toBe(3333);
+    expect(row._fee_cents).toBe(167);
+  });
+
+  it("passes non-finite amounts as null instead of poisoning the insert", () => {
+    const row = moneyEventRow("stripe-webhook", "refund", {
+      amountCents: Number.NaN,
+      feeCents: Number.POSITIVE_INFINITY,
+    });
+    expect(row._amount_cents).toBeNull();
+    expect(row._fee_cents).toBeNull();
+  });
+
+  it("moves a non-uuid reference (Stripe refund/charge id) into metadata — reference_id is a uuid column", () => {
+    const row = moneyEventRow("stripe-webhook", "refund", {
+      referenceId: "re_3ABCdef:10000",
+      metadata: { charge_id: "ch_1" },
+    });
+    expect(row._reference_id).toBeNull();
+    expect(row._metadata).toEqual({ charge_id: "ch_1", reference: "re_3ABCdef:10000" });
+  });
+
+  it("keeps a uuid reference in _reference_id (does not touch metadata)", () => {
+    const row = moneyEventRow("finalize-cart-order", "wallet_credit", { referenceId: UUID });
+    expect(row._reference_id).toBe(UUID);
+    expect(row._metadata).toEqual({});
+  });
+});
+
+describe("logMoneyEventSafe (swallow-proof fire-and-forget wrapper)", () => {
+  it("awaits a successful rpc call and warns about nothing", async () => {
+    const warned: string[] = [];
+    let called = 0;
+    await expect(
+      logMoneyEventSafe(async () => {
+        called++;
+        return { error: null };
+      }, (m) => warned.push(m)),
+    ).resolves.toBeUndefined();
+    expect(called).toBe(1);
+    expect(warned).toEqual([]);
+  });
+
+  it("SWALLOWS a synchronously-THROWING logger stub — the handler path never sees it", async () => {
+    const warned: string[] = [];
+    await expect(
+      logMoneyEventSafe(() => {
+        throw new Error("boom: rpc transport exploded");
+      }, (m) => warned.push(m)),
+    ).resolves.toBeUndefined();
+    expect(warned).toHaveLength(1);
+    expect(warned[0]).toContain("boom: rpc transport exploded");
+  });
+
+  it("swallows a REJECTED rpc promise", async () => {
+    const warned: string[] = [];
+    await expect(
+      logMoneyEventSafe(
+        () => Promise.reject(new Error("network down")),
+        (m) => warned.push(m),
+      ),
+    ).resolves.toBeUndefined();
+    expect(warned[0]).toContain("network down");
+  });
+
+  it("surfaces a returned PostgREST { error } to the warner without throwing", async () => {
+    const warned: string[] = [];
+    await expect(
+      logMoneyEventSafe(
+        async () => ({ error: { message: "permission denied for function log_money_event" } }),
+        (m) => warned.push(m),
+      ),
+    ).resolves.toBeUndefined();
+    expect(warned[0]).toContain("permission denied");
+  });
+
+  it("never throws even when the warn callback itself throws", async () => {
+    await expect(
+      logMoneyEventSafe(
+        () => {
+          throw new Error("primary failure");
+        },
+        () => {
+          throw new Error("warner also broken");
+        },
+      ),
+    ).resolves.toBeUndefined();
+  });
+
+  it("never throws with no warner at all (default silent swallow)", async () => {
+    await expect(
+      logMoneyEventSafe(() => Promise.reject(new Error("nope"))),
+    ).resolves.toBeUndefined();
   });
 });
 

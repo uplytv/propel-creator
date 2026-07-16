@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { moneyEventRow, logMoneyEventSafe } from "../_shared/stripeWebhookLogic.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -169,6 +170,15 @@ serve(async (req) => {
         await supabase.from("tickets").update({ status: "active" }).eq("id", ticket_id);
         throw e;
       }
+      // Audit trail (fire-and-forget; logMoneyEventSafe can never throw)
+      await logMoneyEventSafe(
+        () => supabase.rpc("log_money_event", moneyEventRow("stripe-refund-ticket", "refund", {
+          paymentIntentId: ticket.stripe_payment_intent_id, userId: ticket.buyer_id,
+          creatorId: ticket.creator_id, amountCents: refundCents, referenceId: ticket.id,
+          metadata: { event_id: ticket.event_id },
+        })),
+        (m) => console.warn(`[STRIPE-REFUND-TICKET] ${m}`),
+      );
     }
 
     // Decrement tickets_sold

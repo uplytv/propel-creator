@@ -49,6 +49,8 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
     verify_jwt = false
   [functions.mux-webhook]
     verify_jwt = false
+  [functions.sign-playback-token]
+    verify_jwt = false
   [functions.place-live-bid]
     verify_jwt = false
   [functions.process-email-queue]
@@ -163,4 +165,7 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
     verify_jwt = false
 
   [functions.og-image]
+    verify_jwt = false
+
+  [functions.backfill-live-purchase-pis]
     verify_jwt = false

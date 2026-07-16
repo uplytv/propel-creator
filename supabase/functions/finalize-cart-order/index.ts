@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, json, err, logError } from "../_shared/eventsCors.ts";
+import { moneyEventRow, logMoneyEventSafe } from "../_shared/stripeWebhookLogic.ts";
 
 // Finalizes a multi-item cart checkout (create-cart-checkout). The Stripe
 // webhook deliberately does not handle purchase_type='cart' (multi-creator
@@ -183,6 +184,15 @@ serve(async (req) => {
                 available_balance: Number(walletRow.available_balance || 0) + net,
                 lifetime_earned: Number(walletRow.lifetime_earned || 0) + net,
               }).eq("id", walletRow.id);
+              // Audit trail (fire-and-forget; logMoneyEventSafe can never throw)
+              await logMoneyEventSafe(
+                () => supabase.rpc("log_money_event", moneyEventRow("finalize-cart-order", "wallet_credit", {
+                  paymentIntentId: paymentIntent, userId: order.buyer_id, creatorId,
+                  amountCents: lineAmount * 100, feeCents: fee * 100, referenceId: order.id,
+                  metadata: { product_id: item.product_id },
+                })),
+                (m) => console.warn(`[FINALIZE-CART-ORDER] ${m}`),
+              );
             }
           }
 

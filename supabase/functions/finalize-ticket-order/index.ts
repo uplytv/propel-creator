@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, json, err, logError } from "../_shared/eventsCors.ts";
+import { moneyEventRow, logMoneyEventSafe } from "../_shared/stripeWebhookLogic.ts";
 
 // Finalizes a tier-based ticket order (order_type='primary_ticket'). The Stripe
 // webhook only handles the legacy 'event_ticket' path, so the tier flow needs
@@ -107,6 +108,14 @@ serve(async (req) => {
             wallet_id: walletId, amount: proceeds, status: "completed",
             reference_id: order.id, net_amount: proceeds,
           });
+          // Audit trail (fire-and-forget; logMoneyEventSafe can never throw)
+          await logMoneyEventSafe(
+            () => supabase.rpc("log_money_event", moneyEventRow("finalize-ticket-order", "wallet_credit", {
+              userId: order.buyer_id, creatorId: sellerId, amountCents: proceeds * 100,
+              referenceId: order.id, metadata: { resale: true, ticket_id: ticketId },
+            })),
+            (m) => console.warn(`[FINALIZE-TICKET-ORDER] ${m}`),
+          );
         }
         await supabase.from("notifications").insert({
           user_id: sellerId, type: "resale_sold", title: "💸 Your ticket sold",
@@ -117,6 +126,15 @@ serve(async (req) => {
 
       await supabase.from("orders")
         .update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", order.id);
+
+      // Audit trail (fire-and-forget; logMoneyEventSafe can never throw)
+      await logMoneyEventSafe(
+        () => supabase.rpc("log_money_event", moneyEventRow("finalize-ticket-order", "ticket_issue", {
+          userId: order.buyer_id, amountCents: order.subtotal_cents ?? null, feeCents: order.fees_cents ?? null,
+          referenceId: order.id, metadata: { resale: true, ticket_id: ticketId, event_id: order.event_id },
+        })),
+        (m) => console.warn(`[FINALIZE-TICKET-ORDER] ${m}`),
+      );
 
       try { await supabase.functions.invoke("send-ticket-email", { body: { ticket_id: ticketId } }); } catch (_e) { /* non-fatal */ }
       const { data: tkRow } = await supabase
@@ -182,6 +200,16 @@ serve(async (req) => {
       .from("orders")
       .update({ status: "completed", completed_at: new Date().toISOString() })
       .eq("id", order.id);
+
+    // Audit trail (fire-and-forget; logMoneyEventSafe can never throw)
+    await logMoneyEventSafe(
+      () => supabase.rpc("log_money_event", moneyEventRow("finalize-ticket-order", "ticket_issue", {
+        paymentIntentId: paymentIntent, userId: order.buyer_id, creatorId: event?.creator_id ?? null,
+        amountCents: order.subtotal_cents ?? null, feeCents: order.fees_cents ?? null,
+        referenceId: order.id, metadata: { event_id: order.event_id, tickets: created.length },
+      })),
+      (m) => console.warn(`[FINALIZE-TICKET-ORDER] ${m}`),
+    );
 
     // ── Promoter attribution (tracking ONLY — moves no money) ──
     // If checkout carried a valid promoter code for THIS event, record the

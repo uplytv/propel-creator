@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { logError } from "../_shared/eventsCors.ts";
+import { moneyEventRow, logMoneyEventSafe } from "../_shared/stripeWebhookLogic.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -189,6 +190,15 @@ serve(async (req) => {
                 pi,
                 amountCents,
                 `cancel-event-refund-${ticket.id}`
+              );
+              // Audit trail (fire-and-forget; logMoneyEventSafe can never throw)
+              await logMoneyEventSafe(
+                () => supabase.rpc("log_money_event", moneyEventRow("cancel-event", "refund", {
+                  paymentIntentId: pi, userId: ticket.owner_id ?? ticket.buyer_id,
+                  creatorId: event.creator_id, amountCents, referenceId: ticket.id,
+                  metadata: { event_id, full_refund: amountCents === null, reason: "event_canceled" },
+                })),
+                (m) => console.warn(`[CANCEL-EVENT] ${m}`),
               );
             }
           } catch (e) {
