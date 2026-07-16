@@ -15,13 +15,14 @@ interface PromoRow {
   link: string;
   tickets: number;
   cents: number;
+  settledCents: number;
 }
 
 /**
  * Promoter-side view of the Event Promoter Kit: if this user has been added
- * as a promoter for any event, show their tracked links and attributed sales.
- * Self-hides when the user promotes no events. Attribution only — the event
- * organizer pays promoters directly.
+ * as a promoter for any event, show their tracked links, attributed sales,
+ * and commission already settled to their UPLY wallet. Self-hides when the
+ * user promotes no events.
  */
 export default function EventPromoCard() {
   const { user } = useAuth();
@@ -56,6 +57,16 @@ export default function EventPromoCard() {
         a.cents += s.amount_cents ?? 0;
       }
 
+      // Commission already settled to this promoter's UPLY wallet
+      const { data: settlements } = await (supabase as any) // cast: awaiting types regen (promoter_settlements)
+        .from("promoter_settlements")
+        .select("promoter_id, amount_cents")
+        .in("promoter_id", list.map((p) => p.id));
+      const settledAgg: Record<string, number> = {};
+      for (const s of (settlements ?? []) as any[]) {
+        settledAgg[s.promoter_id] = (settledAgg[s.promoter_id] ?? 0) + (s.amount_cents ?? 0);
+      }
+
       return list.map((p) => {
         const ev = eventById[p.event_id];
         return {
@@ -66,6 +77,7 @@ export default function EventPromoCard() {
           link: `${window.location.origin}/events/${ev?.slug || p.event_id}?promo=${encodeURIComponent(p.code)}`,
           tickets: agg[p.id]?.tickets ?? 0,
           cents: agg[p.id]?.cents ?? 0,
+          settledCents: settledAgg[p.id] ?? 0,
         };
       });
     },
@@ -91,7 +103,8 @@ export default function EventPromoCard() {
         <h3 className="text-sm font-semibold">Event promo</h3>
       </div>
       <p className="text-xs text-muted-foreground mb-4">
-        You're promoting {rows.length === 1 ? "an event" : `${rows.length} events`}. UPLY tracks your attributed sales — the organizer pays you directly.
+        You're promoting {rows.length === 1 ? "an event" : `${rows.length} events`}. UPLY tracks your attributed
+        sales — commission the organizer settles lands in your UPLY wallet; otherwise they pay you directly.
       </p>
       <div className="space-y-3">
         {rows.map((row) => (
@@ -101,6 +114,9 @@ export default function EventPromoCard() {
                 <p className="text-sm font-medium text-foreground truncate">{row.eventTitle}</p>
                 <p className="text-xs text-muted-foreground">
                   {row.tickets} ticket{row.tickets === 1 ? "" : "s"} · ${(row.cents / 100).toFixed(2)} attributed
+                  {row.settledCents > 0 && (
+                    <span className="text-primary"> · ${(row.settledCents / 100).toFixed(2)} settled to your wallet</span>
+                  )}
                 </p>
                 <p className="text-[11px] font-mono text-muted-foreground truncate mt-1">{row.link}</p>
               </div>

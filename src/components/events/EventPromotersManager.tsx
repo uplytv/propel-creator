@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { QRCodeSVG } from "qrcode.react";
-import { Megaphone, UserPlus, Trash2, Loader2, Copy, Check, QrCode, Download, Info } from "lucide-react";
+import { Megaphone, UserPlus, Trash2, Loader2, Copy, Check, QrCode, Download, Info, Banknote } from "lucide-react";
 import { toast } from "sonner";
 
 interface PromoterRow {
@@ -14,6 +14,7 @@ interface PromoterRow {
   promoter_name: string | null;
   promoter_email: string | null;
   code: string;
+  commission_pct: number | null;
   created_at: string;
 }
 
@@ -23,6 +24,22 @@ interface SaleRow {
   tickets_count: number;
 }
 
+interface SettlementRow {
+  promoter_id: string;
+  amount_cents: number;
+  created_at: string;
+}
+
+interface SettleResult {
+  promoter_id: string;
+  owed_cents: number;
+  settled_cents: number;
+  already_settled_cents: number;
+  status: "settled" | "insufficient_balance" | "nothing_owed" | "no_wallet";
+}
+
+const usd = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+
 function makeCode(base: string): string {
   const stem = (base || "PROMO").replace(/[^a-zA-Z0-9]/g, "").substring(0, 12).toUpperCase() || "PROMO";
   const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -31,8 +48,10 @@ function makeCode(base: string): string {
 
 /**
  * Event Promoter Kit (creator side): event-scoped promoter links, sales
- * attribution leaderboard, CSV export. ATTRIBUTION ONLY — UPLY tracks who
- * sold what; paying promoters stays the creator's manual action.
+ * attribution leaderboard, CSV export — plus wallet-ledger SETTLEMENTS for
+ * promoters who are UPLY users: set a commission %, and "Settle payouts"
+ * moves the owed credit from the creator's UPLY wallet to theirs (internal
+ * ledger only — real withdrawals still go through Payouts).
  */
 export default function EventPromotersManager({ eventId, eventUrl }: { eventId: string; eventUrl: string }) {
   const qc = useQueryClient();
@@ -42,13 +61,16 @@ export default function EventPromotersManager({ eventId, eventUrl }: { eventId: 
   const [adding, setAdding] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [qrFor, setQrFor] = useState<{ name: string; link: string } | null>(null);
+  const [pctDrafts, setPctDrafts] = useState<Record<string, string>>({});
+  const [settleOpen, setSettleOpen] = useState(false);
+  const [settling, setSettling] = useState(false);
 
   const { data: promoters, isLoading } = useQuery({
     queryKey: ["event-promoters", eventId],
     queryFn: async () => {
       const { data } = await (supabase as any) // cast: awaiting types regen (event_promoters)
         .from("event_promoters")
-        .select("id, promoter_user_id, promoter_name, promoter_email, code, created_at")
+        .select("id, promoter_user_id, promoter_name, promoter_email, code, commission_pct, created_at")
         .eq("event_id", eventId)
         .order("created_at", { ascending: true });
       const rows = (data ?? []) as PromoterRow[];
@@ -82,6 +104,27 @@ export default function EventPromotersManager({ eventId, eventUrl }: { eventId: 
     },
   });
 
+  const { data: settlements } = useQuery({
+    queryKey: ["event-promoter-settlements", eventId],
+    queryFn: async () => {
+      const { data } = await (supabase as any) // cast: awaiting types regen (promoter_settlements)
+        .from("promoter_settlements")
+        .select("promoter_id, amount_cents, created_at")
+        .eq("event_id", eventId);
+      return (data ?? []) as SettlementRow[];
+    },
+  });
+
+  // Creator's own wallet balance (RLS limits the query to their wallet) — shown
+  // in the settle confirmation so they know whether the transfer can cover it.
+  const { data: walletBalanceCents } = useQuery({
+    queryKey: ["own-wallet-balance"],
+    queryFn: async () => {
+      const { data } = await supabase.from("wallets").select("available_balance").maybeSingle();
+      return Math.round(Number((data as any)?.available_balance ?? 0) * 100);
+    },
+  });
+
   const leaderboard = useMemo(() => {
     const byPromoter: Record<string, { tickets: number; cents: number }> = {};
     for (const s of sales ?? []) {
@@ -89,16 +132,34 @@ export default function EventPromotersManager({ eventId, eventUrl }: { eventId: 
       agg.tickets += s.tickets_count ?? 0;
       agg.cents += s.amount_cents ?? 0;
     }
+    const settledByPromoter: Record<string, number> = {};
+    for (const s of settlements ?? []) {
+      settledByPromoter[s.promoter_id] = (settledByPromoter[s.promoter_id] ?? 0) + (s.amount_cents ?? 0);
+    }
     const totalCents = Object.values(byPromoter).reduce((n, a) => n + a.cents, 0);
     return (promoters ?? [])
-      .map((p) => ({
-        ...p,
-        tickets: byPromoter[p.id]?.tickets ?? 0,
-        cents: byPromoter[p.id]?.cents ?? 0,
-        sharePct: totalCents > 0 ? ((byPromoter[p.id]?.cents ?? 0) / totalCents) * 100 : 0,
-      }))
+      .map((p) => {
+        const cents = byPromoter[p.id]?.cents ?? 0;
+        const settledCents = settledByPromoter[p.id] ?? 0;
+        // Mirrors the RPC's math: floor(lifetime attributed * pct/100) - settled
+        const owedCents =
+          p.commission_pct != null && p.promoter_user_id
+            ? Math.max(0, Math.floor((cents * p.commission_pct) / 100) - settledCents)
+            : 0;
+        return {
+          ...p,
+          tickets: byPromoter[p.id]?.tickets ?? 0,
+          cents,
+          settledCents,
+          owedCents,
+          sharePct: totalCents > 0 ? (cents / totalCents) * 100 : 0,
+        };
+      })
       .sort((a, b) => b.cents - a.cents);
-  }, [promoters, sales]);
+  }, [promoters, sales, settlements]);
+
+  const totalOwedCents = useMemo(() => leaderboard.reduce((n, p) => n + p.owedCents, 0), [leaderboard]);
+  const totalSettledCents = useMemo(() => leaderboard.reduce((n, p) => n + p.settledCents, 0), [leaderboard]);
 
   const linkFor = (code: string) => `${eventUrl}?promo=${encodeURIComponent(code)}`;
 
@@ -179,6 +240,64 @@ export default function EventPromotersManager({ eventId, eventUrl }: { eventId: 
     qc.invalidateQueries({ queryKey: ["event-promoters", eventId] });
   };
 
+  const saveCommissionPct = async (p: PromoterRow, raw: string) => {
+    const trimmed = raw.trim();
+    const next = trimmed === "" ? null : Number(trimmed);
+    if (next !== null && (!Number.isFinite(next) || next < 0 || next > 50)) {
+      toast.error("Commission must be between 0 and 50%");
+      setPctDrafts((d) => ({ ...d, [p.id]: p.commission_pct != null ? String(p.commission_pct) : "" }));
+      return;
+    }
+    if (next === (p.commission_pct ?? null)) return;
+    const { error } = await (supabase as any) // cast: awaiting types regen (event_promoters)
+      .from("event_promoters")
+      .update({ commission_pct: next })
+      .eq("id", p.id);
+    if (error) {
+      toast.error("Couldn't save commission", { description: error.message });
+      return;
+    }
+    toast.success(next === null ? "Auto-payout turned off" : `Commission set to ${next}%`);
+    qc.invalidateQueries({ queryKey: ["event-promoters", eventId] });
+  };
+
+  const settle = async () => {
+    setSettling(true);
+    try {
+      const { data, error } = await (supabase as any).rpc("settle_event_promoters", { p_event_id: eventId }); // cast: awaiting types regen (settle_event_promoters)
+      if (error) {
+        toast.error("Settlement failed", { description: error.message });
+        return;
+      }
+      const results = (data ?? []) as SettleResult[];
+      const labelFor = (id: string) => (promoters ?? []).find((p: any) => p.id === id)?.label ?? "Promoter";
+      let anySettled = false;
+      for (const r of results) {
+        if (r.status === "settled") {
+          anySettled = true;
+          toast.success(`Paid ${labelFor(r.promoter_id)} ${usd(r.settled_cents)}`, {
+            description: "Credited to their UPLY wallet.",
+          });
+        } else if (r.status === "insufficient_balance") {
+          toast.error(`Not enough balance for ${labelFor(r.promoter_id)}`, {
+            description: `${usd(r.owed_cents)} owed — top up by making sales or settle later.`,
+          });
+        } else if (r.status === "no_wallet") {
+          toast.error("Your UPLY wallet isn't set up yet");
+        }
+        // 'nothing_owed' is silent — nothing changed for that promoter.
+      }
+      if (!anySettled && results.every((r) => r.status === "nothing_owed")) {
+        toast.info("Nothing owed right now", { description: "All commissions are already settled." });
+      }
+      qc.invalidateQueries({ queryKey: ["event-promoter-settlements", eventId] });
+      qc.invalidateQueries({ queryKey: ["own-wallet-balance"] });
+      setSettleOpen(false);
+    } finally {
+      setSettling(false);
+    }
+  };
+
   const copyLink = async (id: string, code: string) => {
     try {
       await navigator.clipboard.writeText(linkFor(code));
@@ -217,11 +336,12 @@ export default function EventPromotersManager({ eventId, eventUrl }: { eventId: 
         <h3 className="font-semibold text-foreground">Promoters</h3>
       </div>
 
-      {/* Honest banner — v1 is attribution only, no automatic payouts */}
+      {/* Honest banner — auto-payouts exist for linked promoters; external stay manual */}
       <div className="flex items-start gap-2 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2.5">
         <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
         <p className="text-xs text-foreground/90">
-          UPLY tracks attribution — pay promoters your way. Automatic promoter payouts coming later.
+          Promoters with a UPLY account can be paid automatically: set their commission %, then settle from your
+          UPLY wallet. External promoters (name/email only) are still paid your way.
         </p>
       </div>
 
@@ -263,6 +383,31 @@ export default function EventPromotersManager({ eventId, eventUrl }: { eventId: 
                   </button>
                 </div>
               </div>
+              {/* Commission % — auto-payout only works for linked UPLY users */}
+              <div className="mt-1.5 flex items-center gap-2">
+                {p.promoter_user_id ? (
+                  <>
+                    <label className="text-[11px] text-muted-foreground shrink-0" htmlFor={`pct-${p.id}`}>
+                      Commission
+                    </label>
+                    <Input
+                      id={`pct-${p.id}`}
+                      type="number"
+                      min={0}
+                      max={50}
+                      step="0.5"
+                      placeholder="—"
+                      className="h-7 w-20 text-xs"
+                      value={pctDrafts[p.id] ?? (p.commission_pct != null ? String(p.commission_pct) : "")}
+                      onChange={(e) => setPctDrafts((d) => ({ ...d, [p.id]: e.target.value }))}
+                      onBlur={(e) => saveCommissionPct(p, e.target.value)}
+                    />
+                    <span className="text-[11px] text-muted-foreground">% of attributed sales · blank = manual</span>
+                  </>
+                ) : (
+                  <span className="text-[11px] text-muted-foreground">External promoter — pay manually</span>
+                )}
+              </div>
             </div>
           ))
         )}
@@ -285,6 +430,8 @@ export default function EventPromotersManager({ eventId, eventUrl }: { eventId: 
                   <th className="text-right font-medium px-3 py-2">Tickets</th>
                   <th className="text-right font-medium px-3 py-2">Revenue</th>
                   <th className="text-right font-medium px-3 py-2">Share</th>
+                  <th className="text-right font-medium px-3 py-2">Owed</th>
+                  <th className="text-right font-medium px-3 py-2">Settled</th>
                 </tr>
               </thead>
               <tbody>
@@ -298,16 +445,85 @@ export default function EventPromotersManager({ eventId, eventUrl }: { eventId: 
                     <td className="px-3 py-2 text-right font-mono text-foreground">{p.tickets}</td>
                     <td className="px-3 py-2 text-right font-mono text-foreground">${(p.cents / 100).toFixed(2)}</td>
                     <td className="px-3 py-2 text-right font-mono text-muted-foreground">{p.sharePct.toFixed(0)}%</td>
+                    <td className="px-3 py-2 text-right font-mono text-foreground">
+                      {p.promoter_user_id && p.commission_pct != null ? usd(p.owedCents) : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-right font-mono text-muted-foreground">
+                      {p.settledCents > 0 ? usd(p.settledCents) : "—"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
           <p className="text-[11px] text-muted-foreground mt-1.5">
-            Revenue attributed = ticket subtotals from checkouts that used a promoter's link (7-day window). Payouts to promoters are yours to make.
+            Revenue attributed = ticket subtotals from checkouts that used a promoter's link (7-day window). Owed =
+            commission % of attributed revenue minus what you've already settled.
           </p>
+
+          {/* Settle payouts — internal wallet-ledger transfer */}
+          <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-3 py-2.5">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-foreground">
+                {totalOwedCents > 0 ? `${usd(totalOwedCents)} owed to promoters` : "All commissions settled"}
+              </p>
+              {totalSettledCents > 0 && (
+                <p className="text-[11px] text-muted-foreground">Settled to date: {usd(totalSettledCents)}</p>
+              )}
+            </div>
+            <Button
+              size="sm"
+              className="gap-1.5 shrink-0"
+              disabled={totalOwedCents <= 0}
+              onClick={() => setSettleOpen(true)}
+            >
+              <Banknote className="w-3.5 h-3.5" /> Settle payouts
+            </Button>
+          </div>
         </div>
       )}
+
+      {/* Settle confirmation dialog */}
+      <Dialog open={settleOpen} onOpenChange={(o) => !settling && setSettleOpen(o)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Settle promoter payouts</DialogTitle>
+            <DialogDescription>
+              This moves credit from your UPLY wallet to theirs — real withdrawals still happen via Payouts.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-1.5">
+            {leaderboard
+              .filter((p) => p.owedCents > 0)
+              .map((p) => (
+                <div key={p.id} className="flex items-center justify-between text-sm">
+                  <span className="text-foreground truncate mr-2">
+                    {p.label} <span className="text-[10px] text-muted-foreground">({p.commission_pct}%)</span>
+                  </span>
+                  <span className="font-mono text-foreground shrink-0">{usd(p.owedCents)}</span>
+                </div>
+              ))}
+            <div className="flex items-center justify-between border-t border-border pt-1.5 text-sm font-medium">
+              <span>Total</span>
+              <span className="font-mono">{usd(totalOwedCents)}</span>
+            </div>
+            {walletBalanceCents != null && (
+              <p className={`text-[11px] ${walletBalanceCents < totalOwedCents ? "text-destructive" : "text-muted-foreground"}`}>
+                Your wallet balance: {usd(walletBalanceCents)}
+                {walletBalanceCents < totalOwedCents && " — not enough to cover everything; short payouts will be skipped."}
+              </p>
+            )}
+          </div>
+          <div className="flex gap-2 pt-1">
+            <Button variant="outline" className="flex-1" disabled={settling} onClick={() => setSettleOpen(false)}>
+              Cancel
+            </Button>
+            <Button className="flex-1 gap-1.5" disabled={settling || totalOwedCents <= 0} onClick={settle}>
+              {settling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Banknote className="w-4 h-4" />} Confirm
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* QR dialog */}
       <Dialog open={!!qrFor} onOpenChange={(o) => !o && setQrFor(null)}>
