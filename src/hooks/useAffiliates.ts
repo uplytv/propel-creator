@@ -38,8 +38,13 @@ export function useAffiliateStats() {
         .eq("referring_user_id", user!.id)
         .order("created_at", { ascending: false });
 
-      const totalEarnings = (conversions || []).reduce((sum, c) => sum + Number(c.commission_amount), 0);
-      const pendingEarnings = (conversions || []).filter(c => c.status === "pending").reduce((sum, c) => sum + Number(c.commission_amount), 0);
+      const sumWhere = (pred: (c: { status: string }) => boolean) =>
+        (conversions || []).filter(pred).reduce((sum, c) => sum + Number(c.commission_amount), 0);
+
+      const totalEarnings = sumWhere(() => true);
+      const pendingEarnings = sumWhere((c) => c.status === "pending");
+      const approvedEarnings = sumWhere((c) => c.status === "approved");
+      const paidEarnings = sumWhere((c) => c.status === "paid");
 
       return {
         link,
@@ -48,6 +53,8 @@ export function useAffiliateStats() {
         totalSignups: link?.signups || 0,
         totalEarnings,
         pendingEarnings,
+        approvedEarnings,
+        paidEarnings,
       };
     },
   });

@@ -70,6 +70,29 @@ export const PLATFORM_PLANS: PlatformPlan[] = [
 
 export const TRIAL_DAYS = 14;
 
+/**
+ * Founding-offer extended trial. The server (create-platform-checkout) clamps
+ * trial_days to {14, 30} — passing anything else falls back to 14, so this
+ * constant is a UI convenience, never a security boundary.
+ */
+export const EXTENDED_TRIAL_DAYS = 30;
+
+/** Risk-reversal line parameterized by trial length (founding offer = 30). */
+export const trialRiskReversal = (days: number = TRIAL_DAYS) =>
+  `${days} days free · No obligation · Cancel at any time`;
+
+/**
+ * 50% affiliate program — per-referral first-month commission per plan.
+ * Commissions are a PLATFORM marketing cost paid by UPLY out of its own plan
+ * revenue ($97/$297/$497). They never touch creator money and never alter the
+ * 95/5 creator payout split. Amounts here are display-only; the real number
+ * is computed server-side by the affiliate-commission-reconciler from the
+ * Stripe-verified invoice.
+ */
+export const AFFILIATE_COMMISSION_PCT = 50;
+export const affiliateCommissionFor = (price: number) =>
+  Math.round(price * (AFFILIATE_COMMISSION_PCT / 100) * 100) / 100;
+
 export const TRIAL_INTENT_STORAGE_KEY = "uply_trial_intent";
 
 /**

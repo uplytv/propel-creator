@@ -20,13 +20,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { trackEvent } from "@/lib/posthog";
 import { validatePassword } from "@/lib/passwordValidation";
+import { getAffiliateCookie } from "@/lib/affiliateCookies";
 import {
   PLATFORM_PLANS,
   SETUP_CALL_URL,
   TRIAL_DAYS,
   TRIAL_INTENT_STORAGE_KEY,
   TRIAL_PROFILE_STORAGE_KEY,
-  TRIAL_RISK_REVERSAL,
+  trialRiskReversal,
   type PlatformPlanKey,
 } from "./plans";
 
@@ -35,6 +36,11 @@ interface TrialSignupModalProps {
   onOpenChange: (open: boolean) => void;
   /** Plan preselected by the card the user clicked. */
   defaultPlan: PlatformPlanKey;
+  /**
+   * Trial length shown and requested (founding offer passes 30). The server
+   * clamps to {14, 30} — this prop can never mint an arbitrary trial.
+   */
+  trialDays?: number;
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -44,7 +50,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "");
 
 /** Shared wizard header: centered title + two-step tab indicator with active underline. */
-function WizardHeader({ active }: { active: 1 | 2 }) {
+function WizardHeader({ active, days }: { active: 1 | 2; days: number }) {
   const steps = [
     { n: 1 as const, title: "Step 1", sub: "Tell us about your business" },
     { n: 2 as const, title: "Step 2", sub: "Trial details" },
@@ -53,7 +59,7 @@ function WizardHeader({ active }: { active: 1 | 2 }) {
     <div className="space-y-4">
       <DialogHeader>
         <DialogTitle className="text-center text-xl font-extrabold tracking-tight">
-          Start your 14-day free trial today!
+          Start your {days}-day free trial today!
         </DialogTitle>
         <DialogDescription className="sr-only">
           Two quick steps: tell us about your business, then confirm your plan and add a card.
@@ -71,9 +77,16 @@ function WizardHeader({ active }: { active: 1 | 2 }) {
   );
 }
 
-export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: TrialSignupModalProps) {
+export default function TrialSignupModal({
+  open,
+  onOpenChange,
+  defaultPlan,
+  trialDays = TRIAL_DAYS,
+}: TrialSignupModalProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  // Server clamps to {14, 30}; mirror it so the UI never promises otherwise.
+  const effectiveTrialDays = trialDays === 30 ? 30 : TRIAL_DAYS;
 
   const [step, setStep] = useState<1 | 2>(1);
   const [company, setCompany] = useState("");
@@ -378,6 +391,12 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
     setCheckoutError(null);
     setCheckoutLoading(true);
 
+    // Affiliate attribution: forward the uply_ref cookie (if any) so the
+    // checkout stamps metadata.affiliate_code for the scheduled reconciler.
+    // Display-only on this side — the server sanitizes it, it never changes
+    // pricing, and commission amounts are always computed server-side.
+    const affiliateCode = getAffiliateCookie("uply_ref");
+
     supabase.functions
       .invoke("create-platform-checkout", {
         body: {
@@ -388,6 +407,9 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
           full_name: fullName.trim(),
           phone: phone.trim(),
           email: email.trim(),
+          // Additive: server clamps to {14, 30}.
+          trial_days: effectiveTrialDays,
+          ...(affiliateCode ? { affiliate_code: affiliateCode } : {}),
         },
       })
       .then(({ data, error }) => {
@@ -468,7 +490,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <PartyPopper className="h-5 w-5 text-primary" />
-                You're in — your {TRIAL_DAYS}-day trial is live
+                You're in — your {effectiveTrialDays}-day trial is live
               </DialogTitle>
               <DialogDescription>
                 Your card is on file and UPLY {plan.name} is unlocked. One last thing before you dive in.
@@ -496,7 +518,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                 >
                   Book my setup call
                 </Button>
-                <p className="mt-2 text-center text-xs text-muted-foreground">{TRIAL_RISK_REVERSAL}</p>
+                <p className="mt-2 text-center text-xs text-muted-foreground">{trialRiskReversal(effectiveTrialDays)}</p>
               </div>
 
               <button
@@ -510,7 +532,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
           </>
         ) : step === 1 ? (
           <>
-            <WizardHeader active={1} />
+            <WizardHeader active={1} days={effectiveTrialDays} />
 
             <div className="space-y-3 py-1">
               <div className="space-y-1">
@@ -592,7 +614,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
           </>
         ) : (
           <>
-            <WizardHeader active={2} />
+            <WizardHeader active={2} days={effectiveTrialDays} />
 
             <button
               type="button"
@@ -627,7 +649,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                         )}
                       </span>
                       <span className="block text-xs text-muted-foreground">
-                        {TRIAL_DAYS}-day free trial — then ${p.price}/month
+                        {effectiveTrialDays}-day free trial — then ${p.price}/month
                       </span>
                     </span>
                   </label>
@@ -671,7 +693,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                     <p className="font-bold text-foreground">Check your email to confirm your account</p>
                     <p className="mt-1">
                       We sent a confirmation link to <span className="font-semibold text-foreground">{email.trim()}</span>.
-                      Click it and payment resumes automatically — your {TRIAL_DAYS} free days are saved.
+                      Click it and payment resumes automatically — your {effectiveTrialDays} free days are saved.
                     </p>
                   </div>
                 </div>
@@ -723,11 +745,11 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
               {!awaitingEmailConfirm && (
                 <div className="space-y-1">
                   <p className="text-center text-xs font-semibold text-foreground">
-                    {TRIAL_RISK_REVERSAL}
+                    {trialRiskReversal(effectiveTrialDays)}
                   </p>
                   <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
                     <ShieldCheck className="h-3.5 w-3.5" />
-                    Secured by Stripe — after {TRIAL_DAYS} days, ${plan.price}/mo is billed to the card on file.
+                    Secured by Stripe — after {effectiveTrialDays} days, ${plan.price}/mo is billed to the card on file.
                   </p>
                 </div>
               )}

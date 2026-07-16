@@ -97,6 +97,8 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
     verify_jwt = false
   [functions.platform-dunning-check]
     verify_jwt = false
+  [functions.affiliate-commission-reconciler]
+    verify_jwt = false
   [functions.track-affiliate-conversion]
     verify_jwt = false
   [functions.reveal-virtual-link]

@@ -63,7 +63,28 @@ serve(async (req) => {
       );
     }
 
-    const { price_id, embedded, plan, trial, company, full_name, phone, email: guestEmailRaw } = await req.json();
+    const {
+      price_id, embedded, plan, trial, company, full_name, phone,
+      email: guestEmailRaw,
+      // Additive: affiliate attribution + extended-trial support (founding offer).
+      affiliate_code: affiliateCodeRaw,
+      trial_days: trialDaysRaw,
+    } = await req.json();
+
+    // Affiliate code: client passes the uply_ref cookie value. It is ONLY
+    // stamped as metadata for the scheduled affiliate-commission-reconciler —
+    // it has ZERO effect on pricing, the trial, or the checkout session shape.
+    // Commissions are a PLATFORM marketing cost paid by UPLY out of its own
+    // plan revenue ($97/$297/$497) — never creator money, never the 95/5 split.
+    // No client-supplied amounts are trusted anywhere in this flow.
+    const affiliateCode =
+      typeof affiliateCodeRaw === "string" && /^[A-Za-z0-9_-]{3,64}$/.test(affiliateCodeRaw.trim())
+        ? affiliateCodeRaw.trim()
+        : null;
+
+    // Trial length is CLAMPED server-side to the two sanctioned values:
+    // 14 (standard) or 30 (founding-offer extended trial). Anything else → 14.
+    const trialDays = Number(trialDaysRaw) === 30 ? 30 : 14;
 
     // New platform plans (inline price_data, 14-day free trial).
     // Keep amounts in sync with src/components/pricing/plans.ts.
@@ -142,6 +163,9 @@ serve(async (req) => {
     if (company) metadata.company = String(company).slice(0, 500);
     if (full_name) metadata.full_name = String(full_name).slice(0, 500);
     if (phone) metadata.phone = String(phone).slice(0, 500);
+    // Attribution only — read later by the affiliate-commission-reconciler
+    // (cron). Pricing, split math, and the webhook are untouched.
+    if (affiliateCode) metadata.affiliate_code = affiliateCode;
 
     const sessionConfig: any = {
       customer: customerId,
@@ -158,7 +182,7 @@ serve(async (req) => {
     if (planPricing) {
       sessionConfig.subscription_data = {
         metadata,
-        ...(trial ? { trial_period_days: 14 } : {}),
+        ...(trial ? { trial_period_days: trialDays } : {}),
       };
     }
 

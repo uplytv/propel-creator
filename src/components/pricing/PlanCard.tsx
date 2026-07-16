@@ -7,13 +7,15 @@ interface PlanCardProps {
   onStartTrial: (plan: PlatformPlan) => void;
   /** Optional override for the CTA state (e.g. current plan). */
   isCurrent?: boolean;
+  /** Trial length shown in the footer (founding offer passes 30). Display only. */
+  trialDays?: number;
 }
 
 /**
  * Shared platform-plan card used by /pricing and the homepage pricing section.
  * Square corners everywhere per UPLY design tokens.
  */
-export default function PlanCard({ plan, onStartTrial, isCurrent = false }: PlanCardProps) {
+export default function PlanCard({ plan, onStartTrial, isCurrent = false, trialDays = 14 }: PlanCardProps) {
   return (
     <div
       className={`relative rounded-md border bg-card p-6 sm:p-7 flex flex-col ${
@@ -59,7 +61,7 @@ export default function PlanCard({ plan, onStartTrial, isCurrent = false }: Plan
         {isCurrent ? "Current plan" : "Start free trial"}
       </Button>
       <p className="mt-3 text-center text-xs text-muted-foreground">
-        14 days free · cancel anytime
+        {trialDays} days free · cancel anytime
       </p>
     </div>
   );

@@ -131,6 +131,7 @@ const CategoryFeed = lazy(() => import("./pages/CategoryFeed"));
 const Messages = lazy(() => import("./pages/Messages"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const Pricing = lazy(() => import("./pages/Pricing"));
+const FoundingOffer = lazy(() => import("./pages/FoundingOffer"));
 const PPVLanding = lazy(() => import("./pages/PPVLanding"));
 const Upgrade = lazy(() => import("./pages/Upgrade"));
 const VideoPlayer = lazy(() => import("./pages/VideoPlayer"));
@@ -412,6 +413,7 @@ const App = () => (
                     <Route path="/shop" element={<Shop />} />
                     <Route path="/inbox" element={<ProtectedRoute><Inbox /></ProtectedRoute>} />
                     <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/founding-offer" element={<FoundingOffer />} />
                     <Route path="/ppv" element={<PPVLanding />} />
                     <Route path="/upgrade" element={<Upgrade />} />
                     <Route path="/event/rsvp/:eventId" element={<EventRSVP />} />

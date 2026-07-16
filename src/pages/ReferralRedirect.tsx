@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { setReferralData, getReferralData } from "@/lib/affiliateCookies";
+import { setReferralData, getReferralData, setAffiliateCookie } from "@/lib/affiliateCookies";
 import { useAuth } from "@/context/AuthContext";
 import { Loader2, Video, DollarSign, Bot, Shield, Clock } from "lucide-react";
 import { toast } from "sonner";
@@ -28,11 +28,26 @@ export default function ReferralRedirect() {
 
   const actualCode = code;
   const isBetaInvite = window.location.pathname.startsWith("/invite/");
+  const isPlatformRef = window.location.pathname.startsWith("/ref/");
 
   useEffect(() => {
     if (!actualCode) {
       navigate("/");
       return;
+    }
+
+    // Additive: /ref/<code> links are also the 50% platform-affiliate entry
+    // point. Stamp the uply_ref cookie (read at signup and at plan checkout,
+    // where it becomes Stripe metadata for the commission reconciler) and
+    // count the click. Attribution only — pricing is never affected, and all
+    // commission amounts are computed server-side from verified invoices.
+    if (isPlatformRef) {
+      setAffiliateCookie("uply_ref", actualCode, 30);
+      supabase.functions
+        .invoke("track-affiliate-conversion", {
+          body: { affiliate_code: actualCode, conversion_type: "click" },
+        })
+        .catch(() => {});
     }
 
     const fetchReferrer = async () => {
