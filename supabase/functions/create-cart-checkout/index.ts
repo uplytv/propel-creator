@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { createSessionWithTax } from "../_shared/stripeTax.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -113,7 +114,11 @@ serve(async (req) => {
     const origin = req.headers.get("origin") ?? "https://uply.tv";
     let session;
     try {
-      session = await stripe.checkout.sessions.create({
+      // Flag-gated Stripe Tax (ENABLE_STRIPE_TAX secret). Off by default —
+      // identical session params. Fee math untouched: cart orders carry no
+      // application fee here (fulfillment splits happen downstream on the
+      // pre-tax subtotal); Stripe adds tax on top for the buyer.
+      session = await createSessionWithTax(stripe, {
         customer: customerId,
         customer_email: customerId ? undefined : user.email,
         mode: "payment",
@@ -129,7 +134,7 @@ serve(async (req) => {
           source: "cart",
           item_count: String(line_items.length),
         },
-      });
+      }, undefined, "create-cart-checkout");
     } catch (sessionErr) {
       // Session never existed — remove the dangling order so it can't be claimed.
       await supabaseAdmin.from("cart_orders").delete().eq("id", cartOrder.id);

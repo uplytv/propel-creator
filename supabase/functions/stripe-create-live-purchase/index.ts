@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { createSessionWithTax } from "../_shared/stripeTax.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -153,7 +154,11 @@ serve(async (req) => {
       }];
     }
 
-    const session = await stripe.checkout.sessions.create(sessionParams);
+    // Flag-gated Stripe Tax (ENABLE_STRIPE_TAX secret). Off by default —
+    // identical session params. Fee math untouched: the 5% application fee
+    // (platformFee above) applies to the pre-tax amount; Stripe adds tax
+    // on top for the buyer.
+    const session = await createSessionWithTax(stripe, sessionParams, undefined, "stripe-create-live-purchase");
 
     // Optimistically insert pending purchase  
     await supabase.from("live_purchases").insert({

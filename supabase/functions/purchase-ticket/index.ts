@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, json, err, logError, PLATFORM_FEE_PCT } from "../_shared/eventsCors.ts";
+import { createSessionWithTax } from "../_shared/stripeTax.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -97,7 +98,12 @@ serve(async (req) => {
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
       apiVersion: "2025-08-27.basil",
     });
-    const session = await stripe.checkout.sessions.create(
+    // Flag-gated Stripe Tax (ENABLE_STRIPE_TAX secret). Off by default —
+    // identical session params. Fee math untouched: the platform fee (feePct,
+    // baked into unit_amount above) applies to the pre-tax ticket price;
+    // Stripe adds tax on top for the buyer.
+    const session = await createSessionWithTax(
+      stripe,
       {
         mode: "payment",
         // Hold expires after 30 min (Stripe minimum); release-expired-ticket-holds
@@ -136,6 +142,7 @@ serve(async (req) => {
         },
       },
       { idempotencyKey },
+      "purchase-ticket",
     );
 
     await supabase

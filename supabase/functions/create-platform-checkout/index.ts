@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkEdgeRateLimit, requestIp } from "../_shared/rateLimit.ts";
+import { createSessionWithTax } from "../_shared/stripeTax.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -174,7 +175,11 @@ serve(async (req) => {
       delete sessionConfig.cancel_url;
     }
 
-    const session = await stripe.checkout.sessions.create(sessionConfig);
+    // Flag-gated Stripe Tax (ENABLE_STRIPE_TAX secret). Off by default —
+    // identical session params. Fee math untouched: this is a 100% platform
+    // subscription (no application fee here), and where fees exist elsewhere
+    // they apply to the pre-tax amount; Stripe adds tax on top for the buyer.
+    const session = await createSessionWithTax(stripe, sessionConfig, undefined, "create-platform-checkout");
 
     logStep("Checkout session created", { sessionId: session.id, url: session.url ? "present" : "missing" });
 
