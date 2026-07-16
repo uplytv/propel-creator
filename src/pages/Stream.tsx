@@ -912,6 +912,11 @@ export default function Stream() {
     // PPV playback ids are vaulted server-side; the RPC hands them out only to
     // entitled viewers. Free streams keep using the public column.
     const playbackId = ppvGate.playbackId || dbStream.mux_playback_id;
+    // Signed playback (PPV URL-sharing defense): sign-playback-token mints a
+    // per-viewer JWT when the playback id is signed-policy. Null for free
+    // streams, legacy public-policy PPV streams, or unset signing secrets —
+    // the plain URL then plays exactly as before.
+    const playbackToken = ppvGate.playbackToken || undefined;
     const isPrivateStream = dbStream.is_public === false;
     const isOwner = user?.id === dbStream.user_id;
     const subscribed = dbStream.user_id ? isFollowing(dbStream.user_id) : false;
@@ -1009,7 +1014,12 @@ export default function Stream() {
         <SEOHead
           title={dbStream.title || (isVod ? "Recording" : "Live Stream")}
           description={dbStream.description || `Watch ${creatorName}'s ${isActive ? "live stream" : "recording"} on Uply.`}
-          image={playbackId ? `https://image.mux.com/${playbackId}/thumbnail.webp?width=1200&height=630` : undefined}
+          image={playbackId
+            ? (ppvGate.thumbnailToken
+              // Signed thumbnails: params must live in the token, so only ?token= is sent
+              ? `https://image.mux.com/${playbackId}/thumbnail.webp?token=${encodeURIComponent(ppvGate.thumbnailToken)}`
+              : `https://image.mux.com/${playbackId}/thumbnail.webp?width=1200&height=630`)
+            : undefined}
           type={isActive ? "video.other" : "video.movie"}
         />
         {/* Top bar */}
@@ -1099,6 +1109,8 @@ export default function Stream() {
               ) : (isVod && playbackId) ? (
                 <UPLYMuxPlayer
                   playbackId={playbackId}
+                  playbackToken={playbackToken}
+                  onPlaybackForbidden={ppvGate.handlePlaybackAuthError}
                   title={dbStream.title || 'Recording'}
                   autoPlay
                   muted={false}
@@ -1108,11 +1120,14 @@ export default function Stream() {
                 <WebRTCPlayer
                   streamId={dbStream.id}
                   playbackId={playbackId || undefined}
+                  playbackToken={playbackToken}
                   title={dbStream.title || 'Live Stream'}
                 />
               ) : isActive && playbackId ? (
                 <UPLYMuxPlayer
                   playbackId={playbackId}
+                  playbackToken={playbackToken}
+                  onPlaybackForbidden={ppvGate.handlePlaybackAuthError}
                   title={dbStream.title || 'Live Stream'}
                   autoPlay
                   muted

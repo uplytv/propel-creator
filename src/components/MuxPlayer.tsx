@@ -25,6 +25,14 @@ interface MuxPlayerProps {
   onVideoRef?: (el: HTMLVideoElement | null) => void;
   /** VOD chapter markers (video_chapters rows) — renders progress-bar ticks + a clickable chapter list. */
   chapters?: PlayerChapter[];
+  /** Mux signed-playback JWT (aud "v"). When set, the HLS URL carries ?token= — required for signed-policy playback ids (PPV). */
+  playbackToken?: string;
+  /**
+   * Fired on fatal playback errors so the owner can refresh an expired signed
+   * token (they live 6h). Callers guard on token age, so firing on any fatal
+   * error is safe. A refreshed token changes the HLS URL and re-inits playback.
+   */
+  onPlaybackForbidden?: () => void;
 }
 
 function fmtTime(s: number) {
@@ -45,6 +53,8 @@ export const UPLYMuxPlayer = ({
   streamType = 'on-demand',
   onVideoRef,
   chapters,
+  playbackToken,
+  onPlaybackForbidden,
 }: MuxPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -53,7 +63,13 @@ export const UPLYMuxPlayer = ({
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const maxRetries = 5;
   const isLive = streamType === 'live' || streamType === 'll-live';
-  const hlsUrl = `https://stream.mux.com/${playbackId}.m3u8`;
+  const hlsUrl = playbackToken
+    ? `https://stream.mux.com/${playbackId}.m3u8?token=${encodeURIComponent(playbackToken)}`
+    : `https://stream.mux.com/${playbackId}.m3u8`;
+
+  // Ref so token-expiry notifications don't churn initHls's identity.
+  const onPlaybackForbiddenRef = useRef(onPlaybackForbidden);
+  useEffect(() => { onPlaybackForbiddenRef.current = onPlaybackForbidden; });
 
   // Quality selector — only when hls.js attaches (native-HLS Safari has no
   // levels API, so the menu stays hidden there).
@@ -122,6 +138,10 @@ export const UPLYMuxPlayer = ({
 
       hls.on(Hls.Events.ERROR, (_event, data) => {
         if (!data.fatal) return;
+        // Signed-playback token may have expired (403 mid-watch). The owner's
+        // handler is age-guarded, so notifying on every fatal error is safe;
+        // a refreshed token changes hlsUrl and re-initializes playback.
+        onPlaybackForbiddenRef.current?.();
         if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
           if (isLive) {
             // Live streams never fail — silently resume
@@ -161,6 +181,9 @@ export const UPLYMuxPlayer = ({
         if (autoPlay) video.play().catch(() => {});
       });
       video.addEventListener('error', () => {
+        // Native HLS (Safari) can't expose HTTP status — same age-guarded
+        // token-refresh notification as the hls.js path.
+        onPlaybackForbiddenRef.current?.();
         if (isLive) {
           // iOS Safari live: reload silently after rotation or interruption
           setTimeout(() => { video.src = hlsUrl; video.load(); video.play().catch(() => {}); }, 2000);

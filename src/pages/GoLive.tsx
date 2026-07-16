@@ -236,6 +236,11 @@ export default function GoLive() {
     setSetupSteps([]);
     setSetupTraceId(null);
     pushStep("validate_inputs", "ok", `${orientation} · ${mode}`);
+    // PPV intent is decided up-front so mux-create-livestream can request a
+    // SIGNED Mux playback policy (per-viewer tokens — URL-sharing defense)
+    // when the signing secrets are configured. Without them the fn falls back
+    // to the current public policy and this param changes nothing.
+    const ppvActive = mode === "public" && ppvEnabled && ppvPrice >= 1;
     pushStep("invoke_edge_function", "pending", "Calling mux-create-livestream…");
     try {
       const t0 = performance.now();
@@ -247,6 +252,8 @@ export default function GoLive() {
           category,
           isPublic: mode === "public",
           orientation,
+          ppv: ppvActive,
+          ppvPrice: ppvActive ? ppvPrice : undefined,
         },
       });
       const ms = Math.round(performance.now() - t0);
@@ -336,7 +343,9 @@ export default function GoLive() {
       // Purchases run through stripe-create-live-purchase (purchase_type
       // "live_product"), which the existing stripe-webhook finalizes — the
       // 95/5 split and wallet credit are handled with no webhook changes.
-      const ppvActive = mode === "public" && ppvEnabled && ppvPrice >= 1;
+      // (mux-create-livestream already sets is_ppv/ppv_price at insert when it
+      // receives the ppv param; this update stays as an idempotent backstop
+      // for older fn deployments.)
       if (ppvActive && data?.streamId) {
         pushStep("enable_ppv", "pending", `$${ppvPrice.toFixed(2)}`);
         try {

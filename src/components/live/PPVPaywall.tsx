@@ -20,6 +20,10 @@ export interface PpvGateState {
   sourceStreamId: string | null;
   /** playback id served by the SECURITY DEFINER RPC — only set when allowed */
   playbackId: string | null;
+  /** Mux playback JWT (aud "v") when the playback id is signed-policy */
+  playbackToken: string | null;
+  /** Mux image JWT (aud "t") for thumbnails of signed-policy content */
+  thumbnailToken: string | null;
   refresh: () => Promise<void>;
 }
 
@@ -53,6 +57,8 @@ export function useStreamPpvGate(
     ppvProductId: string | null;
     sourceStreamId: string | null;
     playbackId: string | null;
+    playbackToken: string | null;
+    thumbnailToken: string | null;
   }>({
     checkedRefId: null,
     isPpv: false,
@@ -61,12 +67,42 @@ export function useStreamPpvGate(
     ppvProductId: null,
     sourceStreamId: null,
     playbackId: null,
+    playbackToken: null,
+    thumbnailToken: null,
   });
   const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const tokenMintedAtRef = useRef<number | null>(null);
+  const tokenRefreshingRef = useRef(false);
 
   // "checked" is keyed to the ref id so a late-loading dbStream can never
   // reuse a stale answer (which would flash "unavailable" or leak past gate).
   const checked = !mightBePpv || (!!refId && state.checkedRefId === refId);
+
+  /**
+   * Mint per-viewer Mux playback JWTs via the sign-playback-token edge fn.
+   * The fn re-runs get_stream_playback server-side (entitlement stays there)
+   * and returns { signed: false } for public-policy playback ids or when the
+   * signing secrets aren't configured — the client then plays the plain URL,
+   * i.e. exactly the pre-signed-playback behavior. Any failure falls back the
+   * same way so legacy public PPV streams can never be broken by this call.
+   */
+  const mintPlaybackToken = useCallback(async (): Promise<{
+    token: string | null;
+    thumbnailToken: string | null;
+  }> => {
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData?.session) return { token: null, thumbnailToken: null };
+      const { data, error } = await supabase.functions.invoke("sign-playback-token", {
+        body: { ref_id: refId, ref_type: refType },
+      });
+      if (error || !data?.signed || !data?.token) return { token: null, thumbnailToken: null };
+      tokenMintedAtRef.current = Date.now();
+      return { token: data.token as string, thumbnailToken: (data.thumbnail_token as string) || null };
+    } catch {
+      return { token: null, thumbnailToken: null };
+    }
+  }, [refId, refType]);
 
   const refresh = useCallback(async () => {
     if (!refId || !mightBePpv) return;
@@ -85,6 +121,13 @@ export function useStreamPpvGate(
       setState(s => ({ ...s, checkedRefId: refId }));
       return;
     }
+    // Signed playback: PPV content the viewer may watch gets a per-viewer
+    // token minted before the player mounts (no tokenless 403 flash).
+    let token: string | null = null;
+    let thumbnailToken: string | null = null;
+    if (data.is_ppv && data.allowed && data.playback_id) {
+      ({ token, thumbnailToken } = await mintPlaybackToken());
+    }
     setState({
       checkedRefId: refId,
       isPpv: !!data.is_ppv,
@@ -93,8 +136,30 @@ export function useStreamPpvGate(
       ppvProductId: data.ppv_product_id || null,
       sourceStreamId: data.stream_id || null,
       playbackId: data.playback_id || null,
+      playbackToken: token,
+      thumbnailToken,
     });
-  }, [refId, refType, mightBePpv]);
+  }, [refId, refType, mightBePpv, mintPlaybackToken]);
+
+  /**
+   * Mid-watch token expiry (tokens live 6h): the player calls this on fatal
+   * playback errors. It only acts when the current token is >5h old — that
+   * guard makes it safe to call on ANY fatal error without refresh loops.
+   */
+  const handlePlaybackAuthError = useCallback(async () => {
+    const mintedAt = tokenMintedAtRef.current;
+    if (!mintedAt || Date.now() - mintedAt < 5 * 60 * 60 * 1000) return;
+    if (tokenRefreshingRef.current) return;
+    tokenRefreshingRef.current = true;
+    try {
+      const { token, thumbnailToken } = await mintPlaybackToken();
+      if (token) {
+        setState(s => ({ ...s, playbackToken: token, thumbnailToken }));
+      }
+    } finally {
+      tokenRefreshingRef.current = false;
+    }
+  }, [mintPlaybackToken]);
 
   useEffect(() => {
     if (!mightBePpv) return;
@@ -176,8 +241,11 @@ export function useStreamPpvGate(
     ppvProductId: state.ppvProductId,
     sourceStreamId: state.sourceStreamId,
     playbackId: state.playbackId,
+    playbackToken: state.playbackToken,
+    thumbnailToken: state.thumbnailToken,
     refresh,
     startUnlockPoll,
+    handlePlaybackAuthError,
   };
 }
 

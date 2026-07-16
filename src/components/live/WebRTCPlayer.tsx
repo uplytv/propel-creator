@@ -12,13 +12,15 @@ import { Sentry } from "@/lib/sentry";
 interface WebRTCPlayerProps {
   streamId: string;
   playbackId?: string;
+  /** Mux signed-playback JWT (aud "v") — required by the HLS fallback when the playback id is signed-policy (PPV). */
+  playbackToken?: string;
   title?: string;
   className?: string;
 }
 
 type TransportMode = 'webrtc' | 'hls';
 
-export default function WebRTCPlayer({ streamId, playbackId, title, className }: WebRTCPlayerProps) {
+export default function WebRTCPlayer({ streamId, playbackId, playbackToken, title, className }: WebRTCPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const fullscreenContainerRef = useRef<HTMLDivElement>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
@@ -71,7 +73,9 @@ export default function WebRTCPlayer({ streamId, playbackId, title, className }:
     setTransport('hls');
     setStatus('connecting');
 
-    const hlsUrl = `https://stream.mux.com/${playbackId}.m3u8`;
+    const hlsUrl = playbackToken
+      ? `https://stream.mux.com/${playbackId}.m3u8?token=${encodeURIComponent(playbackToken)}`
+      : `https://stream.mux.com/${playbackId}.m3u8`;
     const video = videoRef.current;
     if (!video) return;
 
@@ -109,7 +113,7 @@ export default function WebRTCPlayer({ streamId, playbackId, title, className }:
     } else {
       setStatus('failed');
     }
-  }, [playbackId, cleanupWebRTC]);
+  }, [playbackId, playbackToken, cleanupWebRTC]);
 
   // Monitor WebRTC stats for latency display
   const startStatsMonitor = useCallback((pc: RTCPeerConnection) => {

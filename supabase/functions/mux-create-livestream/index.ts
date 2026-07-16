@@ -37,9 +37,12 @@ serve(async (req) => {
     })
   }
 
-  const { userId, title, description, category, isPublic, orientation } = body || {}
+  const { userId, title, description, category, isPublic, orientation, ppv, ppvPrice } = body || {}
   const streamOrientation = orientation === 'portrait' ? 'portrait' : 'landscape'
-  log('input_validated', 'ok', { userId: userId ? `${String(userId).slice(0, 8)}…` : null, orientation: streamOrientation, hasTitle: !!title })
+  // Additive PPV param from GoLive's pay-per-view toggle. Older clients that
+  // don't send it get exactly the previous behavior (public policy).
+  const isPpvRequested = ppv === true
+  log('input_validated', 'ok', { userId: userId ? `${String(userId).slice(0, 8)}…` : null, orientation: streamOrientation, hasTitle: !!title, ppv: isPpvRequested })
 
   if (!userId) {
     log('missing_user_id', 'error')
@@ -61,10 +64,30 @@ serve(async (req) => {
   }
   log('mux_credentials_present', 'ok')
 
+  // ─── Playback policy decision ──────────────────────────────────────────────
+  // PPV streams get Mux SIGNED playback (per-viewer JWTs minted by the
+  // sign-playback-token edge fn) when the signing secrets exist, so a leaked
+  // HLS URL is useless without a token. Recordings inherit the policy via
+  // new_asset_settings. Non-PPV streams keep the exact public policy this
+  // function has always used. If the signing secrets are not configured yet,
+  // PPV streams fall back to the current behavior (public policy, playback id
+  // vault-gated by get_stream_playback) — going live is never blocked.
+  const signingConfigured =
+    !!Deno.env.get('MUX_SIGNING_KEY_ID') && !!Deno.env.get('MUX_SIGNING_PRIVATE_KEY')
+  const useSignedPolicy = isPpvRequested && signingConfigured
+  if (isPpvRequested && !signingConfigured) {
+    log('ppv_signed_playback_unavailable', 'ok', {
+      reason: 'mux_signing_secrets_not_set',
+      fallback: 'public_policy_vault_gated',
+    })
+  }
+  if (useSignedPolicy) log('ppv_signed_policy_selected', 'ok')
+  const playbackPolicy = useSignedPolicy ? ['signed'] : ['public']
+
   const muxPayload = {
-    playback_policy: ['public'],
+    playback_policy: playbackPolicy,
     new_asset_settings: {
-      playback_policy: ['public'],
+      playback_policy: playbackPolicy,
       mp4_support: 'capped-1080p',
       normalize_audio: true,
     },
@@ -115,22 +138,46 @@ serve(async (req) => {
   )
   log('supabase_client_ready', 'ok')
 
-  const { data: stream, error: dbError } = await supabase
+  const baseRow: Record<string, unknown> = {
+    user_id: userId,
+    mux_stream_id: muxData.data.id,
+    mux_playback_id: muxData.data.playback_ids[0].id,
+    stream_key: muxData.data.stream_key,
+    title,
+    description,
+    category,
+    is_public: isPublic,
+    status: 'idle',
+    orientation: streamOrientation,
+  }
+
+  // Flag PPV at insert time so the vault trigger (migration 20260706160000)
+  // moves the playback id into stream_playback_vault immediately — no window
+  // where a PPV (possibly signed) playback id sits in the public column.
+  // GoLive still runs its own is_ppv/ppv_price update afterwards (idempotent).
+  const insertRow: Record<string, unknown> = { ...baseRow }
+  if (isPpvRequested) {
+    insertRow.is_ppv = true
+    const parsedPrice = typeof ppvPrice === 'number' && isFinite(ppvPrice) ? ppvPrice : NaN
+    if (parsedPrice >= 1) insertRow.ppv_price = parsedPrice
+  }
+
+  let { data: stream, error: dbError } = await supabase
     .from('mux_live_streams')
-    .insert({
-      user_id: userId,
-      mux_stream_id: muxData.data.id,
-      mux_playback_id: muxData.data.playback_ids[0].id,
-      stream_key: muxData.data.stream_key,
-      title,
-      description,
-      category,
-      is_public: isPublic,
-      status: 'idle',
-      orientation: streamOrientation,
-    })
+    .insert(insertRow)
     .select()
     .single()
+
+  // Never block going live: if the PPV columns aren't deployed yet, retry the
+  // legacy insert (GoLive's follow-up update is the existing PPV path there).
+  if (dbError && isPpvRequested) {
+    log('db_insert_ppv_fields_failed_retrying_plain', 'error', { message: dbError.message })
+    ;({ data: stream, error: dbError } = await supabase
+      .from('mux_live_streams')
+      .insert(baseRow)
+      .select()
+      .single())
+  }
 
   if (dbError) {
     log('db_insert_failed', 'error', { message: dbError.message, code: (dbError as any).code })
