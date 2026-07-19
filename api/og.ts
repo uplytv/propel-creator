@@ -11,7 +11,9 @@ const SUPABASE_PUBLISHABLE_KEY =
 // Site-wide defaults — every unknown path previews as UPLY.
 const DEFAULT_TITLE = "UPLY — The Creator Operating System";
 const DEFAULT_DESCRIPTION = "Stream, teach, sell, and build community. Keep 95% of everything you earn.";
-const DEFAULT_IMAGE = `${SITE_ORIGIN}/uply-og-default.png`;
+// Owner directive: the default preview image is the original UPLY logo
+// (square 1024x1024) until per-creator previews go live on real hosting.
+const DEFAULT_IMAGE = `${SITE_ORIGIN}/logo.png`;
 
 // Arya XO's tags apply ONLY to his own alias routes (see ARYAXO_PROFILE_ALIASES
 // and the arya-* route regexes below) — never as a site-wide default.
@@ -19,7 +21,8 @@ const ARYAXO_IMAGE = `${SITE_ORIGIN}/og/ariaxo.jpg`;
 const ARYAXO_DESCRIPTION = "150 Bands — out now.";
 
 // Images we know are exactly 1200x630 (safe to advertise dimensions for).
-const KNOWN_WIDE_IMAGES = new Set([DEFAULT_IMAGE, ARYAXO_IMAGE]);
+// The square logo default is deliberately NOT here — wrong dims break previews.
+const KNOWN_WIDE_IMAGES = new Set([ARYAXO_IMAGE]);
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -575,7 +578,9 @@ function renderMetaHtml(meta: Meta) {
     ...imageDimensionTags,
     tag("property", "og:image:alt", meta.title),
     tag("property", "og:url", meta.url),
-    tag("name", "twitter:card", "summary_large_image"),
+    // Square logo default renders best as the compact card; real page images
+    // (portraits/covers) get the large card.
+    tag("name", "twitter:card", meta.image === DEFAULT_IMAGE ? "summary" : "summary_large_image"),
     tag("name", "twitter:site", "@uplytv"),
     tag("name", "twitter:title", meta.title),
     tag("name", "twitter:description", meta.description),
