@@ -45,6 +45,7 @@ import StickyBuyTicketBar from "@/components/live/StickyBuyTicketBar";
 import StreamEmailCapture from "@/components/live/StreamEmailCapture";
 import PPVPaywall, { useStreamPpvGate } from "@/components/live/PPVPaywall";
 import { useMemberSubscriptionStatus } from "@/hooks/usePaymentReturn";
+import VideoComments from "@/components/video/VideoComments";
 
 // Wrapper that fetches real event data for the ticket bar
 function StickyBuyTicketBarWithEvent({ eventId, streamId, fallbackTitle }: { eventId: string; streamId: string; fallbackTitle: string }) {
@@ -327,6 +328,8 @@ export default function Stream() {
   const [joinStream, setJoinStream] = useState<MediaStream | null>(null);
   const [joinStatus, setJoinStatus] = useState<'idle' | 'requesting' | 'accepted' | 'rejected'>('idle');
   const [creatorUsername, setCreatorUsername] = useState<string | null>(routeUsername || null);
+  // VOD playback <video> element — drives chat-replay sync in VideoComments
+  const [vodVideoEl, setVodVideoEl] = useState<HTMLVideoElement | null>(null);
   const { isFollowing, follow, unfollow } = useFollows();
 
   const searchParams = new URLSearchParams(window.location.search);
@@ -1115,6 +1118,7 @@ export default function Stream() {
                   autoPlay
                   muted={false}
                   streamType="on-demand"
+                  onVideoRef={setVodVideoEl}
                 />
               ) : isActive && dbStream.stream_type === 'browser' ? (
                 <WebRTCPlayer
@@ -1398,6 +1402,22 @@ export default function Stream() {
               )}
             </div>
 
+            {/* Comments + chat replay — YouTube model: live chat only while
+                live; every non-live playback (vod/recording/asset) gets a real
+                comments section instead. Recordings additionally get a
+                read-only "Chat replay" tab synced to player time. */}
+            {isVod && (
+              <div className="px-4 sm:px-6 py-5 border-b border-border max-w-3xl">
+                <VideoComments
+                  refId={dbStream.id}
+                  refType={ppvRefType}
+                  contentOwnerId={dbStream.user_id}
+                  muxAssetId={dbStream._isRecording ? dbStream.mux_asset_id : null}
+                  videoEl={vodVideoEl}
+                />
+              </div>
+            )}
+
             {/* Related recordings when stream is offline */}
             {!isActive && !isVod && dbStream.user_id && (
               <div className="px-4 sm:px-6 py-5">
@@ -1407,8 +1427,11 @@ export default function Stream() {
             )}
           </div>
 
-          {/* Chat sidebar - desktop only — hide when offline */}
-          {(isActive || isVod) && (
+          {/* Chat sidebar - desktop only — LIVE ONLY (YouTube model).
+              Never on VOD/recordings: there is no live session, so typed
+              messages would silently vanish. Non-live playback gets
+              VideoComments (above) instead. */}
+          {isActive && (
             <div className="hidden lg:block w-80 flex-shrink-0">
               <div className="fixed top-14 right-0 w-80 bottom-0">
                 <StreamChat
@@ -1423,8 +1446,8 @@ export default function Stream() {
           )}
         </div>
 
-        {/* Mobile chat — hide when offline */}
-        {(isActive || isVod) && (
+        {/* Mobile chat — LIVE ONLY (same rule as the desktop sidebar) */}
+        {isActive && (
           <div className="lg:hidden">
             <MobileChatDrawer
               streamId={id || routeSlug}
