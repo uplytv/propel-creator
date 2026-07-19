@@ -50,10 +50,21 @@ export default function ArtistCommunityPage() {
           <div className="flex items-baseline justify-between flex-wrap gap-3 mb-6">
             <h2 className="text-xl font-semibold">What members get</h2>
             <div className="text-right">
-              <div className="text-3xl font-bold" style={{ color: artist.accent }}>
-                {c.priceUsd === 0 ? "Free" : `$${c.priceUsd}`}
-              </div>
-              {c.priceUsd > 0 && <div className="text-[12px] opacity-60">per month</div>}
+              {c.contactForPricing ? (
+                <>
+                  <div className="text-xl font-bold" style={{ color: artist.accent }}>
+                    By application
+                  </div>
+                  <div className="text-[12px] opacity-60">Talk to a rep for a quote</div>
+                </>
+              ) : (
+                <>
+                  <div className="text-3xl font-bold" style={{ color: artist.accent }}>
+                    {c.priceUsd === 0 ? "Free" : `$${c.priceUsd}`}
+                  </div>
+                  {c.priceUsd > 0 && <div className="text-[12px] opacity-60">per month</div>}
+                </>
+              )}
             </div>
           </div>
           <ul className="space-y-3 mb-8">
@@ -70,14 +81,16 @@ export default function ArtistCommunityPage() {
             ))}
           </ul>
           <Link
-            to="/auth"
+            to={c.contactForPricing ? `/${artist.slug}-site#booking` : "/auth"}
             className="block text-center px-6 py-3.5 rounded-full font-semibold transition-transform hover:scale-[1.01]"
             style={{ background: artist.accent, color: "#0a0a0a" }}
           >
-            Join {c.name}
+            {c.contactForPricing ? "Talk to a rep — get a quote" : `Join ${c.name}`}
           </Link>
           <p className="mt-3 text-center text-[11px] opacity-50">
-            Powered by UPLY · cancel anytime
+            {c.contactForPricing
+              ? "Limited intake · pricing shared on your call"
+              : "Powered by UPLY · cancel anytime"}
           </p>
           <ArtistDisclaimers artist={artist} className="mt-5 pt-4 border-t border-white/10" />
         </div>

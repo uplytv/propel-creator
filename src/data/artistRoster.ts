@@ -67,6 +67,8 @@ export interface ArtistCommunity {
   perks: string[];
   /** Monthly USD; 0 = free */
   priceUsd: number;
+  /** Premium positioning: hide the price — pricing by application via the booking form. */
+  contactForPricing?: boolean;
 }
 
 export interface ArtistCourse {
@@ -76,6 +78,8 @@ export interface ArtistCourse {
   lessons: number;
   duration: string;
   priceUsd: number;
+  /** Premium positioning: hide the price — pricing by application via the booking form. */
+  contactForPricing?: boolean;
   summary: string;
   outline: string[];
   /** Optional editorial cover image (CDN url from .asset.json) */
@@ -965,7 +969,9 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
         "Private member feed + direct DM channel",
         "First seat for every cohort, masterclass, and event",
       ],
+      // Premium mastermind — no public price; prospects apply via the booking form.
       priceUsd: 49,
+      contactForPricing: true,
     },
     courses: [
       {
@@ -974,7 +980,9 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
         level: "Advanced",
         lessons: 12,
         duration: "8h 45m",
+        // Premium mentorship — no public price; prospects apply via the booking form.
         priceUsd: 997,
+        contactForPricing: true,
         summary: "The exact internal training Samuel runs his ICON team through — opened up to outside operators. Offer, paid traffic, retention, ops, hiring, and the operating rhythm behind a $40M brand.",
         outline: [
           "How to pick an offer that survives paid traffic",

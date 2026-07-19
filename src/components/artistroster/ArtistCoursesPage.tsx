@@ -79,7 +79,12 @@ export default function ArtistCoursesPage() {
 
                 <div className="mt-8 flex items-center justify-between flex-wrap gap-4">
                   <div>
-                    {isNonProfit ? (
+                    {course.contactForPricing ? (
+                      <>
+                        <div className="text-2xl font-bold" style={{ color: artist.accent }}>By application</div>
+                        <div className="text-[12px] opacity-60">Limited intake · pricing shared on your call</div>
+                      </>
+                    ) : isNonProfit ? (
                       <>
                         <div className="text-3xl font-bold" style={{ color: artist.accent }}>Donate</div>
                         <div className="text-[12px] opacity-60">100% supports the foundation</div>
@@ -92,11 +97,16 @@ export default function ArtistCoursesPage() {
                     )}
                   </div>
                   <Link
-                    to="/auth"
+                    to={course.contactForPricing ? `/${artist.slug}-site#booking` : "/auth"}
                     className="px-6 py-3.5 rounded-full font-semibold inline-flex items-center gap-2"
                     style={{ background: artist.accent, color: "#0a0a0a" }}
                   >
-                    <PlayCircle className="w-4 h-4" /> {isNonProfit ? "Support the foundation" : "Enroll now"}
+                    <PlayCircle className="w-4 h-4" />{" "}
+                    {course.contactForPricing
+                      ? "Talk to a rep — get a quote"
+                      : isNonProfit
+                        ? "Support the foundation"
+                        : "Enroll now"}
                   </Link>
                 </div>
               </>
@@ -152,8 +162,8 @@ export default function ArtistCoursesPage() {
               <h2 className="text-lg font-semibold" style={{ fontFamily: "Fraunces, Georgia, serif" }}>{c.title}</h2>
               <p className="mt-2 text-[14px] opacity-75 flex-1">{c.summary}</p>
               <div className="mt-4 flex items-center justify-between">
-                <div className="text-[12px] opacity-60">{c.priceUsd === 0 ? "Non-profit" : `${c.lessons} lessons`}</div>
-                <div className="font-bold" style={{ color: artist.accent }}>{c.priceUsd === 0 ? "Donate" : `$${c.priceUsd}`}</div>
+                <div className="text-[12px] opacity-60">{c.contactForPricing ? "Limited intake" : c.priceUsd === 0 ? "Non-profit" : `${c.lessons} lessons`}</div>
+                <div className="font-bold" style={{ color: artist.accent }}>{c.contactForPricing ? "By application" : c.priceUsd === 0 ? "Donate" : `$${c.priceUsd}`}</div>
               </div>
             </div>
           </Link>

@@ -182,7 +182,7 @@ export default function ArtistAccountPage() {
                 <p className="text-[11px] uppercase tracking-[0.2em] opacity-60">Community</p>
                 <p className="mt-0.5 text-[16px] font-semibold">{artist.community.name}</p>
                 <p className="text-[13px] opacity-70 mt-1">
-                  {artist.community.priceUsd === 0 ? "Free membership" : `$${artist.community.priceUsd}/mo`} · Not active
+                  {artist.community.contactForPricing ? "By application" : artist.community.priceUsd === 0 ? "Free membership" : `$${artist.community.priceUsd}/mo`} · Not active
                 </p>
               </div>
               <Link
