@@ -4180,6 +4180,7 @@ export type Database = {
           is_free: boolean
           is_public: boolean
           last_blast_sent_at: string | null
+          min_post_level: number
           name: string
           price: number
           slug: string | null
@@ -4195,6 +4196,7 @@ export type Database = {
           is_free?: boolean
           is_public?: boolean
           last_blast_sent_at?: string | null
+          min_post_level?: number
           name?: string
           price?: number
           slug?: string | null
@@ -4210,6 +4212,7 @@ export type Database = {
           is_free?: boolean
           is_public?: boolean
           last_blast_sent_at?: string | null
+          min_post_level?: number
           name?: string
           price?: number
           slug?: string | null
@@ -5411,6 +5414,99 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "event_fee_change_log_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_promoter_sales: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          event_id: string
+          id: string
+          order_id: string
+          promoter_id: string
+          tickets_count: number
+        }
+        Insert: {
+          amount_cents?: number
+          created_at?: string
+          event_id: string
+          id?: string
+          order_id: string
+          promoter_id: string
+          tickets_count?: number
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          event_id?: string
+          id?: string
+          order_id?: string
+          promoter_id?: string
+          tickets_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_promoter_sales_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_promoter_sales_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_promoter_sales_promoter_id_fkey"
+            columns: ["promoter_id"]
+            isOneToOne: false
+            referencedRelation: "event_promoters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_promoters: {
+        Row: {
+          code: string
+          created_at: string
+          creator_id: string
+          event_id: string
+          id: string
+          promoter_email: string | null
+          promoter_name: string | null
+          promoter_user_id: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          creator_id: string
+          event_id: string
+          id?: string
+          promoter_email?: string | null
+          promoter_name?: string | null
+          promoter_user_id?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          creator_id?: string
+          event_id?: string
+          id?: string
+          promoter_email?: string | null
+          promoter_name?: string | null
+          promoter_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_promoters_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
@@ -6988,6 +7084,73 @@ export type Database = {
             foreignKeyName: "lesson_completions_lesson_id_fkey"
             columns: ["lesson_id"]
             isOneToOne: false
+            referencedRelation: "classroom_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_progress: {
+        Row: {
+          id: string
+          lesson_id: string
+          position_seconds: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          lesson_id: string
+          position_seconds?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          lesson_id?: string
+          position_seconds?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_progress_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "classroom_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_quizzes: {
+        Row: {
+          created_at: string
+          creator_id: string
+          id: string
+          lesson_id: string
+          pass_pct: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          id?: string
+          lesson_id: string
+          pass_pct?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          id?: string
+          lesson_id?: string
+          pass_pct?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_quizzes_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: true
             referencedRelation: "classroom_lessons"
             referencedColumns: ["id"]
           },
@@ -16589,6 +16752,7 @@ export type Database = {
           budget_warning: boolean
           campaign_completed: boolean
           created_at: string
+          daily_digest_email: boolean
           id: string
           member_joined_email: boolean
           new_follower_email: boolean
@@ -16601,6 +16765,7 @@ export type Database = {
           budget_warning?: boolean
           campaign_completed?: boolean
           created_at?: string
+          daily_digest_email?: boolean
           id?: string
           member_joined_email?: boolean
           new_follower_email?: boolean
@@ -16613,6 +16778,7 @@ export type Database = {
           budget_warning?: boolean
           campaign_completed?: boolean
           created_at?: string
+          daily_digest_email?: boolean
           id?: string
           member_joined_email?: boolean
           new_follower_email?: boolean
@@ -17748,6 +17914,82 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      quiz_attempts: {
+        Row: {
+          answers: Json
+          created_at: string
+          id: string
+          passed: boolean
+          quiz_id: string
+          score_pct: number
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          created_at?: string
+          id?: string
+          passed: boolean
+          quiz_id: string
+          score_pct: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          id?: string
+          passed?: boolean
+          quiz_id?: string
+          score_pct?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_questions: {
+        Row: {
+          correct_index: number
+          created_at: string
+          id: string
+          options: Json
+          position: number
+          question: string
+          quiz_id: string
+        }
+        Insert: {
+          correct_index: number
+          created_at?: string
+          id?: string
+          options: Json
+          position?: number
+          question: string
+          quiz_id: string
+        }
+        Update: {
+          correct_index?: number
+          created_at?: string
+          id?: string
+          options?: Json
+          position?: number
+          question?: string
+          quiz_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       radiate_broadcasts: {
         Row: {
@@ -19585,10 +19827,13 @@ export type Database = {
           is_active: boolean
           name: string
           price_monthly: number
+          price_yearly: number | null
           stripe_price_id: string | null
+          stripe_price_id_yearly: string | null
           stripe_product_id: string | null
           tier_rank: number | null
           trial_days: number | null
+          welcome_message: string | null
         }
         Insert: {
           created_at?: string
@@ -19598,10 +19843,13 @@ export type Database = {
           is_active?: boolean
           name: string
           price_monthly?: number
+          price_yearly?: number | null
           stripe_price_id?: string | null
+          stripe_price_id_yearly?: string | null
           stripe_product_id?: string | null
           tier_rank?: number | null
           trial_days?: number | null
+          welcome_message?: string | null
         }
         Update: {
           created_at?: string
@@ -19611,10 +19859,13 @@ export type Database = {
           is_active?: boolean
           name?: string
           price_monthly?: number
+          price_yearly?: number | null
           stripe_price_id?: string | null
+          stripe_price_id_yearly?: string | null
           stripe_product_id?: string | null
           tier_rank?: number | null
           trial_days?: number | null
+          welcome_message?: string | null
         }
         Relationships: []
       }
@@ -22250,6 +22501,7 @@ export type Database = {
         Returns: undefined
       }
       calculate_waitlist_leaderboard_rank: { Args: never; Returns: undefined }
+      can_access_lesson: { Args: { p_lesson_id: string }; Returns: boolean }
       can_manage_event: { Args: { _event_id: string }; Returns: boolean }
       can_scan_event: { Args: { _event_id: string }; Returns: boolean }
       cast_challenge_vote: {
@@ -22505,6 +22757,16 @@ export type Database = {
           username: string
         }[]
       }
+      get_quiz_questions: {
+        Args: { p_quiz_id: string }
+        Returns: {
+          id: string
+          options: Json
+          question: string
+          quiz_id: string
+          sort_order: number
+        }[]
+      }
       get_stream_playback: {
         Args: { p_ref_id: string; p_ref_type?: string }
         Returns: Json
@@ -22533,13 +22795,25 @@ export type Database = {
         }[]
       }
       get_user_id_by_email: { Args: { p_email: string }; Returns: string }
+      grade_quiz_attempt: {
+        Args: { p_answers: Json; p_quiz_id: string }
+        Returns: Json
+      }
       has_creator_access: { Args: { _creator_id: string }; Returns: boolean }
+      has_drip_unlocked: {
+        Args: { p_creator_id: string; p_drip_days: number }
+        Returns: boolean
+      }
       has_event_livestream_access: {
         Args: { _event_id: string }
         Returns: boolean
       }
       has_fan_club_access: {
         Args: { _artist_id: string; _tier_id: string }
+        Returns: boolean
+      }
+      has_module_drip_unlocked: {
+        Args: { p_module_id: string }
         Returns: boolean
       }
       has_purchased_track: {
@@ -22619,6 +22893,8 @@ export type Database = {
         Returns: Json
       }
       lookup_referrer_by_code: { Args: { ref_code: string }; Returns: Json }
+      meets_min_post_level: { Args: { _creator_id: string }; Returns: boolean }
+      member_level: { Args: { _points: number }; Returns: number }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -22671,6 +22947,19 @@ export type Database = {
           unique_listeners: number
         }[]
       }
+      my_drip_locked_modules: {
+        Args: { p_creator_id: string }
+        Returns: {
+          cover_image_url: string
+          description: string
+          drip_days: number
+          lesson_count: number
+          module_id: string
+          title: string
+          unlock_at: string
+        }[]
+      }
+      my_member_since: { Args: { p_creator_id: string }; Returns: string }
       my_scannable_events: {
         Args: never
         Returns: {
