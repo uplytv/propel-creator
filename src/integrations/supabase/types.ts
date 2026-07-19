@@ -2893,6 +2893,7 @@ export type Database = {
           created_at: string
           creator_id: string
           description: string
+          drip_days: number | null
           id: string
           is_free: boolean
           min_tier_rank: number | null
@@ -2905,6 +2906,7 @@ export type Database = {
           created_at?: string
           creator_id: string
           description?: string
+          drip_days?: number | null
           id?: string
           is_free?: boolean
           min_tier_rank?: number | null
@@ -2917,6 +2919,7 @@ export type Database = {
           created_at?: string
           creator_id?: string
           description?: string
+          drip_days?: number | null
           id?: string
           is_free?: boolean
           min_tier_rank?: number | null
