@@ -42,13 +42,13 @@ export default function HangoutMatchSection() {
     enabled: !!user,
     queryFn: async () => {
       // Pull recently active profiles, exclude self + already-following
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("profiles")
         .select("user_id, display_name, avatar_url, username, bio, city")
         .neq("user_id", user!.id)
         .order("created_at", { ascending: false })
         .limit(30);
-      return (data || []).filter(
+      return ((data as Candidate[]) || []).filter(
         (p: Candidate) => !followingIds.includes(p.user_id)
       );
     },

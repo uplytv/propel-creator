@@ -25,7 +25,7 @@ export default function EventDiscoveryGrid({
     queryKey: ["profile-location", user?.id],
     queryFn: async () => {
       if (!user) return null;
-      const { data } = await supabase.from("profiles").select("location").eq("user_id", user.id).single();
+      const { data } = await (supabase as any).from("profiles").select("location").eq("user_id", user.id).single();
       return data as { location: string | null } | null;
     },
     enabled: !!user,

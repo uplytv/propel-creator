@@ -416,7 +416,7 @@ function TicketQrModalBody({
         .eq("id", ticket.id)
         .maybeSingle();
       if (data?.status && data.status !== liveStatus) {
-        setLiveStatus(data.status);
+        setLiveStatus(data.status as "active" | "canceled" | "refunded" | "used");
         if (data.status === "used") {
           const at = data.checked_in_at || data.scanned_at;
           if (at) setCheckInAt(at);

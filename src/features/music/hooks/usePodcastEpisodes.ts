@@ -47,7 +47,7 @@ export function useCreateEpisode() {
   return useMutation({
     mutationFn: async (payload: Partial<PodcastEpisode>) => {
       if (!user) throw new Error('Not authenticated');
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('music_podcast_episodes')
         .insert({ artist_id: user.id, ...payload })
         .select()

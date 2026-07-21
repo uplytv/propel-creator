@@ -32,12 +32,13 @@ export function useTrackLyrics(trackId?: string, language?: string) {
         .eq("track_id", trackId)
         .eq("is_published", true);
       if (language) q = q.eq("language", language);
-      const { data, error } = await q
+      const { data: rawData, error } = await q
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
       if (error) throw error;
-      if (!data) return null;
+      if (!rawData) return null;
+      const data: any = rawData;
       if (!data.lrc_text && Array.isArray(data.synced_lines)) {
         data.lrc_text = (data.synced_lines as SyncedLine[])
           .map((l: SyncedLine) => `[${formatTimeLrc(l.time ?? 0)}]${l.text}`)
@@ -90,7 +91,7 @@ export function useUpsertLyrics() {
       is_published?: boolean;
     }) => {
       if (!user) throw new Error("Not authenticated");
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("music_lyrics")
         .upsert(
           {
@@ -104,7 +105,7 @@ export function useUpsertLyrics() {
         .select()
         .single();
       if (error) throw error;
-      return data as Lyrics;
+      return data as unknown as Lyrics;
     },
     onSuccess: (_d, vars) =>
       qc.invalidateQueries({ queryKey: ["lyrics", vars.track_id] }),

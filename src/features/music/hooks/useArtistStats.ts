@@ -20,7 +20,7 @@ export function useArtistStats(artistId?: string, days = 30) {
         _days: days,
       });
       if (error) throw error;
-      return (data as ArtistStats) ?? { monthly_listeners: 0, total_plays: 0, top_countries: [], top_cities: [] };
+      return (data as unknown as ArtistStats) ?? { monthly_listeners: 0, total_plays: 0, top_countries: [], top_cities: [] };
     },
     enabled: !!artistId,
     staleTime: 60_000,

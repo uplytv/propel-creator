@@ -106,10 +106,11 @@ export function useStreamPpvGate(
 
   const refresh = useCallback(async () => {
     if (!refId || !mightBePpv) return;
-    const { data, error } = await supabase.rpc("get_stream_playback", {
+    const { data: rpcData, error } = await supabase.rpc("get_stream_playback", {
       p_ref_id: refId,
       p_ref_type: refType,
     });
+    const data = rpcData as any;
     if (error) {
       // RPC missing (migration not deployed yet) → fail open so free streams
       // keep working; PPV enforcement then rests on the stream row itself.

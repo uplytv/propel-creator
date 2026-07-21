@@ -42,7 +42,7 @@ export function RsvpButton({ eventId }: Props) {
       setGoing(false);
       setCount((c) => Math.max(0, c - 1));
     } else {
-      await sb.from("event_rsvps").insert({ event_id: eventId, user_id: userId, status: "going" });
+      await (sb.from("event_rsvps") as any).insert({ event_id: eventId, user_id: userId, status: "going" });
       setGoing(true);
       setCount((c) => c + 1);
       toast.success("You're going! 🎉");
