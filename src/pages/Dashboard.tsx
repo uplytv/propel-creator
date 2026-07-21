@@ -68,7 +68,7 @@ function PlatformUpgradeBanner() {
         </div>
         <div>
           <p className="text-sm font-semibold text-foreground">Upgrade to keep more earnings</p>
-          <p className="text-xs text-muted-foreground">Reduce fees from 5% to 0% with Pro or Scale</p>
+          <p className="text-xs text-muted-foreground">Keep 95% of everything you earn — upgrade for priority support</p>
         </div>
       </div>
       <Button size="sm" onClick={() => navigate("/pricing")} className="gap-1.5 flex-shrink-0">
