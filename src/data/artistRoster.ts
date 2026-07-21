@@ -1356,7 +1356,184 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     ],
   },
 
+  // ============================================================
+  // AARUSH NIJHAWAN — marketer & short-form content educator
+  // NOTE: numbers/claims are [Aarush: …] placeholders pending his
+  // sign-off — see AARUSH-ONBOARDING.md. Never fill these in for him.
+  // Portrait intentionally omitted — awaiting an uploaded photo;
+  // do NOT scrape or hotlink Instagram images.
+  // ============================================================
+  {
+    slug: "aarush",
+    aliases: ["aarushnijha", "aarush-nijhawan"],
+    displayName: "Aarush Nijhawan",
+    eyebrow: "Marketer · Short-Form Educator · Edison, NJ",
+    tagline: "Short-form content and marketing systems for creators and small brands.",
+    bio:
+      "Aarush Nijhawan is the founder of Rush Impact Media, a digital marketing brand helping creators and small businesses grow with short-form content and simple, repeatable marketing systems.\n\n" +
+      "He studies at Rutgers–New Brunswick and works out of Edison, NJ. His teaching focus is practical: pick your pillars, batch the work, write hooks that stop the scroll, and measure the handful of numbers that actually move the business — instead of drowning in dashboards.\n\n" +
+      "Everything he publishes is education and opinion, not guaranteed results. Marketing outcomes depend on your product, your market, and your consistency.",
+    gradient: { from: "#0d0a24", to: "#0a0a0a" },
+    accent: "#6B5BFF",
+    // portraitUrl intentionally omitted — awaiting an uploaded photo.
+    socials: [
+      { kind: "instagram", label: "Instagram", sub: "@aarushnijha", href: "https://www.instagram.com/aarushnijha", handle: "aarushnijha" },
+    ],
+    videos: [
+      { title: "Latest from @aarushnijha", instagramUrl: "https://www.instagram.com/aarushnijha/" },
+    ],
+    searchKeywords: [
+      "aarush", "aarush nijhawan", "aarushnijha", "rush impact media",
+      "short form content", "content marketing", "creator marketing",
+      "marketing systems", "content batching", "rutgers", "edison nj",
+      "marketer", "educator",
+    ],
+    verified: false,
+    creatorType: "Marketer",
+    joinedAt: "2026-07-01",
+    // bookingEmail intentionally omitted — [Aarush: confirm public email].
+    location: "Edison, NJ",
+    heroChip: "The Rush — founding members now enrolling",
+    bookingTagline:
+      "Workshops, consulting, and creator collabs on short-form content and marketing systems. Tell me the audience and the goal — replies within the week.",
+    marquee: [
+      "SHORT-FORM · SYSTEMS · SIMPLE",
+      "BATCH THE WORK · SHIP THE REPS",
+      "POSITIONING BEFORE PROMOTION",
+      "EDUCATION ONLY — RESULTS VARY",
+    ],
+    milestones: [
+      { year: "[Aarush: year]", text: "[Aarush: when and why you started creating content — one line in your words.]" },
+      { year: "[Aarush: year]", text: "[Aarush: founding Rush Impact Media — the moment and the why, one line.]" },
+      { year: "[Aarush: year]", text: "[Aarush: the marketing lesson that reshaped how you teach — one line.]" },
+      { year: "2026", text: "Launched The Rush on UPLY — short-form content and marketing systems, taught together." },
+    ],
+    stats: [
+      { k: "Brand", v: "Rush Impact Media" },
+      { k: "Teaching", v: "Short-form · systems" },
+      { k: "Studying at", v: "Rutgers–New Brunswick" },
+      { k: "Based in", v: "Edison, NJ" },
+    ],
+    featuredPostSlug: "batch-a-week-of-content-in-an-hour",
+    posts: [
+      {
+        slug: "batch-a-week-of-content-in-an-hour",
+        title: "Batch a week of content in an hour",
+        excerpt:
+          "The reason most creators fall off isn't talent — it's context-switching. Aarush on the batching workflow he teaches inside The Rush.",
+        readTime: "5 min read",
+        publishedAt: "2026-07-10",
+        tag: "Content",
+        body:
+          "The reason most creators quit isn't that they run out of ideas. It's that every idea costs them a full afternoon — because they treat every post like a new project. New setup, new lighting, new outfit, new mental gear. Do that seven days in a row and you're not making content anymore, you're just tired.\n\n" +
+          "Batching fixes that. The idea is boring on purpose: do all the same-type work at the same time, so the setup cost gets paid once instead of seven times. Here's the exact rhythm I teach inside The Rush.\n\n" +
+          "Start with a list, not a camera. Sit down with a notebook or a doc and write ten hooks. Not scripts — hooks. Ten single sentences that would make you stop scrolling if you saw them in your own feed. Some will be terrible. That's the job. You're not filming yet, and it's the cheapest place to be wrong.\n\n" +
+          "Now pick the best five. Under each one, write two lines: the point you're actually making, and the ask at the end. That's it. No teleprompter script, no beat-by-beat outline. If a hook needs three paragraphs of setup to make sense, cut it — it wasn't a hook, it was a lecture.\n\n" +
+          "Then, in one sitting, film all five. Same lighting, same outfit, same energy — batch. Between takes, don't scroll. Reset, breathe, do the next one. The first take of the day will feel stiff and the fourth will feel natural, which is exactly why batching works: your first take of every day used to be your only take.\n\n" +
+          "Edit in one pass, on a different day. Editing is a different brain than performing, and switching between them is where hours vanish. Give editing its own block. Cut tight, caption clearly, and schedule out.\n\n" +
+          "That's a week of content in roughly an hour of camera time and a second hour of edit time. Not because you're a genius — because you stopped paying the setup tax five times in a row.\n\n" +
+          "If you want the templates I use — hook lists, the two-line post plan, and the batching checklist — they live inside The Rush community. Join at /aarush/community and start shipping the reps instead of chasing the perfect one.\n\n" +
+          "Educational content only — marketing results vary based on your product, market, and consistency.",
+      },
+      {
+        slug: "evergreen-beats-viral",
+        title: "Why evergreen beats viral (almost every time)",
+        excerpt:
+          "Viral is a lottery ticket. Evergreen is a business. Aarush on why the boring middle of the content spectrum is where creators actually win.",
+        readTime: "4 min read",
+        publishedAt: "2026-07-08",
+        tag: "Growth",
+        body:
+          "Every creator I meet wants a viral hit. Almost none of them want an evergreen library. That order is backwards, and it's why so many talented people have a highlight reel but not a business.\n\n" +
+          "Here's the honest split. Viral content chases the algorithm's mood on a specific day. When it hits, the spike feels amazing, and within a week the numbers are back to baseline and you're expected to do it again. Evergreen content answers a question people ask this week, and next week, and next year. It doesn't spike. It compounds.\n\n" +
+          "Think about the last five things you googled. They were almost certainly evergreen questions — how to do a thing, what a thing means, whether a thing is worth it. Now think about the last viral video you actually remember from six months ago. Hard, right? That's the whole argument. Viral is entertainment; evergreen is search results, saves, and referrals — the surfaces that keep working for you while you sleep.\n\n" +
+          "The mistake most creators make is treating these as opposite personalities. They're not. The best content diet I've found is roughly this: most of your posts should answer a real question a real person types into a real search bar, packaged in a format that also works on a scroll feed. A small slice can chase the moment — trends, reactions, timely takes — because those posts introduce you to new people. The evergreen library is what convinces those new people to stay.\n\n" +
+          "So the practical move: for every trend-chasing post you publish, publish two that answer a specific question in your niche in the plainest language you can manage. Title it like a search result, hook it like a scroll-stop, and end it with the one thing you want the viewer to do next. Do that for a year and you won't have a viral moment. You'll have a compounding asset, which is quietly the better outcome.\n\n" +
+          "Inside The Rush, this is exactly how we plan calendars — trend posts sprinkled on top of an evergreen backbone. Join at /aarush/community if you want the templates and the weekly planning session.\n\n" +
+          "Educational content only — marketing outcomes depend on your niche, product, and consistency.",
+      },
+      {
+        slug: "building-a-personal-brand-in-college",
+        title: "Building a personal brand in college (without becoming that guy)",
+        excerpt:
+          "Personal brand isn't a costume. Aarush on how to build a real one while you're still in school — without turning into a walking pitch deck.",
+        readTime: "4 min read",
+        publishedAt: "2026-07-06",
+        tag: "Community",
+        body:
+          "There's a version of 'personal brand' that everyone rightly hates: the college kid on LinkedIn who describes a group project like it was a Series B raise. Please don't be that. But there's a much better version that most students never build, because they think building a brand means talking about themselves. It doesn't. It means putting the work in public.\n\n" +
+          "Here's how I'd think about it if I were starting from scratch, still in school, no audience, no résumé bullet points to lean on.\n\n" +
+          "Pick one thing you're already spending time on for reasons other than the internet. A subject you actually study. A skill you're actively getting better at. A community you're already part of. The whole trick is that your brand isn't a topic you invent — it's the topic your life is already about. If you have to force it in week one, it will die by week four.\n\n" +
+          "Now publish what you learn, weekly, in public. Not 'thought-leader' posts. Notes. What you tried, what worked, what didn't, what you'd do differently. The point isn't to look smart; the point is to be useful to the version of you from six months ago. Do that consistently and something quietly powerful happens: strangers who care about the same thing start showing up. Some of them are further ahead and will mentor you almost by accident. Some are a step behind and will introduce you to opportunities you'd never find through the campus career portal. You are, in the most literal sense, building your professional network by teaching what you're actively learning.\n\n" +
+          "A few honest rules while you're doing it. Don't fake results — writing 'here's what I tried and I don't know yet' is more credible than any polished win story. Don't pitch anything for the first six months; you're building trust, not converting a funnel. And keep the volume sane — one thoughtful post a week beats seven thin ones, every single time.\n\n" +
+          "Personal brand in college isn't a costume. It's a paper trail of your actual thinking, published in public, where the right people can find it. Do that for two years and you'll graduate with something most students spend the next decade trying to build: a real reputation with real proof.\n\n" +
+          "If you want a small community of creators and students doing exactly this, The Rush is the room. Join at /aarush/community.\n\n" +
+          "Educational content only — results vary based on your niche, effort, and consistency.",
+      },
+    ],
+    community: {
+      // [Aarush: confirm name] — derived from Rush Impact Media.
+      name: "The Rush",
+      description:
+        "A community for creators and small brands learning to grow with short-form content and smart marketing systems. Weekly planning, batching workflows, hook writing, and honest feedback on the reps. Education only — marketing outcomes vary based on your niche, product, and consistency.",
+      membersLabel: "Founding members — now enrolling",
+      perks: [
+        "Weekly short-form planning session",
+        "Batching workflow and hook-writing templates",
+        "Content-calendar template (evergreen + trending mix)",
+        "Simple analytics reviews — the numbers that actually matter",
+        "Monthly live Q&A with Aarush",
+        "Members-only feed with #content, #growth, and #wins",
+      ],
+      // Placeholder pending [Aarush: confirm launch price].
+      priceUsd: 0,
+    },
+    courses: [
+      {
+        slug: "short-form-content-engine",
+        title: "Short-Form Content Engine",
+        level: "Beginner",
+        lessons: 7,
+        duration: "[TBC]",
+        priceUsd: 0, // Placeholder pending [Aarush: confirm price].
+        summary:
+          "A step-by-step system for finding your pillars, batching a week of content in an hour, writing hooks that stop the scroll, and reading your analytics without fooling yourself. Educational content only — results vary.",
+        outline: [
+          "Finding your content pillars",
+          "The batching workflow: record a week in an hour",
+          "Hooks that stop the scroll",
+          "Before/after and myth-vs-fact formats",
+          "Editing for retention",
+          "Posting cadence and consistency",
+          "Reading your analytics without fooling yourself",
+        ],
+      },
+      {
+        slug: "marketing-systems-101",
+        title: "Marketing Systems 101",
+        level: "Beginner",
+        lessons: 6,
+        duration: "[TBC]",
+        priceUsd: 0, // Placeholder pending [Aarush: confirm price].
+        summary:
+          "The simple systems side of marketing for creators and small brands: positioning, a content calendar you'll actually keep, evergreen vs trending, email capture, offers, and measuring what actually converts. Education only — outcomes depend on your product and market.",
+        outline: [
+          "Positioning before promotion",
+          "Building a simple content calendar",
+          "Evergreen vs trending content",
+          "Turning followers into email subscribers",
+          "Basic offers and landing pages",
+          "Measuring what actually converts",
+        ],
+      },
+    ],
+    disclaimers: [
+      "Educational content only — marketing outcomes depend on your product, market, and consistency. No income or growth results are guaranteed.",
+    ],
+  },
+
 ];
+
 
 
 
