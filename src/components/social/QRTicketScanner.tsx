@@ -33,7 +33,7 @@ export default function QRTicketScanner({ eventId, onClose }: QRTicketScannerPro
     setChecking(true);
     setResult(null);
     try {
-      const { data: ticket, error } = await supabase
+      const { data: ticket, error } = await (supabase as any)
         .from("tickets")
         .select("*, profiles:user_id(display_name)")
         .eq("qr_secret", code.trim())

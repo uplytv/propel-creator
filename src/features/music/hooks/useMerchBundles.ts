@@ -84,7 +84,7 @@ export function useCreateBundle() {
   return useMutation({
     mutationFn: async (payload: Partial<MerchBundle>) => {
       if (!user) throw new Error("Not authenticated");
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("music_merch_bundles")
         .insert({ ...payload, owner_id: user.id })
         .select()
@@ -102,7 +102,7 @@ export function useAddBundleItem() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (payload: Partial<MerchBundleItem> & { bundle_id: string }) => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("music_merch_bundle_items")
         .insert(payload)
         .select()

@@ -43,7 +43,7 @@ export default function StaffReentryRequests() {
   const load = async () => {
     if (!user?.id) return;
     setLoading(true);
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from("notifications")
       .select("id, title, message, read, created_at, reference_id, link, metadata")
       .eq("user_id", user.id)

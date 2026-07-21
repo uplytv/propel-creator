@@ -73,7 +73,7 @@ export function useSmartPlaylistTracks(smartId?: string) {
         _limit: 100,
       });
       if (error) throw error;
-      const trackIds = ((ids as { resolve_smart_playlist: string }[] | string[]) ?? []).map((r: any) =>
+      const trackIds = ((ids as unknown as { resolve_smart_playlist: string }[] | string[]) ?? []).map((r: any) =>
         typeof r === "string" ? r : r.resolve_smart_playlist ?? r,
       );
       if (!trackIds.length) return [] as Track[];

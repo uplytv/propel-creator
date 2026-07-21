@@ -63,7 +63,7 @@ export function useAdCampaigns() {
   const createCampaign = useMutation({
     mutationFn: async (draft: AdCampaignDraft) => {
       if (!user) throw new Error("Not authenticated");
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("ad_campaigns")
         .insert({ ...draft, creator_id: user.id })
         .select()
@@ -76,7 +76,7 @@ export function useAdCampaigns() {
 
   const updateCampaign = useMutation({
     mutationFn: async ({ id, ...patch }: Partial<AdCampaignRow> & { id: string }) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("ad_campaigns")
         .update(patch)
         .eq("id", id);
@@ -89,7 +89,7 @@ export function useAdCampaigns() {
     mutationFn: async (source: AdCampaignRow) => {
       if (!user) throw new Error("Not authenticated");
       const { id, creator_id, created_at, updated_at, external_id, ...rest } = source;
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("ad_campaigns")
         .insert({
           ...rest,

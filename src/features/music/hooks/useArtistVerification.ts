@@ -47,7 +47,7 @@ export function useSubmitVerificationApplication() {
   return useMutation({
     mutationFn: async (payload: Partial<VerificationApplication>) => {
       if (!user) throw new Error('Not authenticated');
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('artist_verification_applications')
         .insert({ user_id: user.id, status: 'pending', ...payload })
         .select()

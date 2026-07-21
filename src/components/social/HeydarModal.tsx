@@ -26,7 +26,7 @@ export default function HeydarModal({ count, onClose }: HeydarModalProps) {
     queryKey: ["wallet-balance", user?.id],
     queryFn: async () => {
       if (!user) return null;
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("wallets")
         .select("balance")
         .eq("user_id", user.id)

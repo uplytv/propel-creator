@@ -24,7 +24,7 @@ export default function EventLiveStream() {
   useEffect(() => {
     if (!eventId) return;
     (async () => {
-      const { data: ev } = await supabase
+      const { data: ev } = await (supabase as any)
         .from("events")
         .select("id, title, slug, is_live, live_stream_id, creator_id, cover_image_url, starts_at")
         .eq("id", eventId)
