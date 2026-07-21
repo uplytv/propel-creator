@@ -139,7 +139,7 @@ async function handleWaitlistConfirmation(supabase: any, wl: any, totalCount: nu
   const topPct = totalCount > 0 ? Math.max(1, Math.round((wl.position / totalCount) * 100)) : 100;
   const refLink = `https://uply.tv/join/${wl.referral_code}`;
 
-  const text = `Hi ${firstName},\n\nYou're #${wl.position} on the UPLY waitlist.\nOut of ${totalCount.toLocaleString()} creators who have applied, you're in the top ${topPct}%.\n\nYOUR INVITE LINK\n${refLink}\n\nEvery creator you refer moves you up 10 spots.\n\nPRIZES FOR REFERRING:\n🥉 3 referrals → Jump 30 spots + Early Access unlocked\n🥈 10 referrals → Top 100 guaranteed + Founding Creator badge\n🥇 25 referrals → 0% platform fees FOREVER (worth $10,000+/year)\n\nWHAT YOU'RE GETTING EARLY ACCESS TO:\n- Go Live — streaming with instant monetization\n- Community — paid memberships and exclusive content\n- Courses — sell knowledge, build passive income\n- AI Team — 5 AI employees running your business 24/7\n- Keep 95% — vs 55% on YouTube and 50% on Twitch\n\nYou applied to the UPLY waitlist.\nUnsubscribe: ${unsubLink(wl.email)}`;
+  const text = `Hi ${firstName},\n\nYou're #${wl.position} on the UPLY waitlist.\nOut of ${totalCount.toLocaleString()} creators who have applied, you're in the top ${topPct}%.\n\nYOUR INVITE LINK\n${refLink}\n\nEvery creator you refer moves you up 10 spots.\n\nPRIZES FOR REFERRING:\n🥉 3 referrals → Jump 30 spots + Early Access unlocked\n🥈 10 referrals → Top 100 guaranteed + Founding Creator badge\n🥇 25 referrals → Founding Rate Lock (your 95% payout locked for life)\n\nWHAT YOU'RE GETTING EARLY ACCESS TO:\n- Go Live — streaming with instant monetization\n- Community — paid memberships and exclusive content\n- Courses — sell knowledge, build passive income\n- AI Team — 5 AI employees running your business 24/7\n- Keep 95% — vs 55% on YouTube and 50% on Twitch\n\nYou applied to the UPLY waitlist.\nUnsubscribe: ${unsubLink(wl.email)}`;
 
   const html = wrap(`<div style="padding:32px 28px;">
     <div style="text-align:center;margin-bottom:24px;">
@@ -159,7 +159,7 @@ async function handleWaitlistConfirmation(supabase: any, wl: any, totalCount: nu
       <p style="color:#ffffff;font-size:14px;font-weight:600;margin:0 0 12px;">🏆 Prizes for referring:</p>
       <p style="color:#CD7F32;font-size:13px;margin:0 0 6px;">🥉 3 referrals → Jump 30 spots + Early Access</p>
       <p style="color:#C0C0C0;font-size:13px;margin:0 0 6px;">🥈 10 referrals → Top 100 + Founding Creator badge</p>
-      <p style="color:#FFD700;font-size:13px;margin:0 0 6px;">🥇 25 referrals → 0% fees FOREVER ($10,000+/yr)</p>
+      <p style="color:#FFD700;font-size:13px;margin:0 0 6px;">🥇 25 referrals → Founding Rate Lock (95% payout for life)</p>
     </div>
     <div style="margin:20px 0;">
       <p style="color:#ffffff;font-size:14px;font-weight:600;margin:0 0 12px;">What you're getting:</p>
@@ -191,7 +191,7 @@ async function handleReferrerNotified(supabase: any, wl: any, applicantName: str
   const refLink = `https://uply.tv/join/${wl.referral_code}`;
   const nextMilestone = wl.referral_count < 3 ? 3 : wl.referral_count < 10 ? 10 : 25;
   const spotsToNext = Math.max(0, nextMilestone - wl.referral_count);
-  const nextName = nextMilestone === 3 ? "Early Access" : nextMilestone === 10 ? "Founding Creator" : "0% Fees Forever";
+  const nextName = nextMilestone === 3 ? "Early Access" : nextMilestone === 10 ? "Founding Creator" : "Founding Rate Lock";
 
   const text = `Hi ${firstName},\n\n${applicantName} (${applicantCreatorType || "Creator"}) just used your UPLY invite link!\n\nYour referral count: ${wl.referral_count}\nLeaderboard rank: #${wl.leaderboard_rank || "—"}\n${spotsToNext > 0 ? `${spotsToNext} more referrals to unlock ${nextName}` : "You've unlocked all milestones!"}\n\nShare your link: ${refLink}\n\nUnsubscribe: ${unsubLink(wl.email)}`;
 
@@ -270,7 +270,7 @@ async function handleMilestone10(supabase: any, wl: any) {
   const refLink = `https://uply.tv/join/${wl.referral_code}`;
   const bar = progressBar(10, 25);
 
-  const text = `Hi ${firstName},\n\n10 referrals. You're officially a UPLY Founding Creator candidate.\n\nYour leaderboard rank: #${wl.leaderboard_rank || "—"}\nFounding Creator badge: UNLOCKED\nTop 100: GUARANTEED\n\nThe 0% fees tier is worth $10,000+/year saved vs Twitch.\n15 more referrals to unlock it forever.\n\nProgress: 10 of 25 referrals [${bar}]\n\nShare: ${refLink}\n\nUnsubscribe: ${unsubLink(wl.email)}`;
+  const text = `Hi ${firstName},\n\n10 referrals. You're officially a UPLY Founding Creator candidate.\n\nYour leaderboard rank: #${wl.leaderboard_rank || "—"}\nFounding Creator badge: UNLOCKED\nTop 100: GUARANTEED\n\nThe Founding Rate Lock locks in your 95% payout for life.\n15 more referrals to unlock it.\n\nProgress: 10 of 25 referrals [${bar}]\n\nShare: ${refLink}\n\nUnsubscribe: ${unsubLink(wl.email)}`;
 
   const html = wrap(`<div style="padding:32px 28px;">
     <div style="text-align:center;margin-bottom:24px;">
@@ -283,8 +283,8 @@ async function handleMilestone10(supabase: any, wl: any) {
       <p style="color:#888;font-size:13px;margin:8px 0 0;">Leaderboard Rank</p>
     </div>`)}
     ${card(`<div>
-      <p style="color:#ffffff;font-size:14px;font-weight:600;margin:0 0 8px;">Next: 0% Platform Fees Forever</p>
-      <p style="color:#888;font-size:13px;margin:0 0 4px;">Worth $10,000+/year saved vs Twitch</p>
+      <p style="color:#ffffff;font-size:14px;font-weight:600;margin:0 0 8px;">Next: Founding Rate Lock — 95% payout for life</p>
+      <p style="color:#888;font-size:13px;margin:0 0 4px;">Your 95% creator payout, guaranteed for life</p>
       <p style="color:#888;font-size:13px;margin:0 0 8px;">15 more referrals to go</p>
       <p style="color:#00FF85;font-family:monospace;font-size:14px;margin:0;">10/25 [${bar}]</p>
     </div>`)}
@@ -295,7 +295,7 @@ async function handleMilestone10(supabase: any, wl: any) {
     to: wl.email,
     subject_a: "🏆 Top 100 locked in — you're a UPLY founding pioneer",
     subject_b: `${firstName}, you're rank #${wl.leaderboard_rank || "—"} — Founding Creator badge unlocked`,
-    preview_text: `You're in the top 100. Your Founding Creator badge is permanent. 15 more referrals = 0% fees forever.`,
+    preview_text: `You're in the top 100. Your Founding Creator badge is permanent. 15 more referrals = Founding Rate Lock (95% for life).`,
     html, text,
     template_name: "referral_milestone_10",
     metadata: { waitlist_id: wl.id },
@@ -308,12 +308,12 @@ async function handleMilestone25(supabase: any, wl: any) {
   if (wl.milestone_25_email_sent_at) return;
   const firstName = (wl.full_name || "Creator").split(" ")[0];
 
-  const text = `Hi ${firstName},\n\n25 referrals. You are officially a UPLY Founding Creator.\n\nTHE MATH:\nIf you earn $10,000/month on UPLY:\n- UPLY: you keep $10,000 (we take 0% — forever)\n- YouTube: you'd keep roughly $5,500 (they take up to 45%)\n- Twitch: you'd keep $5,000 (they take up to 50%)\n\nThat difference: $54,000 per year. Yours. Forever.\n\nYour name will be permanently listed as one of UPLY's founding creators.\nYour profile will be featured in the UPLY launch announcement.\nYou get priority creator support — always.\n\nA note from Arian (founder):\nYou believed in this before anyone else. That means everything. — Arian\n\nClaim your status: https://uply.tv/auth\n\nUnsubscribe: ${unsubLink(wl.email)}`;
+  const text = `Hi ${firstName},\n\n25 referrals. You are officially a UPLY Founding Creator.\n\nYOUR FOUNDING RATE LOCK:\nYour 95% creator payout is locked in for life. No rate hikes, ever.\n\nTHE MATH:\nIf you earn $10,000/month on UPLY:\n- UPLY: you keep $9,500 (locked 95% payout, for life)\n- YouTube: you'd keep roughly $5,500 (they take up to 45%)\n- Twitch: you'd keep $5,000 (they take up to 50%)\n\nYour name will be permanently listed as one of UPLY's founding creators.\nYour profile will be featured in the UPLY launch announcement.\nYou get priority creator support — always.\n\nA note from Arian (founder):\nYou believed in this before anyone else. That means everything. — Arian\n\nClaim your status: https://uply.tv/auth\n\nUnsubscribe: ${unsubLink(wl.email)}`;
 
   const html = wrap(`<div style="padding:32px 28px;">
     <div style="text-align:center;margin-bottom:24px;background:linear-gradient(135deg,#00FF85 0%,#00CC6A 100%);padding:32px;border-radius:12px;">
       <div style="font-size:48px;margin-bottom:12px;">👑</div>
-      <h1 style="color:#000;font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:800;margin:0 0 8px;">0% Fees Forever</h1>
+      <h1 style="color:#000;font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:800;margin:0 0 8px;">Founding Rate Lock — 95% for Life</h1>
       <p style="color:#000;font-size:14px;font-weight:600;margin:0;">You are a UPLY Founding Creator</p>
     </div>
     ${card(`<table width="100%" cellpadding="8" cellspacing="0" style="color:#CCCCCC;font-size:14px;">
@@ -322,11 +322,11 @@ async function handleMilestone25(supabase: any, wl: any) {
         <td style="color:#888;font-size:12px;text-align:right;">You Keep</td>
         <td style="color:#888;font-size:12px;text-align:right;">They Take</td>
       </tr>
-      <tr><td style="color:#00FF85;font-weight:700;">UPLY</td><td style="text-align:right;color:#00FF85;font-weight:700;">$10,000</td><td style="text-align:right;color:#00FF85;">0%</td></tr>
+      <tr><td style="color:#00FF85;font-weight:700;">UPLY</td><td style="text-align:right;color:#00FF85;font-weight:700;">$9,500</td><td style="text-align:right;color:#00FF85;">5% (locked)</td></tr>
       <tr><td>YouTube</td><td style="text-align:right;">~$5,500</td><td style="text-align:right;color:#888;">~45%</td></tr>
       <tr><td>Twitch</td><td style="text-align:right;">~$5,000</td><td style="text-align:right;color:#888;">~50%</td></tr>
     </table>
-    <p style="color:#00FF85;font-size:16px;font-weight:700;text-align:center;margin:16px 0 0;">Difference: $54,000/year. Forever.</p>`)}
+    <p style="color:#00FF85;font-size:16px;font-weight:700;text-align:center;margin:16px 0 0;">Your 95% payout — locked for life.</p>`)}
     ${card(`<div style="border-left:3px solid #00FF85;padding-left:16px;">
       <p style="color:#888;font-size:12px;margin:0 0 8px;">A NOTE FROM ARIAN (FOUNDER)</p>
       <p style="color:#CCCCCC;font-size:14px;font-style:italic;line-height:1.6;margin:0;">You believed in this before anyone else. That means everything. — Arian</p>
@@ -336,9 +336,9 @@ async function handleMilestone25(supabase: any, wl: any) {
 
   await sendEmail(supabase, {
     to: wl.email,
-    subject_a: "👑 You're a Founding Creator — 0% fees forever",
-    subject_b: `${firstName}, 25 referrals. You built something. 0% forever is yours.`,
-    preview_text: `The math: $10k/month on UPLY = $10k yours. On YouTube = $5,500. The difference is $54,000/year. Forever.`,
+    subject_a: "👑 You're a Founding Creator — 95% payout locked for life",
+    subject_b: `${firstName}, 25 referrals. You built something. Your 95% payout is locked for life.`,
+    preview_text: `The Founding Rate Lock: your 95% creator payout, guaranteed for life. No rate hikes, ever.`,
     html, text,
     template_name: "referral_milestone_25",
     metadata: { waitlist_id: wl.id },
@@ -354,7 +354,7 @@ async function handleRankMovement(supabase: any, wl: any) {
   const refLink = `https://uply.tv/join/${wl.referral_code}`;
   const nextMilestone = wl.referral_count < 3 ? 3 : wl.referral_count < 10 ? 10 : 25;
   const spotsToNext = Math.max(0, nextMilestone - wl.referral_count);
-  const nextName = nextMilestone === 3 ? "Early Access" : nextMilestone === 10 ? "Founding Creator" : "0% Fees Forever";
+  const nextName = nextMilestone === 3 ? "Early Access" : nextMilestone === 10 ? "Founding Creator" : "Founding Rate Lock";
 
   const text = `Hi ${firstName},\n\nYou jumped ${improvement} spots on the UPLY leaderboard!\n\nOld rank: #${wl.previous_leaderboard_rank}\nNew rank: #${wl.leaderboard_rank}\n\n${spotsToNext > 0 ? `${spotsToNext} more referrals to ${nextName}` : "All milestones unlocked!"}\n\nShare your link: ${refLink}\n\nUnsubscribe: ${unsubLink(wl.email)}`;
 
