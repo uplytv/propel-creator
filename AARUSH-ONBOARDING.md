@@ -107,9 +107,9 @@ Nothing below goes live as fact until Aarush confirms it in writing:
 
 1. `milestones` — 3 of 4 entries are `[Aarush: …]` prompts (why he started creating, founding Rush Impact Media, the marketing lesson that reshaped how he teaches).
 2. Community name **The Rush** — derived from Rush Impact Media; confirm.
-3. Community `priceUsd` — intentionally omitted; confirm launch price before the tier is created.
+3. Community `priceUsd` — set to `0` as a placeholder; confirm launch price before the tier is created (or the community page will render "$0").
 4. Community perk cadences ("weekly" planning, "monthly" Q&A) — delivery promises he must commit to.
-5. Course prices — Short-Form Content Engine and Marketing Systems 101 are both price-less in the roster; confirm before publishing.
+5. Course prices — Short-Form Content Engine and Marketing Systems 101 both set to `priceUsd: 0` as placeholders; confirm before publishing.
 6. Course durations — both `[TBC]` until content is recorded.
 7. `bookingEmail` intentionally omitted — confirm a public email he wants displayed, or keep it off.
 8. Socials — currently only Instagram (`@aarushnijha`); add X/Twitter, TikTok, YouTube, LinkedIn, etc. as he confirms handles.
