@@ -59,8 +59,8 @@ const milestones: Milestone[] = [
     context: "Creator Fund unlocks • Skool estimated at ~500K total users", reward_type: "status", is_unlocked: false,
   },
   {
-    count: 1000000, label: "1M", unlock: "0% fees + Founding Creator forever",
-    detail: "Every creator who joined before 1M locks in 0% platform fees permanently and earns Founding Creator status — priority support, exclusive badges, and early access to every future feature. If you earn $10,000/month that's $6,000 saved every single year forever. The window closes the moment UPLY hits 1M and never reopens.",
+    count: 1000000, label: "1M", unlock: "Founding Rate Lock + Founding Creator forever",
+    detail: "Every creator who joined before 1M locks in the Founding Rate — their 95% payout is guaranteed for life — and earns Founding Creator status: priority support, exclusive badges, and early access to every future feature. The window closes the moment UPLY hits 1M and never reopens.",
     context: "This window closes permanently at 1M", reward_type: "urgency", urgency: true, is_unlocked: false,
   },
   {
@@ -137,8 +137,8 @@ function ShareModal({ displayCount, effectiveCount, onClose }: { displayCount: s
   const past1M = effectiveCount >= 1000000;
 
   const shareText = past1M
-    ? `I was on @uplyTV before 1M creators.\n\n0% fees locked in forever ✓\nEntered for the $10K + Rolex at 5M ✓\nEligible for the supercar + Vegas + deal at 10M ✓\n\nWindow closed. I got in.\n\nuply.tv`
-    : `I joined @uplyTV before 1M creators.\n\n0% fees locked in forever.\n\nAt 5M: $10K cash + Rolex 🏆\nAt 10M: supercar up to $300K + Vegas + $50K deal 🏎️\n\nWindow still open → uply.tv`;
+    ? `I was on @uplyTV before 1M creators.\n\nFounding Rate Lock — 95% payout for life ✓\nEntered for the $10K + Rolex at 5M ✓\nEligible for the supercar + Vegas + deal at 10M ✓\n\nWindow closed. I got in.\n\nuply.tv`
+    : `I joined @uplyTV before 1M creators.\n\nFounding Rate Lock — 95% payout for life.\n\nAt 5M: $10K cash + Rolex 🏆\nAt 10M: supercar up to $300K + Vegas + $50K deal 🏎️\n\nWindow still open → uply.tv`;
 
   const handleShare = async () => {
     const fullContent = shareText + "\n\nhttps://uply.tv";
@@ -185,13 +185,13 @@ function ShareModal({ displayCount, effectiveCount, onClose }: { displayCount: s
           {past1M ? (
             <>
               <p className="text-[20px] font-extrabold text-primary font-heading" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>I was here before 1M.</p>
-              <p className="text-[13px] text-foreground mt-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>I locked in 0% fees forever.</p>
+              <p className="text-[13px] text-foreground mt-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Founding Rate Lock — 95% payout for life.</p>
               <p className="text-[13px] text-primary mt-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>uply.tv</p>
             </>
           ) : (
             <>
               <p className="text-[20px] font-extrabold text-primary font-heading" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>I joined before 1M.</p>
-              <p className="text-[13px] text-foreground mt-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>The 0% fees forever window<br />is still open.</p>
+              <p className="text-[13px] text-foreground mt-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>The Founding Rate Lock window<br />is still open.</p>
               <p className="text-[12px] text-muted-foreground mt-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>+{displayCount} creators so far.</p>
               <p className="text-[13px] text-primary mt-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>uply.tv — invite only.</p>
             </>
@@ -601,7 +601,7 @@ function MilestoneCard({ m, effectiveCount, isMobile, onOpenAwards }: {
               <p className="text-[11px] text-[#FF4444] mt-0.5">{(1000000 - effectiveCount).toLocaleString()} away from closing</p>
             </>
           ) : (
-            <p className="text-[11px] text-primary">✓ Window closed — 0% fees locked in for early creators</p>
+            <p className="text-[11px] text-primary">✓ Window closed — Founding Rate Lock (95% payout for life) secured for early creators</p>
           )}
         </div>
       )}
@@ -793,7 +793,7 @@ const MissionProgress = React.memo(function MissionProgress() {
         {effectiveCount > 500000 && effectiveCount < 1000000 && (
           <div className="mb-6 rounded-md px-4 py-3 text-center text-[13px] text-foreground"
             style={{ background: "rgba(255,68,68,0.06)", border: "1px solid rgba(255,68,68,0.25)" }}>
-            ⚡ The 0% fees forever window is closing — <span className="font-bold" style={{ color: "#FF4444" }}>{(1000000 - effectiveCount).toLocaleString()}</span> creators until it's gone permanently
+            ⚡ The Founding Rate Lock window is closing — <span className="font-bold" style={{ color: "#FF4444" }}>{(1000000 - effectiveCount).toLocaleString()}</span> creators until it's gone permanently
           </div>
         )}
 
