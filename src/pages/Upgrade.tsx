@@ -115,7 +115,7 @@ export default function Upgrade() {
 
             <div className="rounded-2xl bg-muted/40 border border-border p-4 mb-8">
               <p className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-primary" /> Everything in Scale, plus the above
+                <Sparkles className="w-3.5 h-3.5 text-primary" /> Everything in Unlimited, plus the above
               </p>
               <ul className="grid sm:grid-cols-2 gap-1.5">
                 {["Unlimited members & creators", "Live streaming, courses, events & ticketing", "ARIA AI — Claude-powered, your brand", "Affiliate & jobs marketplace"].map((f) => (
