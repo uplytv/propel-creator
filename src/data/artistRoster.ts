@@ -1403,9 +1403,6 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
       "EDUCATION ONLY — RESULTS VARY",
     ],
     milestones: [
-      { year: "[Aarush: year]", text: "[Aarush: when and why you started creating content — one line in your words.]" },
-      { year: "[Aarush: year]", text: "[Aarush: founding Rush Impact Media — the moment and the why, one line.]" },
-      { year: "[Aarush: year]", text: "[Aarush: the marketing lesson that reshaped how you teach — one line.]" },
       { year: "2026", text: "Launched The Rush on UPLY — short-form content and marketing systems, taught together." },
     ],
     stats: [
