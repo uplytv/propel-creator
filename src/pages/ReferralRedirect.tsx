@@ -359,7 +359,7 @@ export default function ReferralRedirect() {
             { icon: <Video className="w-5 h-5 text-primary flex-shrink-0" />, label: "Go Live & Get Discovered", desc: "Stream to a built-in audience. Tips, reactions, and live shopping." },
             { icon: <DollarSign className="w-5 h-5 text-primary flex-shrink-0" />, label: "7 Revenue Streams", desc: "Subscriptions, tips, courses, events, DMs, products, affiliates." },
             { icon: <Bot className="w-5 h-5 text-primary flex-shrink-0" />, label: "ARIA AI Growth Partner", desc: "Your personal AI advisor that helps you grow and earn more." },
-            { icon: <Shield className="w-5 h-5 text-primary flex-shrink-0" />, label: "Founding Creator Perks", desc: "Early members get permanent benefits and 0% fee opportunities." },
+            { icon: <Shield className="w-5 h-5 text-primary flex-shrink-0" />, label: "Founding Creator Perks", desc: "Early members get permanent benefits and the Founding Rate Lock — 95% payout for life." },
           ].map((f) => (
             <div key={f.label} className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border mb-2">
               {f.icon}

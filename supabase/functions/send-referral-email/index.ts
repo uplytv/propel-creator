@@ -70,7 +70,7 @@ function buildWelcomeEmailHtml(params: {
   <p style="color:#ffffff;font-size:14px;font-weight:600;margin:0 0 8px;">Move up faster:</p>
   <p style="color:#999;font-size:13px;margin:0 0 4px;">🥉 3 referrals → Jump 30 spots</p>
   <p style="color:#999;font-size:13px;margin:0 0 4px;">🥈 10 referrals → Top 100 guaranteed</p>
-  <p style="color:#999;font-size:13px;margin:0 0 16px;">🥇 25 referrals → Founding Creator (0% fees forever)</p>
+  <p style="color:#999;font-size:13px;margin:0 0 16px;">🥇 25 referrals → Founding Creator (Founding Rate Lock — 95% payout for life)</p>
 </td></tr>
 <tr><td style="padding:0 32px 32px;text-align:center;">
   <a href="${referralLink}" style="display:inline-block;background:#00FF85;color:#0A0A0A;font-weight:700;font-size:14px;padding:14px 32px;border-radius:8px;text-decoration:none;">Share Your Invite Link →</a>

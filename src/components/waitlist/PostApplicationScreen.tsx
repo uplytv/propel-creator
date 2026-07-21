@@ -224,7 +224,7 @@ export default function PostApplicationScreen({ position, referralCode, referral
         {[
           { emoji: "🥉", refs: 3, reward: "Move up 30 spots", border: "border-border" },
           { emoji: "🥈", refs: 10, reward: "Top 100 guaranteed", border: "border-border" },
-          { emoji: "🥇", refs: 25, reward: "Founding Creator 👑\n0% fees forever", border: "border-yellow-500/50" },
+          { emoji: "🥇", refs: 25, reward: "Founding Creator 👑\nFounding Rate Lock — 95% payout for life", border: "border-yellow-500/50" },
         ].map((item) => (
           <div
             key={item.refs}
