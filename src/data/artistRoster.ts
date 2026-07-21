@@ -1485,7 +1485,8 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
         "Monthly live Q&A with Aarush",
         "Members-only feed with #content, #growth, and #wins",
       ],
-      // Price intentionally omitted — [Aarush: confirm launch price].
+      // Placeholder pending [Aarush: confirm launch price].
+      priceUsd: 0,
     },
     courses: [
       {
@@ -1494,7 +1495,7 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
         level: "Beginner",
         lessons: 7,
         duration: "[TBC]",
-        // priceUsd intentionally omitted — [Aarush: confirm price].
+        priceUsd: 0, // Placeholder pending [Aarush: confirm price].
         summary:
           "A step-by-step system for finding your pillars, batching a week of content in an hour, writing hooks that stop the scroll, and reading your analytics without fooling yourself. Educational content only — results vary.",
         outline: [
@@ -1513,7 +1514,7 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
         level: "Beginner",
         lessons: 6,
         duration: "[TBC]",
-        // priceUsd intentionally omitted — [Aarush: confirm price].
+        priceUsd: 0, // Placeholder pending [Aarush: confirm price].
         summary:
           "The simple systems side of marketing for creators and small brands: positioning, a content calendar you'll actually keep, evergreen vs trending, email capture, offers, and measuring what actually converts. Education only — outcomes depend on your product and market.",
         outline: [
