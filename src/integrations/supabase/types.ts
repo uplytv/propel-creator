@@ -380,34 +380,49 @@ export type Database = {
           affiliate_code: string
           amount: number
           commission_amount: number
+          commission_pct: number
           conversion_type: string
           created_at: string
           id: string
+          mrr_cents: number | null
+          paid_invoice_id: string | null
+          plan: string | null
           referred_user_id: string
           referring_user_id: string
           status: string
+          stripe_subscription_id: string | null
         }
         Insert: {
           affiliate_code: string
           amount?: number
           commission_amount?: number
+          commission_pct?: number
           conversion_type: string
           created_at?: string
           id?: string
+          mrr_cents?: number | null
+          paid_invoice_id?: string | null
+          plan?: string | null
           referred_user_id: string
           referring_user_id: string
           status?: string
+          stripe_subscription_id?: string | null
         }
         Update: {
           affiliate_code?: string
           amount?: number
           commission_amount?: number
+          commission_pct?: number
           conversion_type?: string
           created_at?: string
           id?: string
+          mrr_cents?: number | null
+          paid_invoice_id?: string | null
+          plan?: string | null
           referred_user_id?: string
           referring_user_id?: string
           status?: string
+          stripe_subscription_id?: string | null
         }
         Relationships: []
       }
@@ -16601,11 +16616,13 @@ export type Database = {
           id: string
           is_event_stream: boolean | null
           is_ppv: boolean
+          is_primetime: boolean
           is_public: boolean | null
           mux_playback_id: string | null
           mux_stream_id: string
           orientation: string | null
           ppv_price: number | null
+          scheduled_at: string | null
           slow_mode_seconds: number
           slug: string | null
           started_at: string | null
@@ -16634,11 +16651,13 @@ export type Database = {
           id?: string
           is_event_stream?: boolean | null
           is_ppv?: boolean
+          is_primetime?: boolean
           is_public?: boolean | null
           mux_playback_id?: string | null
           mux_stream_id: string
           orientation?: string | null
           ppv_price?: number | null
+          scheduled_at?: string | null
           slow_mode_seconds?: number
           slug?: string | null
           started_at?: string | null
@@ -16667,11 +16686,13 @@ export type Database = {
           id?: string
           is_event_stream?: boolean | null
           is_ppv?: boolean
+          is_primetime?: boolean
           is_public?: boolean | null
           mux_playback_id?: string | null
           mux_stream_id?: string
           orientation?: string | null
           ppv_price?: number | null
+          scheduled_at?: string | null
           slow_mode_seconds?: number
           slug?: string | null
           started_at?: string | null
