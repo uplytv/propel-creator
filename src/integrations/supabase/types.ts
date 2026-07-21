@@ -16608,6 +16608,7 @@ export type Database = {
           description: string | null
           ended_at: string | null
           energy_score: number
+          episode_number: number | null
           event_id: string | null
           featured_product_id: string | null
           featured_product_source: string | null
@@ -16623,6 +16624,7 @@ export type Database = {
           orientation: string | null
           ppv_price: number | null
           scheduled_at: string | null
+          series_name: string | null
           slow_mode_seconds: number
           slug: string | null
           started_at: string | null
@@ -16643,6 +16645,7 @@ export type Database = {
           description?: string | null
           ended_at?: string | null
           energy_score?: number
+          episode_number?: number | null
           event_id?: string | null
           featured_product_id?: string | null
           featured_product_source?: string | null
@@ -16658,6 +16661,7 @@ export type Database = {
           orientation?: string | null
           ppv_price?: number | null
           scheduled_at?: string | null
+          series_name?: string | null
           slow_mode_seconds?: number
           slug?: string | null
           started_at?: string | null
@@ -16678,6 +16682,7 @@ export type Database = {
           description?: string | null
           ended_at?: string | null
           energy_score?: number
+          episode_number?: number | null
           event_id?: string | null
           featured_product_id?: string | null
           featured_product_source?: string | null
@@ -16693,6 +16698,7 @@ export type Database = {
           orientation?: string | null
           ppv_price?: number | null
           scheduled_at?: string | null
+          series_name?: string | null
           slow_mode_seconds?: number
           slug?: string | null
           started_at?: string | null
