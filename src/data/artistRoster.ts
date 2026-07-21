@@ -1315,7 +1315,7 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
         title: "Trading Foundations",
         level: "Beginner",
         lessons: 8,
-        duration: "[TBC]",
+        duration: "Self-paced",
         priceUsd: 149,
         summary:
           "Blake's risk-first introduction to the markets — exits before entries, position sizing before conviction, and the discipline to survive long enough to learn. Educational content only — not financial advice; trading involves risk of loss.",
@@ -1335,7 +1335,7 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
         title: "Smart Betting 101",
         level: "Beginner",
         lessons: 7,
-        duration: "[TBC]",
+        duration: "Self-paced",
         priceUsd: 99,
         summary:
           "Bankroll discipline for people who bet on sports — units, expected value, record-keeping, and hard limits. Entertainment and education only · 21+ · where legal · bet responsibly. If gambling stops being fun, call 1-800-GAMBLER.",
@@ -1491,7 +1491,7 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
         title: "Short-Form Content Engine",
         level: "Beginner",
         lessons: 7,
-        duration: "[TBC]",
+        duration: "Self-paced",
         priceUsd: 0, // Placeholder pending [Aarush: confirm price].
         summary:
           "A step-by-step system for finding your pillars, batching a week of content in an hour, writing hooks that stop the scroll, and reading your analytics without fooling yourself. Educational content only — results vary.",
@@ -1510,7 +1510,7 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
         title: "Marketing Systems 101",
         level: "Beginner",
         lessons: 6,
-        duration: "[TBC]",
+        duration: "Self-paced",
         priceUsd: 0, // Placeholder pending [Aarush: confirm price].
         summary:
           "The simple systems side of marketing for creators and small brands: positioning, a content calendar you'll actually keep, evergreen vs trending, email capture, offers, and measuring what actually converts. Education only — outcomes depend on your product and market.",
