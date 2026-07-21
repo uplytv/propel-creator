@@ -16,7 +16,7 @@ export default function DripAnalytics({ sequenceId, steps }: Props) {
   const { data: sends = [], isLoading } = useQuery<SendRow[]>({
     queryKey: ["drip-sends-analytics", sequenceId],
     queryFn: async () => {
-      const res: any = await supabase
+      const res: any = await (supabase as any)
         .from("drip_sequence_sends")
         .select("step_id, status, opened_at, clicked_at")
         .eq("sequence_id", sequenceId);
