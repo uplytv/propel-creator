@@ -112,7 +112,7 @@
       {
         "name": "create_business_profile",
         "title": "Create business profile",
-        "description": "Admin only. Create (or promote) a business tenant: sets the profile's account_type='business' and creates a business_details row. Uses an existing profile by username or user_id.",
+        "description": "Admin only. Create (or promote) a business tenant. If the username matches an existing profile, promote it; otherwise create a new profile row owned by the calling admin (draft until claimed), then upsert business_details. Returns username and public URL.",
         "annotations": {
           "readOnlyHint": false,
           "destructiveHint": false,
