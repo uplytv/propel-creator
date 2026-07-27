@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, CheckCircle2, Star, Sparkles } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Loader2, CheckCircle2, Star, Sparkles, Mail } from "lucide-react";
 import { getProfileHandleCandidates } from "@/lib/profileSlug";
 
 interface BusinessInfo {
@@ -21,12 +23,16 @@ interface BusinessInfo {
   business_status: string;
 }
 
+interface AuthUserInfo {
+  id: string;
+  email: string;
+  fullName: string;
+}
+
 const BUSINESS_PRICE = 97;
 const SETUP_FEE = 500;
 
-// Persists the claimant's name+phone across the auth+Stripe round trip so the
-// success handler can build the claim_request without a second form.
-const intentKey = (username: string) => `uply_claim_intent_${username.toLowerCase()}`;
+const claimIntentKey = (username: string) => `uply_claim_checkout_intent_${username.toLowerCase()}`;
 
 const included = [
   "Your page at uply.tv/yourname",
@@ -40,28 +46,95 @@ const included = [
 export default function ClaimBusinessPage() {
   const { username = "" } = useParams();
   const [params] = useSearchParams();
-  const navigate = useNavigate();
   const [biz, setBiz] = useState<BusinessInfo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [authUser, setAuthUser] = useState<AuthUserInfo | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [existingClaim, setExistingClaim] = useState<{ id: string; status: string } | null>(null);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authEmail, setAuthEmail] = useState("");
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [existingClaim, setExistingClaim] = useState<{ id: string; status: string; requester_phone?: string | null } | null>(null);
   const [justClaimed, setJustClaimed] = useState(false);
+  const [phoneText, setPhoneText] = useState("");
+  const [phoneSaving, setPhoneSaving] = useState(false);
 
   const isCheckoutReturn = params.get("checkout") === "success";
 
+  const getClaimReturnUrl = useCallback((targetUsername = username) => {
+    const cleanUsername = targetUsername || username;
+    return `${window.location.origin}/claim/${cleanUsername}?claim_auth=1`;
+  }, [username]);
+
+  const rememberCheckoutIntent = useCallback(() => {
+    try {
+      localStorage.setItem(
+        claimIntentKey(username),
+        JSON.stringify({ username, startedAt: Date.now() }),
+      );
+    } catch {
+      // Best effort only; the URL return param also preserves the claim target.
+    }
+  }, [username]);
+
+  const clearCheckoutIntent = useCallback(() => {
+    try { localStorage.removeItem(claimIntentKey(username)); } catch { /* ignore */ }
+  }, [username]);
+
+  const hasCheckoutIntent = useCallback(() => {
+    if (params.get("claim_auth") === "1") return true;
+    try {
+      const raw = localStorage.getItem(claimIntentKey(username));
+      if (!raw) return false;
+      const parsed = JSON.parse(raw) as { startedAt?: number };
+      return !parsed.startedAt || Date.now() - parsed.startedAt < 24 * 60 * 60 * 1000;
+    } catch {
+      return false;
+    }
+  }, [params, username]);
+
+  const getAuthUserInfo = useCallback(async (): Promise<AuthUserInfo | null> => {
+    const { data: userData } = await supabase.auth.getUser();
+    const user = userData.user;
+    if (!user?.id || !user.email) return null;
+    const meta = (user.user_metadata ?? {}) as {
+      full_name?: string;
+      name?: string;
+      display_name?: string;
+    };
+    const fullName =
+      meta.full_name?.trim() ||
+      meta.name?.trim() ||
+      meta.display_name?.trim() ||
+      user.email.split("@")[0] ||
+      "Owner";
+    return { id: user.id, email: user.email, fullName };
+  }, []);
+
+  const startCheckout = useCallback(async (businessId: string) => {
+    setSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-business-claim-checkout", {
+        body: { business_id: businessId },
+      });
+      if (error) throw error;
+      if ((data as any)?.url) {
+        window.location.href = (data as any).url;
+        return;
+      }
+      throw new Error("Checkout URL missing");
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Please try again.";
+      toast({ title: "Could not start checkout", description: message, variant: "destructive" });
+      setSubmitting(false);
+    }
+  }, []);
+
   useEffect(() => {
     (async () => {
-      const { data: sess } = await supabase.auth.getSession();
-      const uid = sess.session?.user?.id ?? null;
-      const meta = (sess.session?.user?.user_metadata ?? {}) as { full_name?: string; phone?: string };
-      setUserId(uid);
-      if (sess.session?.user?.email) setEmail(sess.session.user.email);
-      if (meta.full_name && !name) setName(meta.full_name);
-      if (meta.phone && !phone) setPhone(meta.phone);
+      const currentUser = await getAuthUserInfo();
+      setAuthUser(currentUser);
+      if (currentUser?.email) setAuthEmail(currentUser.email);
 
       const candidates = getProfileHandleCandidates(username);
       const rpcResults = await Promise.all(
@@ -96,98 +169,126 @@ export default function ClaimBusinessPage() {
         google_reviews_count: (d as any)?.google_reviews_count ?? null,
       });
 
-      // Restore stashed intent (from pre-auth handoff)
-      try {
-        const raw = localStorage.getItem(intentKey(username));
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed.name && !name) setName(parsed.name);
-          if (parsed.phone && !phone) setPhone(parsed.phone);
-        }
-      } catch { /* ignore */ }
-
-      if (uid) {
+      if (currentUser?.id) {
         const { data: existing } = await supabase
           .from("claim_requests")
-          .select("id, status")
+          .select("id, status, requester_phone")
           .eq("business_id", p.id)
-          .eq("requester_user_id", uid)
+          .eq("requester_user_id", currentUser.id)
           .order("created_at", { ascending: false })
           .limit(1);
-        if (existing && existing.length) setExistingClaim(existing[0] as any);
+        if (existing && existing.length) {
+          setExistingClaim(existing[0] as any);
+          setPhoneText(((existing[0] as any).requester_phone as string | null) ?? "");
+        }
       }
       setLoading(false);
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [username]);
+  }, [getAuthUserInfo, username]);
 
   // Post-checkout: auto-create the claim_request if not yet recorded.
   useEffect(() => {
-    if (!isCheckoutReturn || !userId || !biz) return;
+    if (!isCheckoutReturn || !authUser || !biz) return;
     if (existingClaim) {
       setJustClaimed(true);
+      clearCheckoutIntent();
       return;
     }
     (async () => {
-      let intent: { name?: string; phone?: string } = {};
-      try {
-        const raw = localStorage.getItem(intentKey(username));
-        if (raw) intent = JSON.parse(raw);
-      } catch { /* ignore */ }
       const { data, error } = await supabase
         .from("claim_requests")
         .insert({
           business_id: biz.id,
-          requester_user_id: userId,
-          requester_name: intent.name || name || email.split("@")[0] || "Owner",
-          requester_email: email,
-          requester_phone: intent.phone || phone || null,
+          requester_user_id: authUser.id,
+          requester_name: authUser.fullName,
+          requester_email: authUser.email,
+          requester_phone: null,
         })
-        .select("id, status")
+        .select("id, status, requester_phone")
         .single();
       if (!error && data) {
         setExistingClaim(data as any);
         setJustClaimed(true);
-        try { localStorage.removeItem(intentKey(username)); } catch { /* ignore */ }
+        clearCheckoutIntent();
+      } else if (error) {
+        toast({ title: "Claim recorded late", description: error.message, variant: "destructive" });
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isCheckoutReturn, userId, biz?.id]);
+  }, [authUser, biz, clearCheckoutIntent, existingClaim, isCheckoutReturn]);
+
+  useEffect(() => {
+    if (loading || isCheckoutReturn || !biz || !authUser || existingClaim || submitting) return;
+    if (!hasCheckoutIntent()) return;
+    startCheckout(biz.id);
+  }, [authUser, biz, existingClaim, hasCheckoutIntent, isCheckoutReturn, loading, startCheckout, submitting]);
 
   const startClaim = async () => {
     if (!biz) return;
-    if (!name.trim()) {
-      toast({ title: "Add your name", description: "So we know who to verify", variant: "destructive" });
+    rememberCheckoutIntent();
+    const currentUser = authUser ?? await getAuthUserInfo();
+    if (!currentUser) {
+      setAuthOpen(true);
       return;
     }
-    // Stash intent for the round-trip through auth/Stripe.
-    try {
-      localStorage.setItem(intentKey(username), JSON.stringify({ name: name.trim(), phone: phone.trim() }));
-    } catch { /* ignore */ }
+    setAuthUser(currentUser);
+    startCheckout(biz.id);
+  };
 
-    if (!userId) {
-      // Uninterrupted: send to auth with return path, skip creator onboarding.
-      navigate(
-        `/auth?mode=signup&as=member&redirect=${encodeURIComponent(`/claim/${username}`)}`,
-      );
-      return;
-    }
-
+  const continueWithGoogle = async () => {
+    if (!biz) return;
+    rememberCheckoutIntent();
     setSubmitting(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("create-business-claim-checkout", {
-        body: { business_id: biz.id },
-      });
-      if (error) throw error;
-      if ((data as any)?.url) {
-        window.location.href = (data as any).url;
-      } else {
-        throw new Error("Checkout URL missing");
-      }
-    } catch (e: any) {
-      toast({ title: "Could not start checkout", description: e.message, variant: "destructive" });
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: getClaimReturnUrl(biz.username),
+      extraParams: { prompt: "select_account" },
+    });
+    if (result.error) {
       setSubmitting(false);
+      toast({ title: "Google sign in failed", description: result.error.message, variant: "destructive" });
+      return;
     }
+    if (result.redirected) return;
+    const currentUser = await getAuthUserInfo();
+    setAuthUser(currentUser);
+    setAuthOpen(false);
+    if (currentUser) startCheckout(biz.id);
+  };
+
+  const continueWithEmail = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!biz || !authEmail.trim()) return;
+    rememberCheckoutIntent();
+    setEmailSending(true);
+    const { error } = await supabase.auth.signInWithOtp({
+      email: authEmail.trim(),
+      options: {
+        shouldCreateUser: true,
+        emailRedirectTo: getClaimReturnUrl(biz.username),
+      },
+    });
+    setEmailSending(false);
+    if (error) {
+      toast({ title: "Email sign in failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    setEmailSent(true);
+    toast({ title: "Check your email", description: "Open the secure sign-in link to continue to checkout." });
+  };
+
+  const saveOptionalPhone = async () => {
+    if (!existingClaim || !phoneText.trim()) return;
+    setPhoneSaving(true);
+    const { data, error } = await (supabase as any).rpc("update_my_claim_request_phone", {
+      _claim_request_id: existingClaim.id,
+      _requester_phone: phoneText.trim(),
+    });
+    setPhoneSaving(false);
+    if (error) {
+      toast({ title: "Could not save phone", description: error.message, variant: "destructive" });
+      return;
+    }
+    setExistingClaim({ ...(data as any), requester_phone: (data as any)?.requester_phone ?? phoneText.trim() });
+    toast({ title: "Saved", description: "We'll text you when your page goes live." });
   };
 
   if (loading) {
@@ -221,8 +322,37 @@ export default function ClaimBusinessPage() {
             You claimed {biz.business_name} 🎉
           </h1>
           <p className="mt-3 text-muted-foreground">
-            We verify ownership within 24 hours, then your page goes live and leads start coming to you.
+            We verify ownership within 24 hours, then your page goes live.
           </p>
+
+          {!existingClaim?.requester_phone && (
+            <Card className="mt-8 p-5 text-left space-y-3">
+              <label htmlFor="claim-phone" className="block text-sm font-semibold">
+                Where should we text you when your page goes live?
+              </label>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Input
+                  id="claim-phone"
+                  value={phoneText}
+                  onChange={(e) => setPhoneText(e.target.value)}
+                  placeholder="Mobile number (optional)"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  className="min-h-[48px] text-base"
+                />
+                <Button onClick={saveOptionalPhone} disabled={phoneSaving || !phoneText.trim()} className="min-h-[48px]">
+                  {phoneSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save"}
+                </Button>
+              </div>
+              <button
+                type="button"
+                onClick={() => setExistingClaim((claim) => claim ? { ...claim, requester_phone: "skipped" } : claim)}
+                className="text-xs text-muted-foreground hover:text-foreground underline"
+              >
+                Skip for now
+              </button>
+            </Card>
+          )}
 
           <Card className="mt-8 p-5 text-left">
             <p className="text-xs uppercase tracking-widest text-[#6B5BFF] font-bold mb-3">What happens next</p>
@@ -333,30 +463,6 @@ export default function ClaimBusinessPage() {
           </ul>
         </Card>
 
-        {/* Inline 2-field details (only when signed in so it's not a wall) */}
-        {userId && !alreadyPending && (
-          <Card className="mt-6 p-5 space-y-3">
-            <p className="text-xs uppercase tracking-widest text-muted-foreground font-bold">
-              Two quick fields before checkout
-            </p>
-            <Input
-              placeholder="Full name *"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="min-h-[48px] text-base"
-              autoComplete="name"
-            />
-            <Input
-              placeholder="Phone (optional)"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="min-h-[48px] text-base"
-              autoComplete="tel"
-              inputMode="tel"
-            />
-          </Card>
-        )}
-
         {/* Already-pending state */}
         {alreadyPending && (
           <Card className="mt-6 p-5">
@@ -394,6 +500,41 @@ export default function ClaimBusinessPage() {
           </>
         )}
       </div>
+
+      <Dialog open={authOpen} onOpenChange={setAuthOpen}>
+        <DialogContent className="max-w-sm rounded-2xl border-border/70">
+          <DialogHeader className="text-center">
+            <DialogTitle className="text-2xl font-extrabold tracking-tight">Claim {biz.business_name}</DialogTitle>
+            <DialogDescription>
+              Sign in once, then we’ll send you straight to secure checkout.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Button onClick={continueWithGoogle} disabled={submitting || emailSending} className="w-full h-14 text-base font-bold">
+              {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Continue with Google"}
+            </Button>
+            <form onSubmit={continueWithEmail} className="space-y-2">
+              <Input
+                type="email"
+                value={authEmail}
+                onChange={(e) => setAuthEmail(e.target.value)}
+                placeholder="Email for secure link"
+                autoComplete="email"
+                className="min-h-[48px] text-base"
+              />
+              <Button type="submit" variant="outline" disabled={emailSending || submitting || !authEmail.trim()} className="w-full h-12">
+                {emailSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                Continue with email
+              </Button>
+            </form>
+            {emailSent && (
+              <p className="rounded-lg bg-primary/10 border border-primary/25 px-3 py-2 text-xs text-muted-foreground">
+                Check your inbox and tap the secure link. You’ll return here and continue to checkout automatically.
+              </p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
