@@ -184,14 +184,27 @@ export default function ClaimBusinessPage() {
         {/* Business plan */}
         <Card className="mt-6 p-5">
           <div className="flex items-start justify-between gap-4">
-            <div>
+            <div className="flex-1">
               <p className="text-xs uppercase tracking-widest text-[#6B5BFF] font-bold">UPLY Business</p>
-              <p className="text-3xl font-extrabold mt-1">${BUSINESS_PRICE}<span className="text-base font-medium text-muted-foreground">/mo</span></p>
-              <ul className="mt-4 space-y-1.5 text-sm">
-                <li className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-[#6B5BFF] shrink-0 mt-0.5" /> Full ownership of your business page</li>
+              <p className="text-3xl font-extrabold mt-1">${BUSINESS_PRICE}<span className="text-base font-medium text-muted-foreground">/month</span></p>
+              {SETUP_FEE_WAIVED ? (
+                <p className="mt-2 text-sm">
+                  <span className="line-through text-muted-foreground">${SETUP_FEE} setup fee</span>{" "}
+                  <span className="font-bold text-[#6B5BFF]">WAIVED (limited time)</span>
+                </p>
+              ) : (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  + one-time ${SETUP_FEE} setup fee (charged today)
+                </p>
+              )}
+              <p className="mt-4 text-xs uppercase tracking-widest text-muted-foreground font-bold">What's included</p>
+              <ul className="mt-2 space-y-1.5 text-sm">
+                <li className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-[#6B5BFF] shrink-0 mt-0.5" /> Your page at uply.tv/yourname</li>
+                <li className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-[#6B5BFF] shrink-0 mt-0.5" /> Links page (replaces Linktree)</li>
+                <li className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-[#6B5BFF] shrink-0 mt-0.5" /> Blog that ranks on Google</li>
                 <li className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-[#6B5BFF] shrink-0 mt-0.5" /> Lead capture with instant email alerts</li>
-                <li className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-[#6B5BFF] shrink-0 mt-0.5" /> Blog + photo updates</li>
-                <li className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-[#6B5BFF] shrink-0 mt-0.5" /> Weekly analytics summary</li>
+                <li className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-[#6B5BFF] shrink-0 mt-0.5" /> Call & visit analytics</li>
+                <li className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-[#6B5BFF] shrink-0 mt-0.5" /> Weekly performance report</li>
               </ul>
             </div>
             <Shield className="w-8 h-8 text-[#6B5BFF] shrink-0" />
