@@ -145,6 +145,8 @@ export default function BusinessSitePage({ profile }: { profile: BusinessProfile
       <Hero biz={biz} />
       <QuickActions biz={biz} />
 
+      {biz.links && biz.links.length > 0 && <LinksSection links={biz.links} businessId={biz.id} />}
+
       {biz.services && biz.services.length > 0 && <Services services={biz.services} />}
       {biz.testimonials && biz.testimonials.length > 0 && <Testimonials items={biz.testimonials} />}
       <HoursAndMap biz={biz} />
@@ -153,8 +155,13 @@ export default function BusinessSitePage({ profile }: { profile: BusinessProfile
 
       <LeadForm businessId={biz.id} businessName={biz.business_name} disabled={!canSubmitLead} />
 
-      <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground">
-        <Link to="/" className="hover:text-foreground transition-colors">Powered by UPLY</Link>
+      <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground space-y-2">
+        <Link to={`/${profile.username}/links`} className="text-[#6B5BFF] hover:underline">
+          View links page →
+        </Link>
+        <div>
+          <Link to="/" className="hover:text-foreground transition-colors">Powered by UPLY</Link>
+        </div>
       </footer>
     </div>
   );
