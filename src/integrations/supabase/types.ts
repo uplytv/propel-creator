@@ -2411,6 +2411,7 @@ export type Database = {
           hero_image_url: string | null
           hours: Json | null
           id: string
+          links: Json
           logo_url: string | null
           phone: string | null
           profile_id: string
@@ -2432,6 +2433,7 @@ export type Database = {
           hero_image_url?: string | null
           hours?: Json | null
           id?: string
+          links?: Json
           logo_url?: string | null
           phone?: string | null
           profile_id: string
@@ -2453,6 +2455,7 @@ export type Database = {
           hero_image_url?: string | null
           hours?: Json | null
           id?: string
+          links?: Json
           logo_url?: string | null
           phone?: string | null
           profile_id?: string
