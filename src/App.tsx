@@ -662,6 +662,8 @@ const App = () => (
 
                     {/* Business claim funnel — MUST be before /:username catch-all */}
                     <Route path="/claim/:username" element={<ClaimBusinessPage />} />
+                    {/* Business standalone links page — MUST be before /:username catch-all */}
+                    <Route path="/:username/links" element={<BusinessLinksPage />} />
 
                     {/* Legacy /:username and /:username/page redirect to /@<slug>; keep last before 404. */}
                     <Route path="/purchases" element={<ProtectedRoute><Purchases /></ProtectedRoute>} />

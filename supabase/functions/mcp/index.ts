@@ -274,6 +274,7 @@ var update_business_profile_default = defineTool6({
     hours: z5.record(z5.string(), z5.string()).optional(),
     services: z5.array(z5.object({ title: z5.string(), description: z5.string().optional(), price: z5.string().optional() })).optional(),
     testimonials: z5.array(z5.object({ author: z5.string(), text: z5.string(), rating: z5.number().int().min(1).max(5).optional() })).optional(),
+    links: z5.array(z5.object({ label: z5.string().trim().min(1).max(80), url: z5.string().url() })).optional(),
     status: z5.enum(["draft", "claimed", "live"]).optional()
   },
   annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },

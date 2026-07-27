@@ -303,6 +303,27 @@
                 ]
               }
             },
+            "links": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                },
+                "required": [
+                  "label",
+                  "url"
+                ]
+              }
+            },
             "status": {
               "type": "string",
               "enum": [

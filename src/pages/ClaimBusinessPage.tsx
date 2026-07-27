@@ -252,7 +252,7 @@ export default function ClaimBusinessPage() {
               disabled={submitting}
               className="w-full bg-[#6B5BFF] hover:bg-[#5b4bf0] h-11"
             >
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : `Claim & subscribe — $${BUSINESS_PRICE}/mo`}
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (SETUP_FEE_WAIVED ? `Claim & subscribe — $${BUSINESS_PRICE}/mo (setup fee waived)` : `Claim & subscribe — $${SETUP_FEE} today, then $${BUSINESS_PRICE}/mo`)}
             </Button>
             <p className="text-xs text-muted-foreground text-center">
               Payment starts today. Your page goes live once an admin approves the claim.
