@@ -155,7 +155,7 @@ export default function BusinessSitePage({ profile }: { profile: BusinessProfile
 
       <LeadForm businessId={biz.id} businessName={biz.business_name} disabled={!canSubmitLead} />
 
-      <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground space-y-2">
+      <footer className="border-t border-border py-8 pb-28 md:pb-8 text-center text-sm text-muted-foreground space-y-2">
         <Link to={`/${profile.username}/links`} className="text-[#6B5BFF] hover:underline">
           View links page →
         </Link>
@@ -163,6 +163,46 @@ export default function BusinessSitePage({ profile }: { profile: BusinessProfile
           <Link to="/" className="hover:text-foreground transition-colors">Powered by UPLY</Link>
         </div>
       </footer>
+
+      <StickyMobileBar biz={biz} isLive={isLive} username={profile.username} />
+    </div>
+  );
+}
+
+function StickyMobileBar({ biz, isLive, username }: { biz: BusinessDetails; isLive: boolean; username: string }) {
+  if (!isLive) {
+    return (
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur px-4 py-3">
+        <Link
+          to={`/claim/${username}`}
+          className="flex items-center justify-center w-full min-h-[52px] rounded-xl bg-[#6B5BFF] hover:bg-[#5b4bf0] text-white font-bold text-base"
+        >
+          Claim this page
+        </Link>
+      </div>
+    );
+  }
+  if (!biz.phone && !biz.google_maps_url) return null;
+  return (
+    <div className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur px-3 py-3 flex gap-2">
+      {biz.phone && (
+        <a
+          href={`tel:${biz.phone}`}
+          className="flex-1 inline-flex items-center justify-center gap-2 min-h-[52px] rounded-xl bg-[#6B5BFF] text-white font-bold"
+        >
+          <Phone className="w-4 h-4" /> Call
+        </a>
+      )}
+      {biz.google_maps_url && (
+        <a
+          href={biz.google_maps_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 inline-flex items-center justify-center gap-2 min-h-[52px] rounded-xl border border-border bg-white/[0.03] font-bold"
+        >
+          <MapPin className="w-4 h-4" /> Directions
+        </a>
+      )}
     </div>
   );
 }
