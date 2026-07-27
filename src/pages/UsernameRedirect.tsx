@@ -4,20 +4,24 @@ import { supabase } from "@/integrations/supabase/client";
 import SocialCreatorPage from "@/components/creatorprofile/social/SocialCreatorPage";
 import { getProfileHandleCandidates } from "@/lib/profileSlug";
 import { resolveCreatorDestination } from "@/lib/resolveCreatorDestination";
+import BusinessSitePage from "./BusinessSitePage";
 
 /**
  * Resolves /:username (and /:username/page) to the canonical /@<slug> social
- * creator page.
- *
- * If the profile has a vanity_slug on artist_profiles, that wins; otherwise we
- * use the username itself. When NO profile exists we never render a 404 —
- * the handle runs the standard destination chain (community → profile →
- * curated artist site → artist blog → /roster) and redirects to the first
- * tier that exists.
+ * creator page, or renders the BusinessSitePage when the profile is a
+ * business tenant.
  */
 export default function UsernameRedirect() {
   const { username } = useParams<{ username: string }>();
   const [target, setTarget] = useState<string | undefined>(undefined);
+  const [businessProfile, setBusinessProfile] = useState<{
+    id: string;
+    user_id: string;
+    username: string;
+    display_name: string | null;
+    avatar_url: string | null;
+    business_status: string | null;
+  } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -34,13 +38,33 @@ export default function UsernameRedirect() {
             .maybeSingle()
         )
       );
-      const profile = results.find(({ data }) => data)?.data;
+      const profile = results.find(({ data }) => data)?.data as {
+        id: string;
+        user_id: string;
+        username: string;
+        display_name: string | null;
+        avatar_url: string | null;
+        account_type?: string | null;
+        business_status?: string | null;
+      } | undefined;
 
       if (!profile) {
-        // No profiles row — fall through the never-404 chain (roster site,
-        // roster blog, /roster) instead of a "Not found" dead end.
         const dest = await resolveCreatorDestination(username);
         if (!cancelled) setTarget(dest);
+        return;
+      }
+
+      if (profile.account_type === "business") {
+        if (!cancelled) {
+          setBusinessProfile({
+            id: profile.id,
+            user_id: profile.user_id,
+            username: profile.username,
+            display_name: profile.display_name,
+            avatar_url: profile.avatar_url,
+            business_status: profile.business_status ?? "draft",
+          });
+        }
         return;
       }
 
@@ -61,6 +85,10 @@ export default function UsernameRedirect() {
 
   if (username?.startsWith("@")) {
     return <SocialCreatorPage />;
+  }
+
+  if (businessProfile) {
+    return <BusinessSitePage profile={businessProfile} />;
   }
 
   if (target === undefined) {

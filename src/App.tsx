@@ -255,6 +255,7 @@ const Inbox = lazy(() => import("./pages/Inbox"));
 const FounderServices = lazy(() => import("./pages/FounderServices"));
 const FounderOfferSuccess = lazy(() => import("./pages/FounderOfferSuccess"));
 const FounderOfferCanceled = lazy(() => import("./pages/FounderOfferCanceled"));
+const BusinessAnalytics = lazy(() => import("./pages/BusinessAnalytics"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -652,6 +653,9 @@ const App = () => (
                     <Route path="/founder-services" element={<FounderServices />} />
                     <Route path="/founder-offers/success" element={<FounderOfferSuccess />} />
                     <Route path="/founder-offers/canceled" element={<FounderOfferCanceled />} />
+
+                    {/* Business owner analytics — MUST be before /:username catch-all */}
+                    <Route path="/business/analytics" element={<ProtectedRoute><BusinessAnalytics /></ProtectedRoute>} />
 
                     {/* Legacy /:username and /:username/page redirect to /@<slug>; keep last before 404. */}
                     <Route path="/purchases" element={<ProtectedRoute><Purchases /></ProtectedRoute>} />

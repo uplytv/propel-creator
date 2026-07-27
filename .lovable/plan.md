@@ -1,102 +1,98 @@
+# Business Account Type — Implementation Plan
 
-## What we're building
+Reuses creator infrastructure. Additive-only migrations, RLS on every new table, `/:username` catch-all stays last, no webhook edits.
 
-A new "Founder Services" pricing block with **3 tiers**:
+## 1. Database migration (single file, additive)
 
-| Tier | Price | What's included |
-|---|---|---|
-| DIY | $0 / included | Use UPLY's course builder yourself — current platform experience |
-| Assisted Setup | **$149** (one-off) | 1:1 strategy call + course outline + setup checklist (no build) |
-| Done-for-you Course Build | **$495** (one-off) | A UPLY rep builds your entire course from scratch — outline, modules, lessons, media uploads, pricing setup |
+**profiles**
+- Add `account_type text not null default 'creator' check (account_type in ('creator','business'))`
+- Add `business_status text check (business_status in ('draft','claimed','live'))` (nullable; only set for businesses)
 
-The middle "Assisted" tier price is a placeholder — easy to change or remove in one file (`src/data/founderOffers.ts`). I'll flag this in code with a comment.
+**business_details** (new)
+- `id uuid pk`, `profile_id uuid unique fk profiles(id) on delete cascade`
+- `business_name text not null`, `category text`, `tagline text`
+- `address text`, `city text`, `phone text`, `email text`
+- `hours jsonb`, `services jsonb`, `testimonials jsonb`
+- `google_rating numeric(2,1)`, `google_reviews_count int`, `google_maps_url text`
+- `hero_image_url text`, `logo_url text`
+- `created_at`, `updated_at` + updated_at trigger
+- RLS:
+  - SELECT anon+authenticated: allowed when parent profile is `business_status='live'` OR when caller is owner OR admin
+  - INSERT/UPDATE/DELETE: owner (profile.user_id = auth.uid()) OR admin
+- GRANT select to anon/authenticated; full to service_role
 
-Only the $495 tier creates a paid Stripe checkout right now. DIY is a free CTA into the existing course builder. Assisted starts with the same checkout flow but with its own price ID so you can toggle it on when ready.
+**business_leads** (new)
+- `id uuid pk`, `business_id uuid fk business_details(id) on delete cascade`
+- `name text`, `phone text`, `email text`, `message text`
+- `source text default 'profile'`, `handled boolean default false`
+- `created_at`
+- RLS:
+  - INSERT anon+authenticated: allowed only when target business's profile is `business_status='live'`
+  - SELECT/UPDATE/DELETE: only owner of the business's profile OR admin
+- GRANT insert to anon+authenticated; select/update/delete to authenticated; full to service_role
 
-## Payments approach
+**business_page_events** (new, for analytics)
+- `id`, `business_id fk`, `event_type text check in ('view','call_tap','maps_tap','lead_submit','blog_view')`, `metadata jsonb`, `created_at`
+- INSERT anon+authenticated when business is live
+- SELECT: owner or admin
 
-- **Direct platform charge to UPLY** — no Stripe Connect transfer, no 95/5 split. This is a UPLY service, not a creator sale.
-- **New, isolated Edge Function** `create-founder-offer-checkout` — does not touch `stripe-webhook` or any existing money-path code (per CLAUDE.md hard rule).
-- Stripe Checkout in `mode: "payment"`, hosted by Stripe, opens in a new tab.
-- Uses the existing `STRIPE_SECRET_KEY` already in the project's edge env.
+**View** `business_weekly_summary` — aggregates last 7 days by business_id: views, call_taps, leads, top blog post id. RLS via security_invoker so owner-only reads carry through.
 
-## Post-purchase flow
+## 2. Business profile page
 
-1. Buyer completes Stripe Checkout → redirected to `/founder-offers/success?session_id={CHECKOUT_SESSION_ID}`.
-2. New `FounderOfferSuccess` page calls a second Edge Function `finalize-founder-offer` once on mount.
-3. `finalize-founder-offer`:
-   - Retrieves the Checkout Session from Stripe, verifies `payment_status === "paid"` and `metadata.offer === "done-for-you-course"`.
-   - Inserts a row into a new `founder_offer_purchases` table (id, offer_key, buyer_email, buyer_name, amount_cents, stripe_session_id, stripe_payment_intent, status, created_at). RLS: insert/select restricted to service role; authenticated users can read their own.
-   - Sends buyer confirmation email via existing Resend send-from `notify.uply.tv`.
-   - Sends internal team notification email to a `FOUNDER_OFFER_NOTIFY_EMAIL` secret (you'll add this with `add_secret`).
-4. Success page shows confirmation + "A rep will contact you within 1 business day."
+Route: reuse existing `/:username` catch-all. `UsernameRedirect.tsx` (or the current resolver) branches on `profiles.account_type`:
+- `creator` → existing creator site
+- `business` → new `<BusinessSitePage/>`
 
-## Where the pricing block appears
+New files:
+- `src/pages/BusinessSitePage.tsx` — hero (name, tagline, ★ rating, click-to-call `tel:` button), services grid, testimonials, hours + Google Maps link, blog list (reuses `posts` table filtered by owner), lead form, "Powered by UPLY" footer. Mobile-first.
+- `src/components/business/LeadCaptureForm.tsx` — zod-validated, inserts into `business_leads` via anon client, calls `notify-business-lead` edge function.
+- `src/components/business/DraftBanner.tsx` — slim "Preview — claim this page" bar when status='draft' and viewer isn't owner.
+- `src/hooks/useBusinessProfile.ts` — fetches details + posts.
+- `src/hooks/useTrackBusinessEvent.ts` — logs view/call_tap/maps_tap/blog_view.
 
-One reusable React component `<FounderOffersPricing variant="full" | "compact" />`.
+Discovery/sitemap: filter `business_status='live'` in the sitemap generator and any discovery query that includes profiles.
 
-- **Public landing** (`src/pages/Landing.tsx`) — `variant="full"`, new section near the existing pricing/value sections.
-- **Onboarding** — `variant="compact"` card placed as an optional step at the end of the existing onboarding flow (skippable, never blocking).
-- **Creator dashboard / Growth hub** — `variant="compact"` card in the upgrade/grow surface (Growth hub area).
-- **Courses page** (creator-facing classroom management) — `variant="compact"` "Want us to build this for you?" card above the empty/manage state.
+## 3. Email notification
 
-Compact variant = single highlighted "$495 Done-for-you" card with "Compare tiers →" link to a dedicated `/founder-services` page that shows all three tiers. This keeps the four embed points small and safe; the full pricing table lives in one place.
+New edge function `supabase/functions/notify-business-lead/index.ts`:
+- Input: `{ lead_id }`. Loads lead + business + owner email (service role).
+- Sends via Resend using existing `RESEND_API_KEY` and existing dark email template style.
+- Called after lead insert from `LeadCaptureForm`.
 
-## New routes
+## 4. Analytics
 
-Added BEFORE the `/:username` catch-all in `App.tsx` (verified per CLAUDE.md hard rule):
-- `/founder-services` — full pricing page
-- `/founder-offers/success` — post-Stripe success page
-- `/founder-offers/canceled` — cancellation page
+- `src/pages/BusinessAnalytics.tsx` — dashboard for the owner: views, call taps, maps taps, leads, top blog post (last 7d) read from `business_weekly_summary`.
+- Reuse existing creator analytics components for shared metric cards.
 
-## Files
+## 5. Admin MCP tools
 
-**New:**
-- `src/data/founderOffers.ts` — tier definitions + price IDs
-- `src/components/founderoffers/FounderOffersPricing.tsx` — reusable component (compact + full)
-- `src/components/founderoffers/FounderOfferCard.tsx` — single tier card
-- `src/pages/FounderServices.tsx` — `/founder-services` route
-- `src/pages/FounderOfferSuccess.tsx` — `/founder-offers/success` route
-- `src/pages/FounderOfferCanceled.tsx` — `/founder-offers/canceled` route
-- `supabase/functions/create-founder-offer-checkout/index.ts`
-- `supabase/functions/finalize-founder-offer/index.ts`
-- `supabase/functions/_shared/transactional-email-templates/founder-offer-buyer-confirmation.tsx`
-- `supabase/functions/_shared/transactional-email-templates/founder-offer-team-notification.tsx`
-- SQL migration: `founder_offer_purchases` table with RLS + GRANTs
+Extend `src/lib/mcp/index.ts` (do not touch existing tools). Add:
+- `src/lib/mcp/tools/create-business-profile.ts`
+- `src/lib/mcp/tools/update-business-profile.ts`
+- `src/lib/mcp/tools/create-business-post.ts`
+- `src/lib/mcp/tools/list-business-leads.ts`
+- `src/lib/mcp/tools/get-business-analytics.ts`
 
-**Edited (minimal, additive only):**
-- `src/App.tsx` — 3 new route entries above the catch-all
-- `src/pages/Landing.tsx` — one new section
-- Onboarding flow page — one new card on the final step
-- Growth hub / dashboard page — one new card
-- Courses manage page — one new card
-- `_shared/transactional-email-templates/registry.ts` — register 2 new templates
+Each handler:
+1. `ctx.isAuthenticated()` check.
+2. Admin guard: query `user_roles` via `has_role(getUserId(), 'admin')` using a Supabase client with the caller's bearer token; return `isError` if false.
+3. Perform action using that same authed client so RLS still applies (admin RLS clauses cover it).
 
-**Untouched:** `stripe-webhook`, `mux-webhook`, `auth-email-hook`, any existing Stripe Connect / payout / fee code.
+After edits: run `app_mcp_server--extract_mcp_manifest`, then deploy `mcp` edge function.
 
-## Stripe setup steps I'll run
+## 6. Rollout order
 
-1. Create Stripe Product "Done-for-you Course Build" + Price `$495 USD one-time` via `stripe--create_stripe_product_and_price`, hardcode the returned `price_id` in `founderOffers.ts`.
-2. (Optional later) Create Price for Assisted tier when you confirm the price.
+1. Migration (creates tables/RLS/grants/view).
+2. Edge function `notify-business-lead` + deploy.
+3. Frontend: BusinessSitePage, LeadCaptureForm, DraftBanner, analytics page, catch-all branch.
+4. MCP tools + extract manifest + deploy `mcp`.
+5. Typecheck; confirm `/:username` catch-all remains last in `App.tsx`.
 
-## Secrets I'll need from you
+## Technical notes
 
-- `FOUNDER_OFFER_NOTIFY_EMAIL` — the email address where internal team notifications go (e.g. you@uply.tv). I'll request it via `add_secret` after the rest is built.
-
-`STRIPE_SECRET_KEY` and `RESEND_API_KEY` are already in your project's edge env per CLAUDE.md, so no extra setup there.
-
-## Risk callouts
-
-- Money path: new isolated checkout function, zero changes to existing webhooks or Connect logic. Direct platform charge — no transfers, no application fees, no split.
-- `/:username` catch-all order verified after route additions.
-- No changes to `src/integrations/supabase/types.ts` — I'll cast through `supabaseTyped` for the new table reads.
-- Email templates use existing Resend infra and follow the dark email design tokens already in `mem://style/email-design-system`.
-
-## What I'm NOT doing in this pass
-
-- No fulfillment workflow / project management board for the rep (just the email notification).
-- No automated scheduling (Calendly etc.).
-- No revenue reporting integration into your existing creator analytics (this revenue is platform-owned, separate from creator earnings).
-- No Assisted-tier checkout enabled by default — it ships disabled with a "Contact us" CTA until you set its price.
-
-Approve and I'll ship it.
+- Owner check pattern in RLS: `EXISTS (SELECT 1 FROM profiles p WHERE p.id = business_details.profile_id AND p.user_id = auth.uid())`.
+- Admin check: `public.has_role(auth.uid(), 'admin')` (function already exists).
+- `business_leads` insert-by-anon policy uses same EXISTS on `business_status='live'` to prevent lead spam to draft pages.
+- Sitemap file (`public/sitemap.xml`) is static — dynamic sitemap generator, if any, must add the live-only filter; static file needs no change.
+- No changes to Stripe/Mux webhooks. All migrations additive. `/:username` route stays last.
