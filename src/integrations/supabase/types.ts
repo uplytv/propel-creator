@@ -2397,6 +2397,177 @@ export type Database = {
         }
         Relationships: []
       }
+      business_details: {
+        Row: {
+          address: string | null
+          business_name: string
+          category: string | null
+          city: string | null
+          created_at: string
+          email: string | null
+          google_maps_url: string | null
+          google_rating: number | null
+          google_reviews_count: number | null
+          hero_image_url: string | null
+          hours: Json | null
+          id: string
+          logo_url: string | null
+          phone: string | null
+          profile_id: string
+          services: Json | null
+          tagline: string | null
+          testimonials: Json | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          business_name: string
+          category?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          google_maps_url?: string | null
+          google_rating?: number | null
+          google_reviews_count?: number | null
+          hero_image_url?: string | null
+          hours?: Json | null
+          id?: string
+          logo_url?: string | null
+          phone?: string | null
+          profile_id: string
+          services?: Json | null
+          tagline?: string | null
+          testimonials?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          business_name?: string
+          category?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          google_maps_url?: string | null
+          google_rating?: number | null
+          google_reviews_count?: number | null
+          hero_image_url?: string | null
+          hours?: Json | null
+          id?: string
+          logo_url?: string | null
+          phone?: string | null
+          profile_id?: string
+          services?: Json | null
+          tagline?: string | null
+          testimonials?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_details_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_details_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_leads: {
+        Row: {
+          business_id: string
+          created_at: string
+          email: string | null
+          handled: boolean
+          id: string
+          message: string | null
+          name: string | null
+          phone: string | null
+          source: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          email?: string | null
+          handled?: boolean
+          id?: string
+          message?: string | null
+          name?: string | null
+          phone?: string | null
+          source?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          email?: string | null
+          handled?: boolean
+          id?: string
+          message?: string | null
+          name?: string | null
+          phone?: string | null
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_leads_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_details"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_leads_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_weekly_summary"
+            referencedColumns: ["business_id"]
+          },
+        ]
+      }
+      business_page_events: {
+        Row: {
+          business_id: string
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_page_events_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_details"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_page_events_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_weekly_summary"
+            referencedColumns: ["business_id"]
+          },
+        ]
+      }
       campaign_applications: {
         Row: {
           applied_at: string | null
@@ -17557,6 +17728,7 @@ export type Database = {
           beta_user: boolean
           bio: string | null
           business_category: string | null
+          business_status: string | null
           channel_category: string | null
           channel_tagline: string | null
           cover_image_url: string | null
@@ -17630,6 +17802,7 @@ export type Database = {
           beta_user?: boolean
           bio?: string | null
           business_category?: string | null
+          business_status?: string | null
           channel_category?: string | null
           channel_tagline?: string | null
           cover_image_url?: string | null
@@ -17703,6 +17876,7 @@ export type Database = {
           beta_user?: boolean
           bio?: string | null
           business_category?: string | null
+          business_status?: string | null
           channel_category?: string | null
           channel_tagline?: string | null
           cover_image_url?: string | null
@@ -22246,6 +22420,18 @@ export type Database = {
       }
     }
     Views: {
+      business_weekly_summary: {
+        Row: {
+          blog_views_7d: number | null
+          business_id: string | null
+          call_taps_7d: number | null
+          leads_7d: number | null
+          maps_taps_7d: number | null
+          top_blog_post_id: string | null
+          views_7d: number | null
+        }
+        Relationships: []
+      }
       email_ab_test_results: {
         Row: {
           delivered: number | null
