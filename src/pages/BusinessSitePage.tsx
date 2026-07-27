@@ -233,23 +233,30 @@ function DraftBanner({ status, isOwner, username }: { status: string; isOwner: b
 function Hero({ biz }: { biz: BusinessDetails }) {
   return (
     <section className="relative overflow-hidden border-b border-border">
-      {biz.hero_image_url && (
-        <div className="absolute inset-0 opacity-25">
-          <img src={biz.hero_image_url} alt="" className="w-full h-full object-cover" />
+      {biz.hero_image_url ? (
+        <div className="absolute inset-0">
+          <img src={biz.hero_image_url} alt="" className="w-full h-full object-cover opacity-30" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/70 to-background" />
         </div>
+      ) : (
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(107,91,255,0.25),_transparent_60%)]" />
       )}
-      <div className="relative max-w-5xl mx-auto px-4 py-14 sm:py-20">
+      <div className="relative max-w-5xl mx-auto px-5 sm:px-6 pt-16 pb-14 sm:pt-24 sm:pb-20">
         {biz.category && (
-          <p className="text-xs uppercase tracking-widest text-[#6B5BFF] font-bold mb-3">{biz.category}</p>
+          <p className="text-[11px] uppercase tracking-[0.28em] text-[#6B5BFF] font-bold mb-4">{biz.category}</p>
         )}
-        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">{biz.business_name}</h1>
-        {biz.tagline && <p className="mt-3 text-lg text-muted-foreground max-w-2xl">{biz.tagline}</p>}
+        <h1 className="font-serif text-5xl sm:text-7xl leading-[1.02] tracking-tight font-semibold">
+          {biz.business_name}
+        </h1>
+        {biz.tagline && (
+          <p className="mt-5 text-base sm:text-lg text-muted-foreground max-w-xl leading-relaxed">{biz.tagline}</p>
+        )}
         {biz.google_rating && (
-          <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/5 px-3 py-1 border border-border">
+          <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/[0.06] backdrop-blur px-4 py-1.5 border border-white/10 shadow-[0_4px_20px_-8px_rgba(107,91,255,0.4)]">
             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-            <span className="font-semibold">{biz.google_rating.toFixed(1)}</span>
+            <span className="font-semibold text-sm">{biz.google_rating.toFixed(1)}</span>
             {biz.google_reviews_count != null && (
-              <span className="text-muted-foreground text-sm">({biz.google_reviews_count} reviews)</span>
+              <span className="text-muted-foreground text-xs">· {biz.google_reviews_count} reviews</span>
             )}
           </div>
         )}
