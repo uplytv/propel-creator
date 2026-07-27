@@ -660,6 +660,9 @@ const App = () => (
                     {/* Business owner analytics — MUST be before /:username catch-all */}
                     <Route path="/business/analytics" element={<ProtectedRoute><BusinessAnalytics /></ProtectedRoute>} />
 
+                    {/* Business claim funnel — MUST be before /:username catch-all */}
+                    <Route path="/claim/:username" element={<ClaimBusinessPage />} />
+
                     {/* Legacy /:username and /:username/page redirect to /@<slug>; keep last before 404. */}
                     <Route path="/purchases" element={<ProtectedRoute><Purchases /></ProtectedRoute>} />
                     <Route path="/:username/site" element={<PublicSite />} />
