@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate, Navigate } from "react-router-dom";
 import { ArrowLeft, Plus, Gift, Radio } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
