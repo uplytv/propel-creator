@@ -571,34 +571,116 @@ export default function ClaimBusinessPage() {
       <Dialog open={authOpen} onOpenChange={setAuthOpen}>
         <DialogContent className="max-w-sm rounded-2xl border-border/70">
           <DialogHeader className="text-center">
-            <DialogTitle className="text-2xl font-extrabold tracking-tight">Claim {biz.business_name}</DialogTitle>
+            <DialogTitle className="text-2xl font-serif font-semibold tracking-tight">Claim {biz.business_name}</DialogTitle>
             <DialogDescription>
-              Sign in once, then we’ll send you straight to secure checkout.
+              One tap with Google — you'll confirm your details next.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3">
-            <Button onClick={continueWithGoogle} disabled={submitting || emailSending} className="w-full h-14 text-base font-bold">
-              {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Continue with Google"}
+          <div className="space-y-4">
+            <Button
+              onClick={continueWithGoogle}
+              disabled={submitting || emailSubmitting}
+              className="w-full h-14 text-base font-bold bg-[#6B5BFF] hover:bg-[#5b4bf0]"
+            >
+              {submitting ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <span className="inline-flex items-center gap-2">
+                  <GoogleGlyph /> Continue with Google
+                </span>
+              )}
             </Button>
-            <form onSubmit={continueWithEmail} className="space-y-2">
+
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-muted-foreground">
+              <div className="flex-1 h-px bg-border" />
+              <span>or email</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+
+            <form onSubmit={continueWithEmailPassword} className="space-y-2">
               <Input
                 type="email"
                 value={authEmail}
                 onChange={(e) => setAuthEmail(e.target.value)}
-                placeholder="Email for secure link"
+                placeholder="you@business.com"
                 autoComplete="email"
+                className="min-h-[44px] text-sm"
+              />
+              <Input
+                type="password"
+                value={authPassword}
+                onChange={(e) => setAuthPassword(e.target.value)}
+                placeholder="Password"
+                autoComplete={emailMode === "signup" ? "new-password" : "current-password"}
+                minLength={8}
+                className="min-h-[44px] text-sm"
+              />
+              <Button
+                type="submit"
+                variant="outline"
+                disabled={emailSubmitting || submitting || !authEmail.trim() || !authPassword}
+                className="w-full h-11 text-sm"
+              >
+                {emailSubmitting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <span className="inline-flex items-center gap-2">
+                    <Mail className="w-4 h-4" /> {emailMode === "signup" ? "Create account" : "Sign in"}
+                  </span>
+                )}
+              </Button>
+              <button
+                type="button"
+                onClick={() => setEmailMode((m) => (m === "signup" ? "signin" : "signup"))}
+                className="w-full text-xs text-muted-foreground hover:text-foreground"
+              >
+                {emailMode === "signup" ? "Have an account? Sign in" : "New here? Create an account"}
+              </button>
+            </form>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={detailsOpen} onOpenChange={(open) => !submitting && setDetailsOpen(open)}>
+        <DialogContent className="max-w-sm rounded-2xl border-border/70">
+          <DialogHeader className="text-center">
+            <DialogTitle className="text-2xl font-serif font-semibold tracking-tight">Almost there</DialogTitle>
+            <DialogDescription>
+              Confirm who's claiming {biz.business_name}. Next step is secure checkout.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Your name</label>
+              <Input
+                value={detailsName}
+                onChange={(e) => setDetailsName(e.target.value)}
+                placeholder="Full name"
+                autoComplete="name"
                 className="min-h-[48px] text-base"
               />
-              <Button type="submit" variant="outline" disabled={emailSending || submitting || !authEmail.trim()} className="w-full h-12">
-                {emailSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
-                Continue with email
-              </Button>
-            </form>
-            {emailSent && (
-              <p className="rounded-lg bg-primary/10 border border-primary/25 px-3 py-2 text-xs text-muted-foreground">
-                Check your inbox and tap the secure link. You’ll return here and continue to checkout automatically.
-              </p>
-            )}
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Mobile (optional)</label>
+              <Input
+                value={detailsPhone}
+                onChange={(e) => setDetailsPhone(e.target.value)}
+                placeholder="For go-live text"
+                inputMode="tel"
+                autoComplete="tel"
+                className="min-h-[48px] text-base"
+              />
+            </div>
+            <Button
+              onClick={confirmDetailsAndCheckout}
+              disabled={submitting || !detailsName.trim()}
+              className="w-full h-14 text-base font-bold bg-[#6B5BFF] hover:bg-[#5b4bf0]"
+            >
+              {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Continue to secure checkout →"}
+            </Button>
+            <p className="text-[11px] text-center text-muted-foreground">
+              $97/mo · $500 setup <span className="line-through">waived</span> · cancel anytime
+            </p>
           </div>
         </DialogContent>
       </Dialog>
