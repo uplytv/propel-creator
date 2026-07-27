@@ -23758,6 +23758,30 @@ export type Database = {
         Args: { _business_id: string; _new_owner: string }
         Returns: undefined
       }
+      update_my_claim_request_phone: {
+        Args: { _claim_request_id: string; _requester_phone: string }
+        Returns: {
+          business_id: string
+          created_at: string
+          id: string
+          note: string | null
+          requester_email: string
+          requester_name: string
+          requester_phone: string | null
+          requester_user_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewer_notes: string | null
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "claim_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       update_subscriber_send_hour: {
         Args: { p_email: string; p_hour: number }
         Returns: undefined
