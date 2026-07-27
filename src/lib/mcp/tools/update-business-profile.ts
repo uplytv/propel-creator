@@ -33,7 +33,7 @@ export default defineTool({
   handler: async (input, ctx) => {
     if (!ctx.isAuthenticated()) return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     const supabase = supabaseForUser(ctx);
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: ctx.getUserId(), _role: "admin" });
+    const { data: isAdmin } = await supabase.rpc("has_role" as never, { _user_id: ctx.getUserId(), _role: "admin" } as never);
     if (!isAdmin) return { content: [{ type: "text", text: "Admin only" }], isError: true };
 
     const patch: Record<string, unknown> = {};
