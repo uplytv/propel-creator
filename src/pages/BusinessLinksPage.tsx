@@ -92,8 +92,24 @@ export default function BusinessLinksPage() {
 
   const links = biz.links ?? [];
 
+  const isLive = biz.status === "live";
+
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {!isLive && (
+        <div className="w-full bg-[#6B5BFF]/10 border-b border-[#6B5BFF]/30 px-4 py-2 text-center text-sm">
+          <span className="text-foreground/80">
+            Preview —{" "}
+            <Link to={`/claim/${username}`} className="text-[#6B5BFF] font-semibold underline">
+              claim this page
+            </Link>
+            <span className="mx-2 text-muted-foreground">·</span>
+            <a href="mailto:remove@uply.tv?subject=Takedown%20request" className="text-muted-foreground hover:text-foreground underline">
+              Not your business?
+            </a>
+          </span>
+        </div>
+      )}
       <div className="max-w-md mx-auto px-5 pt-10 pb-16 flex flex-col items-center text-center">
         {biz.logo_url ? (
           <img src={biz.logo_url} alt={biz.business_name} className="w-24 h-24 rounded-full object-cover border-2 border-[#6B5BFF]/40" />
@@ -146,9 +162,9 @@ export default function BusinessLinksPage() {
         <Link to={`/${username}`} className="mt-8 text-sm text-[#6B5BFF] hover:underline">
           Visit full page →
         </Link>
-        <Link to="/" className="mt-6 text-xs text-muted-foreground hover:text-foreground">
+        <a href="https://uply.tv" className="mt-6 text-xs text-muted-foreground hover:text-foreground">
           Powered by UPLY
-        </Link>
+        </a>
       </div>
     </div>
   );

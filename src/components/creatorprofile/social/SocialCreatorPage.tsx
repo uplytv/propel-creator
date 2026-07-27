@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate, Navigate } from "react-router-dom";
 import { ArrowLeft, Plus, Gift, Radio } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,6 +60,8 @@ interface BasicProfile {
   creator_type: string | null;
   creator_layout: string | null;
   members?: number | null;
+  account_type?: string | null;
+  business_status?: string | null;
 }
 
 interface ArtistProfileLite {
@@ -372,6 +374,12 @@ export default function SocialCreatorPage() {
     // chain (community → profile → artist site → blog → /roster) and go
     // to the first tier that exists.
     return <CreatorDestinationRedirect handle={slug} />;
+  }
+  // Business tenants always render at /:username via BusinessSitePage —
+  // the social creator shell is meaningless for them (no music/works/etc).
+  // Redirect /@handle → /handle so every share/discovery link lands there.
+  if (basic.account_type === "business" && basic.username) {
+    return <Navigate to={`/${basic.username}`} replace />;
   }
 
   // Tabs

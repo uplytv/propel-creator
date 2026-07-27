@@ -48,10 +48,15 @@ async function resolveUncached(handle: string): Promise<string> {
       ),
     );
     const profile = results.find((r: any) => r?.data)?.data as
-      | { user_id: string; username: string | null }
+      | { user_id: string; username: string | null; account_type?: string | null }
       | undefined;
 
     if (profile?.user_id) {
+      // Business tenants always live at /:username — never send them to
+      // the social creator shell, which would render an empty page.
+      if (profile.account_type === "business" && profile.username) {
+        return `/${profile.username}`;
+      }
       const { data: space } = await supabase
         .from("creator_spaces")
         .select("creator_id")
