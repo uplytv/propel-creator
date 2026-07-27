@@ -138,7 +138,7 @@ export default function BusinessSitePage({ profile }: { profile: BusinessProfile
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {showDraftBanner && <DraftBanner status={profile.business_status ?? "draft"} isOwner={isOwner} />}
+      {showDraftBanner && <DraftBanner status={profile.business_status ?? "draft"} isOwner={isOwner} username={profile.username} />}
 
 
       <Hero biz={biz} />
