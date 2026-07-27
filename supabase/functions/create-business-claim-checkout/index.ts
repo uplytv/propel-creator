@@ -18,6 +18,11 @@ const corsHeaders = {
 const BUSINESS_PLAN_PRICE_CENTS = Number(
   Deno.env.get("BUSINESS_PLAN_PRICE_CENTS") ?? "9700",
 );
+const BUSINESS_PLAN_SETUP_FEE_CENTS = Number(
+  Deno.env.get("BUSINESS_PLAN_SETUP_FEE_CENTS") ?? "50000",
+);
+const BUSINESS_PLAN_SETUP_FEE_WAIVED =
+  (Deno.env.get("BUSINESS_PLAN_SETUP_FEE_WAIVED") ?? "true").toLowerCase() !== "false";
 const BUSINESS_PLAN_NAME = "UPLY Business";
 
 serve(async (req) => {
