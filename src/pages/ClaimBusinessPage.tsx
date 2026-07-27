@@ -233,16 +233,22 @@ export default function ClaimBusinessPage() {
     startCheckout(biz.id);
   }, [authUser, biz, clearCheckoutIntent, existingClaim, hasCheckoutIntent, isCheckoutCancel, isCheckoutReturn, loading, startCheckout, submitting]);
 
+  const openDetailsWithPrefill = (user: AuthUserInfo) => {
+    setDetailsName((current) => current || user.fullName);
+    setDetailsOpen(true);
+  };
+
   const startClaim = async () => {
     if (!biz) return;
     rememberCheckoutIntent();
     const currentUser = authUser ?? await getAuthUserInfo();
     if (!currentUser) {
+      setAuthEmail((v) => v || "");
       setAuthOpen(true);
       return;
     }
     setAuthUser(currentUser);
-    startCheckout(biz.id);
+    openDetailsWithPrefill(currentUser);
   };
 
   const continueWithGoogle = async () => {
@@ -260,30 +266,80 @@ export default function ClaimBusinessPage() {
     }
     if (result.redirected) return;
     const currentUser = await getAuthUserInfo();
-    setAuthUser(currentUser);
-    setAuthOpen(false);
-    if (currentUser) startCheckout(biz.id);
+    setSubmitting(false);
+    if (currentUser) {
+      setAuthUser(currentUser);
+      setAuthOpen(false);
+      openDetailsWithPrefill(currentUser);
+    }
   };
 
-  const continueWithEmail = async (event: React.FormEvent) => {
+  const continueWithEmailPassword = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!biz || !authEmail.trim()) return;
+    if (!biz || !authEmail.trim() || !authPassword) return;
     rememberCheckoutIntent();
-    setEmailSending(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email: authEmail.trim(),
-      options: {
-        shouldCreateUser: true,
-        emailRedirectTo: getClaimReturnUrl(biz.username),
-      },
-    });
-    setEmailSending(false);
+    setEmailSubmitting(true);
+    const email = authEmail.trim();
+    let error: { message: string } | null = null;
+    if (emailMode === "signup") {
+      const { error: signUpError } = await supabase.auth.signUp({
+        email,
+        password: authPassword,
+        options: { emailRedirectTo: getClaimReturnUrl(biz.username) },
+      });
+      error = signUpError;
+    } else {
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password: authPassword });
+      error = signInError;
+    }
+    setEmailSubmitting(false);
     if (error) {
-      toast({ title: "Email sign in failed", description: error.message, variant: "destructive" });
+      toast({ title: emailMode === "signup" ? "Sign up failed" : "Sign in failed", description: error.message, variant: "destructive" });
       return;
     }
-    setEmailSent(true);
-    toast({ title: "Check your email", description: "Open the secure sign-in link to continue to checkout." });
+    const currentUser = await getAuthUserInfo();
+    if (!currentUser) {
+      toast({
+        title: "Check your inbox",
+        description: "Confirm your email to continue to checkout.",
+      });
+      return;
+    }
+    setAuthUser(currentUser);
+    setAuthOpen(false);
+    openDetailsWithPrefill(currentUser);
+  };
+
+  const confirmDetailsAndCheckout = async () => {
+    if (!biz || !authUser) return;
+    const name = detailsName.trim();
+    if (!name) {
+      toast({ title: "Add your name", description: "So we know who to verify.", variant: "destructive" });
+      return;
+    }
+    setSubmitting(true);
+    // Pre-create a pending claim_request with the collected name/phone so we
+    // never lose the data across the Stripe redirect.
+    const { data, error } = await supabase
+      .from("claim_requests")
+      .insert({
+        business_id: biz.id,
+        requester_user_id: authUser.id,
+        requester_name: name,
+        requester_email: authUser.email,
+        requester_phone: detailsPhone.trim() || null,
+      })
+      .select("id, status, requester_phone")
+      .single();
+    if (!error && data) {
+      setExistingClaim(data as any);
+    } else if (error && !/duplicate|unique/i.test(error.message)) {
+      setSubmitting(false);
+      toast({ title: "Could not start claim", description: error.message, variant: "destructive" });
+      return;
+    }
+    setDetailsOpen(false);
+    startCheckout(biz.id);
   };
 
   const saveOptionalPhone = async () => {
