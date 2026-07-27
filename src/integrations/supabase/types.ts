@@ -23171,6 +23171,11 @@ export type Database = {
         Returns: boolean
       }
       is_stream_chat_blocked: { Args: { _stream_id: string }; Returns: boolean }
+      is_visible_business_profile: {
+        Args: { _profile_id: string }
+        Returns: boolean
+      }
+      is_visible_business_user: { Args: { _user_id: string }; Returns: boolean }
       link_wristband: {
         Args: {
           p_event_id: string
