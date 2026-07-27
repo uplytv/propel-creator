@@ -43,6 +43,7 @@ export default function Auth() {
     if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return null;
     return raw;
   })();
+  const isOAuthConsentReturn = redirectParam?.startsWith("/.lovable/oauth/consent") ?? false;
   const returnTo = redirectParam ? `${window.location.origin}${redirectParam}` : window.location.origin;
 
   // Member (free-account) entry: /auth?mode=signup&as=member&redirect=...
@@ -60,6 +61,10 @@ export default function Auth() {
         .eq("user_id", session.user.id)
         .single();
       const p = profile as any;
+      if (isOAuthConsentReturn) {
+        navigate(redirectParam, { replace: true });
+        return;
+      }
       // Members (free accounts) bypass creator onboarding + the approval
       // waitlist: straight to their destination. `as=member` records the
       // persona on first pass; a stored 'member' persona covers later
@@ -92,7 +97,7 @@ export default function Auth() {
       if (session && !signUpSuccess) checkAndRedirect(session);
     });
     return () => subscription.unsubscribe();
-  }, [navigate, signUpSuccess, redirectParam, asMember]);
+  }, [navigate, signUpSuccess, redirectParam, asMember, isOAuthConsentReturn]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,6 +166,10 @@ export default function Auth() {
       // Auto-confirm is enabled — if session exists, redirect immediately
       if (signUpData?.session) {
         toast.success("Account created!", { description: "Welcome to UPLY!" });
+        if (isOAuthConsentReturn) {
+          navigate(redirectParam, { replace: true });
+          return;
+        }
         if (asMember) {
           // Free member account: record the persona and skip creator
           // onboarding/waitlist. Idempotent with checkAndRedirect's write.
