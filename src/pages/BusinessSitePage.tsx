@@ -336,15 +336,20 @@ function BlogSection({ posts, username, businessId }: { posts: Array<{ id: strin
       <h2 className="text-2xl font-bold mb-6">Latest updates</h2>
       <div className="space-y-4">
         {posts.map((p) => (
-          <Link
+          <article
             key={p.id}
-            to={`/@${username}?post=${p.id}`}
+            id={`post-${p.id}`}
             onClick={() => logView(p.id)}
-            className="block rounded-xl p-5 bg-white/[0.03] border border-border hover:border-[#6B5BFF]/40 transition-colors"
+            className="rounded-xl p-5 bg-white/[0.03] border border-border"
           >
-            <p className="text-foreground/90 line-clamp-3">{p.content}</p>
-            <p className="text-xs text-muted-foreground mt-2">{new Date(p.created_at).toLocaleDateString()}</p>
-          </Link>
+            <p className="text-foreground/90 whitespace-pre-wrap">{p.content}</p>
+            <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+              <span>{new Date(p.created_at).toLocaleDateString()}</span>
+              <Link to={`/${username}`} className="text-[#6B5BFF] hover:underline">
+                ← Back to page
+              </Link>
+            </div>
+          </article>
         ))}
       </div>
     </section>
