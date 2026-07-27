@@ -60,6 +60,8 @@ interface BasicProfile {
   creator_type: string | null;
   creator_layout: string | null;
   members?: number | null;
+  account_type?: string | null;
+  business_status?: string | null;
 }
 
 interface ArtistProfileLite {
