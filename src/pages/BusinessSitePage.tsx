@@ -102,6 +102,18 @@ export default function BusinessSitePage({ profile }: { profile: BusinessProfile
       .insert({ business_id: biz.id, event_type: "view" });
   }, [biz?.id, isLive]);
 
+  // Non-live pages must never be indexed by search engines.
+  useEffect(() => {
+    if (isLive) return;
+    const tag = document.createElement("meta");
+    tag.name = "robots";
+    tag.content = "noindex";
+    document.head.appendChild(tag);
+    return () => {
+      document.head.removeChild(tag);
+    };
+  }, [isLive]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background grid place-items-center">
@@ -121,12 +133,13 @@ export default function BusinessSitePage({ profile }: { profile: BusinessProfile
     );
   }
 
-  const showDraftBanner = !isLive && (isOwner || profile.business_status === "draft");
+  const showDraftBanner = !isLive;
   const canSubmitLead = isLive;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       {showDraftBanner && <DraftBanner status={profile.business_status ?? "draft"} isOwner={isOwner} />}
+
 
       <Hero biz={biz} />
       <QuickActions biz={biz} />
