@@ -42,25 +42,43 @@ export default function ClaimBusinessPage() {
       setUserId(uid);
       if (sess.session?.user?.email) setEmail(sess.session.user.email);
 
-      const { data: p } = await supabase
-        .from("profiles")
-        .select("id, username, business_status, account_type")
-        .eq("username", username)
-        .maybeSingle();
-      if (!p || (p as any).account_type !== "business") {
+      // Resolve business via the same anon-safe path as BusinessSitePage:
+      // security-definer RPC (bypasses profile RLS) + anon-readable
+      // business_details select. Never query the profiles table directly
+      // here — that path is RLS-blocked for non-owner visitors.
+      const candidates = getProfileHandleCandidates(username);
+      const rpcResults = await Promise.all(
+        candidates.map((candidate) =>
+          supabase
+            .rpc("get_public_profile_by_username", { _username: candidate })
+            .maybeSingle(),
+        ),
+      );
+      const p = rpcResults.find((r: any) => r?.data)?.data as
+        | {
+            id: string;
+            user_id: string;
+            username: string;
+            account_type: string | null;
+            business_status: string | null;
+          }
+        | undefined;
+
+      if (!p || p.account_type !== "business") {
         setLoading(false);
         return;
       }
+
       const { data: d } = await supabase
-        .from("business_details")
+        .from("business_details" as never)
         .select("business_name, tagline, category, hero_image_url")
         .eq("profile_id", p.id)
         .maybeSingle();
       setBiz({
         id: p.id,
         username: p.username,
-        business_status: (p as any).business_status,
-        business_name: (d as any)?.business_name ?? username,
+        business_status: p.business_status ?? "draft",
+        business_name: (d as any)?.business_name ?? p.username,
         tagline: (d as any)?.tagline ?? null,
         category: (d as any)?.category ?? null,
         hero_image_url: (d as any)?.hero_image_url ?? null,
