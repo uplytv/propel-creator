@@ -138,7 +138,7 @@ export default function BusinessSitePage({ profile }: { profile: BusinessProfile
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {showDraftBanner && <DraftBanner status={profile.business_status ?? "draft"} isOwner={isOwner} />}
+      {showDraftBanner && <DraftBanner status={profile.business_status ?? "draft"} isOwner={isOwner} username={profile.username} />}
 
 
       <Hero biz={biz} />
@@ -159,7 +159,7 @@ export default function BusinessSitePage({ profile }: { profile: BusinessProfile
   );
 }
 
-function DraftBanner({ status, isOwner }: { status: string; isOwner: boolean }) {
+function DraftBanner({ status, isOwner, username }: { status: string; isOwner: boolean; username: string }) {
   return (
     <div className="w-full bg-[#6B5BFF]/10 border-b border-[#6B5BFF]/30 px-4 py-2 text-center text-sm">
       <span className="text-foreground/80">
@@ -169,8 +169,14 @@ function DraftBanner({ status, isOwner }: { status: string; isOwner: boolean }) 
             Publish this page
           </Link>
         ) : (
-          <span className="text-[#6B5BFF] font-semibold">claim this page</span>
+          <Link to={`/claim/${username}`} className="text-[#6B5BFF] font-semibold underline">
+            claim this page
+          </Link>
         )}
+        <span className="mx-2 text-muted-foreground">·</span>
+        <a href="mailto:remove@uply.tv?subject=Takedown%20request" className="text-muted-foreground hover:text-foreground underline">
+          Not your business?
+        </a>
       </span>
     </div>
   );

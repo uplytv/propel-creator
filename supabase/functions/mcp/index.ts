@@ -416,13 +416,97 @@ var get_business_analytics_default = defineTool9({
   }
 });
 
+// src/lib/mcp/tools/list-claim-requests.ts
+import { createClient as createClient10 } from "npm:@supabase/supabase-js@^2.98.0";
+import { defineTool as defineTool10 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { z as z9 } from "npm:zod@^4.4.3";
+function supabaseForUser10(ctx) {
+  return createClient10(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
+    global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+}
+var list_claim_requests_default = defineTool10({
+  name: "list_claim_requests",
+  title: "List business claim requests",
+  description: "Admin only. List business page claim requests, optionally filtered by status.",
+  inputSchema: {
+    status: z9.enum(["pending", "approved", "rejected"]).optional(),
+    limit: z9.number().int().min(1).max(200).optional()
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ status, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    const supabase = supabaseForUser10(ctx);
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: ctx.getUserId(), _role: "admin" });
+    if (!isAdmin) return { content: [{ type: "text", text: "Admin only" }], isError: true };
+    let q = supabase.from("claim_requests").select("id, business_id, requester_user_id, requester_name, requester_email, requester_phone, note, status, reviewer_notes, created_at, reviewed_at").order("created_at", { ascending: false }).limit(limit ?? 50);
+    if (status) q = q.eq("status", status);
+    const { data, error } = await q;
+    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    return {
+      content: [{ type: "text", text: `${data.length} claim request(s).` }],
+      structuredContent: { claims: data }
+    };
+  }
+});
+
+// src/lib/mcp/tools/approve-claim.ts
+import { createClient as createClient11 } from "npm:@supabase/supabase-js@^2.98.0";
+import { defineTool as defineTool11 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { z as z10 } from "npm:zod@^4.4.3";
+function supabaseForUser11(ctx) {
+  return createClient11(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
+    global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+}
+var approve_claim_default = defineTool11({
+  name: "approve_claim",
+  title: "Approve or reject a business claim",
+  description: "Admin only. Approve or reject a pending business claim request. Approve transfers business page ownership to the requester and marks it live.",
+  inputSchema: {
+    claim_id: z10.string().uuid(),
+    decision: z10.enum(["approve", "reject"]),
+    reviewer_notes: z10.string().max(1e3).optional()
+  },
+  annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false },
+  handler: async ({ claim_id, decision, reviewer_notes }, ctx) => {
+    if (!ctx.isAuthenticated()) return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    const supabase = supabaseForUser11(ctx);
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: ctx.getUserId(), _role: "admin" });
+    if (!isAdmin) return { content: [{ type: "text", text: "Admin only" }], isError: true };
+    const url = `${process.env.SUPABASE_URL}/functions/v1/review-business-claim`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${ctx.getToken()}`,
+        "Content-Type": "application/json",
+        apikey: process.env.SUPABASE_PUBLISHABLE_KEY
+      },
+      body: JSON.stringify({ claim_id, decision, reviewer_notes })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok || body?.error) {
+      return {
+        content: [{ type: "text", text: body?.error || `HTTP ${res.status}` }],
+        isError: true
+      };
+    }
+    return {
+      content: [{ type: "text", text: `Claim ${decision}d.` }],
+      structuredContent: { claim_id, decision }
+    };
+  }
+});
+
 // src/lib/mcp/index.ts
 var projectRef = "dbjlhmbgskvhuzqvqfrl";
 var mcp_default = defineMcp({
   name: "uply-mcp",
   title: "UPLY",
-  version: "0.2.0",
-  instructions: "Tools for a UPLY creator's own account. `whoami`, `list_my_products`, `list_my_posts`, `create_post` act as the signed-in creator. Admin-only business tenant tools: `create_business_profile`, `update_business_profile`, `create_business_post`, `list_business_leads`, `get_business_analytics`. All tools authorize via Supabase RLS and public.has_role.",
+  version: "0.3.0",
+  instructions: "Tools for a UPLY creator's own account. `whoami`, `list_my_products`, `list_my_posts`, `create_post` act as the signed-in creator. Admin-only business tenant tools: `create_business_profile`, `update_business_profile`, `create_business_post`, `list_business_leads`, `get_business_analytics`, `list_claim_requests`, `approve_claim`. All tools authorize via Supabase RLS and public.has_role.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated"
@@ -436,7 +520,9 @@ var mcp_default = defineMcp({
     update_business_profile_default,
     create_business_post_default,
     list_business_leads_default,
-    get_business_analytics_default
+    get_business_analytics_default,
+    list_claim_requests_default,
+    approve_claim_default
   ]
 });
 

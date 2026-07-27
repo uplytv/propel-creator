@@ -12,7 +12,7 @@
   "mcp": {
     "server": {
       "name": "uply-mcp",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "title": "UPLY"
     },
     "tools": [
@@ -407,6 +407,73 @@
               "maxLength": 64
             }
           }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_claim_requests",
+        "title": "List business claim requests",
+        "description": "Admin only. List business page claim requests, optionally filtered by status.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "approved",
+                "rejected"
+              ]
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "approve_claim",
+        "title": "Approve or reject a business claim",
+        "description": "Admin only. Approve or reject a pending business claim request. Approve transfers business page ownership to the requester and marks it live.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "claim_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "decision": {
+              "type": "string",
+              "enum": [
+                "approve",
+                "reject"
+              ]
+            },
+            "reviewer_notes": {
+              "type": "string",
+              "maxLength": 1000
+            }
+          },
+          "required": [
+            "claim_id",
+            "decision"
+          ]
         },
         "outputSchema": null
       }

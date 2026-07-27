@@ -114,6 +114,8 @@ const Launchpad = lazy(() => import("./pages/Launchpad"));
 const AdminAffiliates = lazy(() => import("./pages/AdminAffiliates"));
 const AdminReferrals = lazy(() => import("./pages/AdminReferrals"));
 const AdminBlakeSubscribers = lazy(() => import("./pages/AdminBlakeSubscribers"));
+const AdminClaimRequests = lazy(() => import("./pages/AdminClaimRequests"));
+const ClaimBusinessPage = lazy(() => import("./pages/ClaimBusinessPage"));
 const ReferralRedirect = lazy(() => import("./pages/ReferralRedirect"));
 const GrowthReports = lazy(() => import("./pages/GrowthReports"));
 const Shorts = lazy(() => import("./pages/Shorts"));
@@ -641,6 +643,7 @@ const App = () => (
                     <Route path="/admin/tv-audit" element={<AdminRoute><AdminTVAudit /></AdminRoute>} />
                     <Route path="/admin/event-fees" element={<AdminRoute><AdminEventFees /></AdminRoute>} />
                     <Route path="/admin/competition-entries" element={<AdminRoute><AdminCompetitionEntries /></AdminRoute>} />
+                    <Route path="/admin/claim-requests" element={<AdminRoute><AdminClaimRequests /></AdminRoute>} />
 
                     {/* In-app camera & post-capture editors */}
                     <Route path="/camera" element={<ProtectedRoute><Camera /></ProtectedRoute>} />
@@ -656,6 +659,9 @@ const App = () => (
 
                     {/* Business owner analytics — MUST be before /:username catch-all */}
                     <Route path="/business/analytics" element={<ProtectedRoute><BusinessAnalytics /></ProtectedRoute>} />
+
+                    {/* Business claim funnel — MUST be before /:username catch-all */}
+                    <Route path="/claim/:username" element={<ClaimBusinessPage />} />
 
                     {/* Legacy /:username and /:username/page redirect to /@<slug>; keep last before 404. */}
                     <Route path="/purchases" element={<ProtectedRoute><Purchases /></ProtectedRoute>} />
