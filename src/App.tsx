@@ -116,6 +116,7 @@ const AdminReferrals = lazy(() => import("./pages/AdminReferrals"));
 const AdminBlakeSubscribers = lazy(() => import("./pages/AdminBlakeSubscribers"));
 const AdminClaimRequests = lazy(() => import("./pages/AdminClaimRequests"));
 const ClaimBusinessPage = lazy(() => import("./pages/ClaimBusinessPage"));
+const BusinessLinksPage = lazy(() => import("./pages/BusinessLinksPage"));
 const ReferralRedirect = lazy(() => import("./pages/ReferralRedirect"));
 const GrowthReports = lazy(() => import("./pages/GrowthReports"));
 const Shorts = lazy(() => import("./pages/Shorts"));
@@ -662,6 +663,8 @@ const App = () => (
 
                     {/* Business claim funnel — MUST be before /:username catch-all */}
                     <Route path="/claim/:username" element={<ClaimBusinessPage />} />
+                    {/* Business standalone links page — MUST be before /:username catch-all */}
+                    <Route path="/:username/links" element={<BusinessLinksPage />} />
 
                     {/* Legacy /:username and /:username/page redirect to /@<slug>; keep last before 404. */}
                     <Route path="/purchases" element={<ProtectedRoute><Purchases /></ProtectedRoute>} />

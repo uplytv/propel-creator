@@ -41,6 +41,7 @@ export default defineTool({
     hours: z.record(z.string(), z.string()).optional(),
     services: z.array(z.object({ title: z.string(), description: z.string().optional(), price: z.string().optional() })).optional(),
     testimonials: z.array(z.object({ author: z.string(), text: z.string(), rating: z.number().int().min(1).max(5).optional() })).optional(),
+    links: z.array(z.object({ label: z.string().trim().min(1).max(80), url: z.string().url() })).optional(),
     status: z.enum(["draft", "claimed", "live"]).optional(),
   },
   annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },

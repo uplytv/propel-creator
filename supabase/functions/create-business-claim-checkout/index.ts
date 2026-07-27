@@ -18,6 +18,11 @@ const corsHeaders = {
 const BUSINESS_PLAN_PRICE_CENTS = Number(
   Deno.env.get("BUSINESS_PLAN_PRICE_CENTS") ?? "9700",
 );
+const BUSINESS_PLAN_SETUP_FEE_CENTS = Number(
+  Deno.env.get("BUSINESS_PLAN_SETUP_FEE_CENTS") ?? "50000",
+);
+const BUSINESS_PLAN_SETUP_FEE_WAIVED =
+  (Deno.env.get("BUSINESS_PLAN_SETUP_FEE_WAIVED") ?? "true").toLowerCase() !== "false";
 const BUSINESS_PLAN_NAME = "UPLY Business";
 
 serve(async (req) => {
@@ -57,27 +62,45 @@ serve(async (req) => {
       .maybeSingle();
     const username = bizProfile?.username ?? "";
 
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [{
+      price_data: {
+        currency: "usd",
+        product_data: {
+          name: BUSINESS_PLAN_NAME,
+          metadata: { plan_type: "business_claim" },
+        },
+        unit_amount: BUSINESS_PLAN_PRICE_CENTS,
+        recurring: { interval: "month" },
+      },
+      quantity: 1,
+    }];
+
+    if (!BUSINESS_PLAN_SETUP_FEE_WAIVED && BUSINESS_PLAN_SETUP_FEE_CENTS > 0) {
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: `${BUSINESS_PLAN_NAME} — One-time setup fee`,
+            metadata: { plan_type: "business_claim_setup" },
+          },
+          unit_amount: BUSINESS_PLAN_SETUP_FEE_CENTS,
+        },
+        quantity: 1,
+      });
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       mode: "subscription",
-      line_items: [{
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: BUSINESS_PLAN_NAME,
-            metadata: { plan_type: "business_claim" },
-          },
-          unit_amount: BUSINESS_PLAN_PRICE_CENTS,
-          recurring: { interval: "month" },
-        },
-        quantity: 1,
-      }],
+      line_items: lineItems,
       metadata: {
         plan_type: "business_claim",
         business_id,
         claim_request_id: claim_request_id ?? "",
         user_id: user.id,
+        setup_fee_cents: BUSINESS_PLAN_SETUP_FEE_WAIVED ? "0" : String(BUSINESS_PLAN_SETUP_FEE_CENTS),
+        setup_fee_waived: BUSINESS_PLAN_SETUP_FEE_WAIVED ? "true" : "false",
       },
       subscription_data: {
         metadata: {

@@ -36,6 +36,7 @@ interface BusinessDetails {
   google_maps_url: string | null;
   hero_image_url: string | null;
   logo_url: string | null;
+  links: Array<{ label: string; url: string }> | null;
 }
 
 const leadSchema = z.object({
@@ -144,6 +145,8 @@ export default function BusinessSitePage({ profile }: { profile: BusinessProfile
       <Hero biz={biz} />
       <QuickActions biz={biz} />
 
+      {biz.links && biz.links.length > 0 && <LinksSection links={biz.links} businessId={biz.id} />}
+
       {biz.services && biz.services.length > 0 && <Services services={biz.services} />}
       {biz.testimonials && biz.testimonials.length > 0 && <Testimonials items={biz.testimonials} />}
       <HoursAndMap biz={biz} />
@@ -152,8 +155,13 @@ export default function BusinessSitePage({ profile }: { profile: BusinessProfile
 
       <LeadForm businessId={biz.id} businessName={biz.business_name} disabled={!canSubmitLead} />
 
-      <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground">
-        <Link to="/" className="hover:text-foreground transition-colors">Powered by UPLY</Link>
+      <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground space-y-2">
+        <Link to={`/${profile.username}/links`} className="text-[#6B5BFF] hover:underline">
+          View links page →
+        </Link>
+        <div>
+          <Link to="/" className="hover:text-foreground transition-colors">Powered by UPLY</Link>
+        </div>
       </footer>
     </div>
   );
@@ -422,6 +430,33 @@ function LeadForm({ businessId, businessName, disabled }: { businessId: string; 
         </Button>
         {disabled && <p className="text-xs text-muted-foreground text-center">This page is in preview. Leads open once it's published.</p>}
       </form>
+    </section>
+  );
+}
+
+function LinksSection({ links, businessId }: { links: Array<{ label: string; url: string }>; businessId: string }) {
+  const logTap = async (label: string) => {
+    await (supabase as unknown as { from: (t: string) => { insert: (r: unknown) => Promise<unknown> } })
+      .from("business_page_events")
+      .insert({ business_id: businessId, event_type: "link_tap", metadata: { label } });
+  };
+  return (
+    <section className="max-w-2xl mx-auto px-4 py-8">
+      <h2 className="text-xl font-bold mb-4">Links</h2>
+      <div className="grid gap-3">
+        {links.map((l, i) => (
+          <a
+            key={i}
+            href={l.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => logTap(l.label)}
+            className="block w-full text-center rounded-xl px-5 py-4 bg-white/[0.04] border border-border hover:border-[#6B5BFF]/60 hover:bg-white/[0.06] transition-colors font-semibold min-h-[52px]"
+          >
+            {l.label}
+          </a>
+        ))}
+      </div>
     </section>
   );
 }
