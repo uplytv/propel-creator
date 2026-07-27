@@ -4,6 +4,7 @@ import path from "path";
 import { execSync } from "child_process";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
+import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/supabase/vite";
 
 // Build metadata injected at build time and surfaced by the /health page so we
 // can confirm a deploy is actually live.
