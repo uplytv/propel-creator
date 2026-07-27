@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, CheckCircle2, Star, Shield } from "lucide-react";
+import { getProfileHandleCandidates } from "@/lib/profileSlug";
 
 interface BusinessInfo {
   id: string;
