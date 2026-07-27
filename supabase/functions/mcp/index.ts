@@ -143,10 +143,24 @@ async function requireAdmin(ctx) {
   if (error || !data) throw new Error("Admin only");
   return supabase;
 }
+function slugify(input) {
+  return input.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "").slice(0, 40) || "business";
+}
+async function ensureUniqueUsername(supabase, base) {
+  let candidate = base;
+  let n = 1;
+  for (let i = 0; i < 20; i++) {
+    const { data } = await supabase.from("profiles").select("id").ilike("username", candidate).maybeSingle();
+    if (!data) return candidate;
+    n += 1;
+    candidate = `${base}${n}`;
+  }
+  return `${base}${Date.now().toString().slice(-5)}`;
+}
 var create_business_profile_default = defineTool5({
   name: "create_business_profile",
   title: "Create business profile",
-  description: "Admin only. Create (or promote) a business tenant: sets the profile's account_type='business' and creates a business_details row. Uses an existing profile by username or user_id.",
+  description: "Admin only. Create (or promote) a business tenant. If the username matches an existing profile, promote it; otherwise create a new profile row owned by the calling admin (draft until claimed), then upsert business_details. Returns username and public URL.",
   inputSchema: {
     username: z4.string().trim().min(1).max(64).optional(),
     user_id: z4.string().uuid().optional(),
@@ -168,15 +182,34 @@ var create_business_profile_default = defineTool5({
     try {
       const supabase = await requireAdmin(ctx);
       let profileId = null;
+      let profileUsername = null;
       if (input.user_id) {
-        const { data } = await supabase.from("profiles").select("id").eq("user_id", input.user_id).maybeSingle();
+        const { data } = await supabase.from("profiles").select("id, username").eq("user_id", input.user_id).maybeSingle();
         profileId = data?.id ?? null;
+        profileUsername = data?.username ?? null;
       } else if (input.username) {
-        const { data } = await supabase.from("profiles").select("id").ilike("username", input.username).maybeSingle();
+        const { data } = await supabase.from("profiles").select("id, username").ilike("username", input.username).maybeSingle();
         profileId = data?.id ?? null;
+        profileUsername = data?.username ?? null;
       }
-      if (!profileId) return { content: [{ type: "text", text: "Profile not found. Create the user account first." }], isError: true };
-      await supabase.from("profiles").update({ account_type: "business", business_status: input.status }).eq("id", profileId);
+      if (!profileId) {
+        const base = slugify(input.username || input.business_name);
+        const username = await ensureUniqueUsername(supabase, base);
+        const { data: created, error: createErr } = await supabase.from("profiles").insert({
+          user_id: ctx.getUserId(),
+          username,
+          display_name: input.business_name,
+          account_type: "business",
+          business_status: input.status
+        }).select("id, username").single();
+        if (createErr || !created) {
+          return { content: [{ type: "text", text: `Failed to create profile: ${createErr?.message ?? "unknown"}` }], isError: true };
+        }
+        profileId = created.id;
+        profileUsername = created.username;
+      } else {
+        await supabase.from("profiles").update({ account_type: "business", business_status: input.status }).eq("id", profileId);
+      }
       const { data: biz, error } = await supabase.from("business_details").upsert(
         {
           profile_id: profileId,
@@ -194,9 +227,10 @@ var create_business_profile_default = defineTool5({
         { onConflict: "profile_id" }
       ).select().single();
       if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+      const publicUrl = `https://uply.tv/${profileUsername}`;
       return {
-        content: [{ type: "text", text: `Business ${biz.business_name} ready (${input.status}).` }],
-        structuredContent: { business: biz }
+        content: [{ type: "text", text: `Business ${biz.business_name} ready (${input.status}) at ${publicUrl}` }],
+        structuredContent: { business: biz, username: profileUsername, public_url: publicUrl }
       };
     } catch (e) {
       return { content: [{ type: "text", text: e instanceof Error ? e.message : String(e) }], isError: true };
@@ -214,12 +248,21 @@ function supabaseForUser6(ctx) {
     auth: { persistSession: false, autoRefreshToken: false }
   });
 }
+async function resolveBusinessId(supabase, business_id, username) {
+  if (business_id) return business_id;
+  if (!username) return null;
+  const { data: prof } = await supabase.from("profiles").select("id").ilike("username", username).maybeSingle();
+  if (!prof?.id) return null;
+  const { data: biz } = await supabase.from("business_details").select("id").eq("profile_id", prof.id).maybeSingle();
+  return biz?.id ?? null;
+}
 var update_business_profile_default = defineTool6({
   name: "update_business_profile",
   title: "Update business profile",
-  description: "Admin only. Update fields on an existing business_details row and optionally change the business_status (draft/claimed/live).",
+  description: "Admin only. Update fields on an existing business_details row and optionally change the business_status (draft/claimed/live). Accepts business_id or username.",
   inputSchema: {
-    business_id: z5.string().uuid(),
+    business_id: z5.string().uuid().optional(),
+    username: z5.string().trim().min(1).max(64).optional(),
     business_name: z5.string().trim().min(1).max(200).optional(),
     category: z5.string().trim().max(100).optional(),
     tagline: z5.string().trim().max(500).optional(),
@@ -239,22 +282,24 @@ var update_business_profile_default = defineTool6({
     const supabase = supabaseForUser6(ctx);
     const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: ctx.getUserId(), _role: "admin" });
     if (!isAdmin) return { content: [{ type: "text", text: "Admin only" }], isError: true };
+    const businessId = await resolveBusinessId(supabase, input.business_id, input.username);
+    if (!businessId) return { content: [{ type: "text", text: "Business not found (provide business_id or username)" }], isError: true };
     const patch = {};
     for (const [k, v] of Object.entries(input)) {
-      if (k === "business_id" || k === "status") continue;
+      if (k === "business_id" || k === "username" || k === "status") continue;
       if (v !== void 0) patch[k] = v;
     }
     if (Object.keys(patch).length > 0) {
-      const { error } = await supabase.from("business_details").update(patch).eq("id", input.business_id);
+      const { error } = await supabase.from("business_details").update(patch).eq("id", businessId);
       if (error) return { content: [{ type: "text", text: error.message }], isError: true };
     }
     if (input.status) {
-      const { data: biz } = await supabase.from("business_details").select("profile_id").eq("id", input.business_id).maybeSingle();
+      const { data: biz } = await supabase.from("business_details").select("profile_id").eq("id", businessId).maybeSingle();
       if (biz?.profile_id) {
         await supabase.from("profiles").update({ business_status: input.status }).eq("id", biz.profile_id);
       }
     }
-    return { content: [{ type: "text", text: `Business ${input.business_id} updated.` }] };
+    return { content: [{ type: "text", text: `Business ${businessId} updated.` }], structuredContent: { business_id: businessId } };
   }
 });
 
@@ -342,19 +387,31 @@ function supabaseForUser9(ctx) {
 var get_business_analytics_default = defineTool9({
   name: "get_business_analytics",
   title: "Business analytics summary",
-  description: "Admin only. Returns 7-day views, call taps, maps taps, blog views, and lead counts for a business.",
-  inputSchema: { business_id: z8.string().uuid() },
+  description: "Admin only. Returns 7-day views, call taps, maps taps, blog views, and lead counts for a business. Accepts business_id or username.",
+  inputSchema: {
+    business_id: z8.string().uuid().optional(),
+    username: z8.string().trim().min(1).max(64).optional()
+  },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ business_id }, ctx) => {
+  handler: async ({ business_id, username }, ctx) => {
     if (!ctx.isAuthenticated()) return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     const supabase = supabaseForUser9(ctx);
     const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: ctx.getUserId(), _role: "admin" });
     if (!isAdmin) return { content: [{ type: "text", text: "Admin only" }], isError: true };
-    const { data, error } = await supabase.from("business_weekly_summary").select("*").eq("business_id", business_id).maybeSingle();
+    let resolvedId = business_id ?? null;
+    if (!resolvedId && username) {
+      const { data: prof } = await supabase.from("profiles").select("id").ilike("username", username).maybeSingle();
+      if (prof?.id) {
+        const { data: biz } = await supabase.from("business_details").select("id").eq("profile_id", prof.id).maybeSingle();
+        resolvedId = biz?.id ?? null;
+      }
+    }
+    if (!resolvedId) return { content: [{ type: "text", text: "Business not found (provide business_id or username)" }], isError: true };
+    const { data, error } = await supabase.from("business_weekly_summary").select("*").eq("business_id", resolvedId).maybeSingle();
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
     return {
-      content: [{ type: "text", text: `Analytics for ${business_id}` }],
-      structuredContent: { summary: data ?? { business_id, views_7d: 0, call_taps_7d: 0, maps_taps_7d: 0, blog_views_7d: 0, leads_7d: 0, top_blog_post_id: null } }
+      content: [{ type: "text", text: `Analytics for ${resolvedId}` }],
+      structuredContent: { summary: data ?? { business_id: resolvedId, views_7d: 0, call_taps_7d: 0, maps_taps_7d: 0, blog_views_7d: 0, leads_7d: 0, top_blog_post_id: null } }
     };
   }
 });

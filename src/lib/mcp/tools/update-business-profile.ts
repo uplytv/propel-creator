@@ -9,13 +9,27 @@ function supabaseForUser(ctx: ToolContext) {
   });
 }
 
+async function resolveBusinessId(
+  supabase: ReturnType<typeof supabaseForUser>,
+  business_id?: string,
+  username?: string
+): Promise<string | null> {
+  if (business_id) return business_id;
+  if (!username) return null;
+  const { data: prof } = await supabase.from("profiles").select("id").ilike("username", username).maybeSingle();
+  if (!prof?.id) return null;
+  const { data: biz } = await supabase.from("business_details").select("id").eq("profile_id", prof.id).maybeSingle();
+  return biz?.id ?? null;
+}
+
 export default defineTool({
   name: "update_business_profile",
   title: "Update business profile",
   description:
-    "Admin only. Update fields on an existing business_details row and optionally change the business_status (draft/claimed/live).",
+    "Admin only. Update fields on an existing business_details row and optionally change the business_status (draft/claimed/live). Accepts business_id or username.",
   inputSchema: {
-    business_id: z.string().uuid(),
+    business_id: z.string().uuid().optional(),
+    username: z.string().trim().min(1).max(64).optional(),
     business_name: z.string().trim().min(1).max(200).optional(),
     category: z.string().trim().max(100).optional(),
     tagline: z.string().trim().max(500).optional(),
@@ -36,24 +50,27 @@ export default defineTool({
     const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: ctx.getUserId(), _role: "admin" });
     if (!isAdmin) return { content: [{ type: "text", text: "Admin only" }], isError: true };
 
+    const businessId = await resolveBusinessId(supabase, input.business_id, input.username);
+    if (!businessId) return { content: [{ type: "text", text: "Business not found (provide business_id or username)" }], isError: true };
+
     const patch: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(input)) {
-      if (k === "business_id" || k === "status") continue;
+      if (k === "business_id" || k === "username" || k === "status") continue;
       if (v !== undefined) patch[k] = v;
     }
 
     if (Object.keys(patch).length > 0) {
-      const { error } = await supabase.from("business_details").update(patch).eq("id", input.business_id);
+      const { error } = await supabase.from("business_details").update(patch).eq("id", businessId);
       if (error) return { content: [{ type: "text", text: error.message }], isError: true };
     }
 
     if (input.status) {
-      const { data: biz } = await supabase.from("business_details").select("profile_id").eq("id", input.business_id).maybeSingle();
+      const { data: biz } = await supabase.from("business_details").select("profile_id").eq("id", businessId).maybeSingle();
       if (biz?.profile_id) {
-        await supabase.from("profiles").update({ business_status: input.status }).eq("id", biz.profile_id);
+        await supabase.from("profiles").update({ business_status: input.status } as any).eq("id", biz.profile_id);
       }
     }
 
-    return { content: [{ type: "text", text: `Business ${input.business_id} updated.` }] };
+    return { content: [{ type: "text", text: `Business ${businessId} updated.` }], structuredContent: { business_id: businessId } };
   },
 });
