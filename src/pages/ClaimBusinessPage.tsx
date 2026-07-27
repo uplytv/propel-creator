@@ -10,6 +10,17 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Loader2, CheckCircle2, Star, Sparkles, Mail } from "lucide-react";
 import { getProfileHandleCandidates } from "@/lib/profileSlug";
 
+function GoogleGlyph() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+      <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35.5 24 35.5c-6.4 0-11.5-5.2-11.5-11.5S17.6 12.5 24 12.5c3 0 5.7 1.1 7.7 3l5.7-5.7C33.7 6.5 29.1 4.5 24 4.5 13.2 4.5 4.5 13.2 4.5 24S13.2 43.5 24 43.5c10.8 0 19.5-8.7 19.5-19.5 0-1.2-.1-2.3-.4-3.5z"/>
+      <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.6 19 12.5 24 12.5c3 0 5.7 1.1 7.7 3l5.7-5.7C33.7 6.5 29.1 4.5 24 4.5 16.3 4.5 9.7 8.9 6.3 14.7z"/>
+      <path fill="#4CAF50" d="M24 43.5c5 0 9.5-1.9 13-5l-6-5.1c-2 1.4-4.4 2.2-7 2.2-5.3 0-9.7-3.1-11.3-7.5l-6.5 5C9.5 39.1 16.1 43.5 24 43.5z"/>
+      <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.3 5.4l6 5.1c-.4.4 6.5-4.7 6.5-14.5 0-1.2-.1-2.3-.4-3.5z"/>
+    </svg>
+  );
+}
+
 interface BusinessInfo {
   id: string;
   username: string;
@@ -51,9 +62,13 @@ export default function ClaimBusinessPage() {
   const [authUser, setAuthUser] = useState<AuthUserInfo | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [detailsName, setDetailsName] = useState("");
+  const [detailsPhone, setDetailsPhone] = useState("");
   const [authEmail, setAuthEmail] = useState("");
-  const [emailSending, setEmailSending] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
+  const [authPassword, setAuthPassword] = useState("");
+  const [emailSubmitting, setEmailSubmitting] = useState(false);
+  const [emailMode, setEmailMode] = useState<"signin" | "signup">("signin");
   const [existingClaim, setExistingClaim] = useState<{ id: string; status: string; requester_phone?: string | null } | null>(null);
   const [justClaimed, setJustClaimed] = useState(false);
   const [phoneText, setPhoneText] = useState("");
@@ -229,16 +244,22 @@ export default function ClaimBusinessPage() {
     startCheckout(biz.id);
   }, [authUser, biz, clearCheckoutIntent, existingClaim, hasCheckoutIntent, isCheckoutCancel, isCheckoutReturn, loading, startCheckout, submitting]);
 
+  const openDetailsWithPrefill = (user: AuthUserInfo) => {
+    setDetailsName((current) => current || user.fullName);
+    setDetailsOpen(true);
+  };
+
   const startClaim = async () => {
     if (!biz) return;
     rememberCheckoutIntent();
     const currentUser = authUser ?? await getAuthUserInfo();
     if (!currentUser) {
+      setAuthEmail((v) => v || "");
       setAuthOpen(true);
       return;
     }
     setAuthUser(currentUser);
-    startCheckout(biz.id);
+    openDetailsWithPrefill(currentUser);
   };
 
   const continueWithGoogle = async () => {
@@ -256,30 +277,80 @@ export default function ClaimBusinessPage() {
     }
     if (result.redirected) return;
     const currentUser = await getAuthUserInfo();
-    setAuthUser(currentUser);
-    setAuthOpen(false);
-    if (currentUser) startCheckout(biz.id);
+    setSubmitting(false);
+    if (currentUser) {
+      setAuthUser(currentUser);
+      setAuthOpen(false);
+      openDetailsWithPrefill(currentUser);
+    }
   };
 
-  const continueWithEmail = async (event: React.FormEvent) => {
+  const continueWithEmailPassword = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!biz || !authEmail.trim()) return;
+    if (!biz || !authEmail.trim() || !authPassword) return;
     rememberCheckoutIntent();
-    setEmailSending(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email: authEmail.trim(),
-      options: {
-        shouldCreateUser: true,
-        emailRedirectTo: getClaimReturnUrl(biz.username),
-      },
-    });
-    setEmailSending(false);
+    setEmailSubmitting(true);
+    const email = authEmail.trim();
+    let error: { message: string } | null = null;
+    if (emailMode === "signup") {
+      const { error: signUpError } = await supabase.auth.signUp({
+        email,
+        password: authPassword,
+        options: { emailRedirectTo: getClaimReturnUrl(biz.username) },
+      });
+      error = signUpError;
+    } else {
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password: authPassword });
+      error = signInError;
+    }
+    setEmailSubmitting(false);
     if (error) {
-      toast({ title: "Email sign in failed", description: error.message, variant: "destructive" });
+      toast({ title: emailMode === "signup" ? "Sign up failed" : "Sign in failed", description: error.message, variant: "destructive" });
       return;
     }
-    setEmailSent(true);
-    toast({ title: "Check your email", description: "Open the secure sign-in link to continue to checkout." });
+    const currentUser = await getAuthUserInfo();
+    if (!currentUser) {
+      toast({
+        title: "Check your inbox",
+        description: "Confirm your email to continue to checkout.",
+      });
+      return;
+    }
+    setAuthUser(currentUser);
+    setAuthOpen(false);
+    openDetailsWithPrefill(currentUser);
+  };
+
+  const confirmDetailsAndCheckout = async () => {
+    if (!biz || !authUser) return;
+    const name = detailsName.trim();
+    if (!name) {
+      toast({ title: "Add your name", description: "So we know who to verify.", variant: "destructive" });
+      return;
+    }
+    setSubmitting(true);
+    // Pre-create a pending claim_request with the collected name/phone so we
+    // never lose the data across the Stripe redirect.
+    const { data, error } = await supabase
+      .from("claim_requests")
+      .insert({
+        business_id: biz.id,
+        requester_user_id: authUser.id,
+        requester_name: name,
+        requester_email: authUser.email,
+        requester_phone: detailsPhone.trim() || null,
+      })
+      .select("id, status, requester_phone")
+      .single();
+    if (!error && data) {
+      setExistingClaim(data as any);
+    } else if (error && !/duplicate|unique/i.test(error.message)) {
+      setSubmitting(false);
+      toast({ title: "Could not start claim", description: error.message, variant: "destructive" });
+      return;
+    }
+    setDetailsOpen(false);
+    startCheckout(biz.id);
   };
 
   const saveOptionalPhone = async () => {
@@ -511,34 +582,116 @@ export default function ClaimBusinessPage() {
       <Dialog open={authOpen} onOpenChange={setAuthOpen}>
         <DialogContent className="max-w-sm rounded-2xl border-border/70">
           <DialogHeader className="text-center">
-            <DialogTitle className="text-2xl font-extrabold tracking-tight">Claim {biz.business_name}</DialogTitle>
+            <DialogTitle className="text-2xl font-serif font-semibold tracking-tight">Claim {biz.business_name}</DialogTitle>
             <DialogDescription>
-              Sign in once, then we’ll send you straight to secure checkout.
+              One tap with Google — you'll confirm your details next.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3">
-            <Button onClick={continueWithGoogle} disabled={submitting || emailSending} className="w-full h-14 text-base font-bold">
-              {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Continue with Google"}
+          <div className="space-y-4">
+            <Button
+              onClick={continueWithGoogle}
+              disabled={submitting || emailSubmitting}
+              className="w-full h-14 text-base font-bold bg-[#6B5BFF] hover:bg-[#5b4bf0]"
+            >
+              {submitting ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <span className="inline-flex items-center gap-2">
+                  <GoogleGlyph /> Continue with Google
+                </span>
+              )}
             </Button>
-            <form onSubmit={continueWithEmail} className="space-y-2">
+
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-muted-foreground">
+              <div className="flex-1 h-px bg-border" />
+              <span>or email</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+
+            <form onSubmit={continueWithEmailPassword} className="space-y-2">
               <Input
                 type="email"
                 value={authEmail}
                 onChange={(e) => setAuthEmail(e.target.value)}
-                placeholder="Email for secure link"
+                placeholder="you@business.com"
                 autoComplete="email"
+                className="min-h-[44px] text-sm"
+              />
+              <Input
+                type="password"
+                value={authPassword}
+                onChange={(e) => setAuthPassword(e.target.value)}
+                placeholder="Password"
+                autoComplete={emailMode === "signup" ? "new-password" : "current-password"}
+                minLength={8}
+                className="min-h-[44px] text-sm"
+              />
+              <Button
+                type="submit"
+                variant="outline"
+                disabled={emailSubmitting || submitting || !authEmail.trim() || !authPassword}
+                className="w-full h-11 text-sm"
+              >
+                {emailSubmitting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <span className="inline-flex items-center gap-2">
+                    <Mail className="w-4 h-4" /> {emailMode === "signup" ? "Create account" : "Sign in"}
+                  </span>
+                )}
+              </Button>
+              <button
+                type="button"
+                onClick={() => setEmailMode((m) => (m === "signup" ? "signin" : "signup"))}
+                className="w-full text-xs text-muted-foreground hover:text-foreground"
+              >
+                {emailMode === "signup" ? "Have an account? Sign in" : "New here? Create an account"}
+              </button>
+            </form>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={detailsOpen} onOpenChange={(open) => !submitting && setDetailsOpen(open)}>
+        <DialogContent className="max-w-sm rounded-2xl border-border/70">
+          <DialogHeader className="text-center">
+            <DialogTitle className="text-2xl font-serif font-semibold tracking-tight">Almost there</DialogTitle>
+            <DialogDescription>
+              Confirm who's claiming {biz.business_name}. Next step is secure checkout.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Your name</label>
+              <Input
+                value={detailsName}
+                onChange={(e) => setDetailsName(e.target.value)}
+                placeholder="Full name"
+                autoComplete="name"
                 className="min-h-[48px] text-base"
               />
-              <Button type="submit" variant="outline" disabled={emailSending || submitting || !authEmail.trim()} className="w-full h-12">
-                {emailSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
-                Continue with email
-              </Button>
-            </form>
-            {emailSent && (
-              <p className="rounded-lg bg-primary/10 border border-primary/25 px-3 py-2 text-xs text-muted-foreground">
-                Check your inbox and tap the secure link. You’ll return here and continue to checkout automatically.
-              </p>
-            )}
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Mobile (optional)</label>
+              <Input
+                value={detailsPhone}
+                onChange={(e) => setDetailsPhone(e.target.value)}
+                placeholder="For go-live text"
+                inputMode="tel"
+                autoComplete="tel"
+                className="min-h-[48px] text-base"
+              />
+            </div>
+            <Button
+              onClick={confirmDetailsAndCheckout}
+              disabled={submitting || !detailsName.trim()}
+              className="w-full h-14 text-base font-bold bg-[#6B5BFF] hover:bg-[#5b4bf0]"
+            >
+              {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Continue to secure checkout →"}
+            </Button>
+            <p className="text-[11px] text-center text-muted-foreground">
+              $97/mo · $500 setup <span className="line-through">waived</span> · cancel anytime
+            </p>
           </div>
         </DialogContent>
       </Dialog>
