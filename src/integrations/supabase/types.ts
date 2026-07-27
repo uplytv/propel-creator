@@ -2999,6 +2999,69 @@ export type Database = {
         }
         Relationships: []
       }
+      claim_requests: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          note: string | null
+          requester_email: string
+          requester_name: string
+          requester_phone: string | null
+          requester_user_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewer_notes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          requester_email: string
+          requester_name: string
+          requester_phone?: string | null
+          requester_user_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          requester_email?: string
+          requester_name?: string
+          requester_phone?: string | null
+          requester_user_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_requests_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claim_requests_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classroom_lessons: {
         Row: {
           created_at: string
@@ -23682,6 +23745,10 @@ export type Database = {
           lesson_count: number
           min_rank: number
         }[]
+      }
+      transfer_business_ownership: {
+        Args: { _business_id: string; _new_owner: string }
+        Returns: undefined
       }
       update_subscriber_send_hour: {
         Args: { p_email: string; p_hour: number }
