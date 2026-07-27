@@ -24,7 +24,7 @@ export default defineTool({
     phone: z.string().trim().max(30).optional(),
     email: z.string().trim().email().max(255).optional(),
     google_maps_url: z.string().url().optional(),
-    hours: z.record(z.string()).optional(),
+    hours: z.record(z.string(), z.string()).optional(),
     services: z.array(z.object({ title: z.string(), description: z.string().optional(), price: z.string().optional() })).optional(),
     testimonials: z.array(z.object({ author: z.string(), text: z.string(), rating: z.number().int().min(1).max(5).optional() })).optional(),
     status: z.enum(["draft", "claimed", "live"]).optional(),
@@ -33,7 +33,7 @@ export default defineTool({
   handler: async (input, ctx) => {
     if (!ctx.isAuthenticated()) return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     const supabase = supabaseForUser(ctx);
-    const { data: isAdmin } = await supabase.rpc("has_role" as never, { _user_id: ctx.getUserId(), _role: "admin" } as never);
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: ctx.getUserId(), _role: "admin" });
     if (!isAdmin) return { content: [{ type: "text", text: "Admin only" }], isError: true };
 
     const patch: Record<string, unknown> = {};
