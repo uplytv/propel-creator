@@ -196,7 +196,7 @@
       {
         "name": "update_business_profile",
         "title": "Update business profile",
-        "description": "Admin only. Update fields on an existing business_details row and optionally change the business_status (draft/claimed/live).",
+        "description": "Admin only. Update fields on an existing business_details row and optionally change the business_status (draft/claimed/live). Accepts business_id or username.",
         "annotations": {
           "readOnlyHint": false,
           "destructiveHint": false,
@@ -210,6 +210,11 @@
               "type": "string",
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "username": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
             },
             "business_name": {
               "type": "string",
@@ -306,10 +311,7 @@
                 "live"
               ]
             }
-          },
-          "required": [
-            "business_id"
-          ]
+          }
         },
         "outputSchema": null
       },
@@ -384,7 +386,7 @@
       {
         "name": "get_business_analytics",
         "title": "Business analytics summary",
-        "description": "Admin only. Returns 7-day views, call taps, maps taps, blog views, and lead counts for a business.",
+        "description": "Admin only. Returns 7-day views, call taps, maps taps, blog views, and lead counts for a business. Accepts business_id or username.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,
@@ -398,11 +400,13 @@
               "type": "string",
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "username": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
             }
-          },
-          "required": [
-            "business_id"
-          ]
+          }
         },
         "outputSchema": null
       }
