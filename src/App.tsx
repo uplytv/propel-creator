@@ -32,6 +32,7 @@ const Landing = lazy(() => import("./pages/Landing"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Privacy = lazy(() => import("./pages/Privacy"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Scan = lazy(() => import("./pages/Scan"));
 const ScanEvent = lazy(() => import("./pages/ScanEvent"));
@@ -383,6 +384,7 @@ const App = () => (
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
                     <Route path="/terms" element={<Terms />} />
                     <Route path="/health" element={<Health />} />
                     <Route path="/p/:slug" element={<JointProduct isPublic />} />

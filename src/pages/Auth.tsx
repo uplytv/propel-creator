@@ -33,13 +33,17 @@ export default function Auth() {
   })();
   const [tab, setTab] = useState<string>(defaultTab);
 
-  // Post-auth redirect target (e.g. /tickets from the Resell tickets entry).
-  // Only allow same-origin paths to prevent open-redirect abuse.
+  // Post-auth redirect target. Accepts `redirect=` (existing UPLY convention)
+  // and `next=` (used by the MCP OAuth consent page at
+  // /.lovable/oauth/consent so it can round-trip through /auth and land back
+  // on the consent screen). Only same-origin relative paths are allowed.
   const redirectParam = (() => {
-    const raw = new URLSearchParams(location.search).get("redirect");
+    const q = new URLSearchParams(location.search);
+    const raw = q.get("redirect") ?? q.get("next");
     if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return null;
     return raw;
   })();
+  const returnTo = redirectParam ? `${window.location.origin}${redirectParam}` : window.location.origin;
 
   // Member (free-account) entry: /auth?mode=signup&as=member&redirect=...
   // Members skip creator onboarding + the approval waitlist entirely.
@@ -111,7 +115,7 @@ export default function Auth() {
       email,
       password,
       options: {
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: returnTo,
         data: {
           full_name: name,
           referred_by: waitlistRef.code || refCode || creatorRefCode || undefined,
@@ -251,7 +255,7 @@ export default function Auth() {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: returnTo,
     });
 
     if (result.error) {
