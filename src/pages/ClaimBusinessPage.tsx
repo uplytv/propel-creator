@@ -19,6 +19,8 @@ interface BusinessInfo {
 }
 
 const BUSINESS_PRICE = 97;
+const SETUP_FEE = 500;
+const SETUP_FEE_WAIVED = true;
 
 export default function ClaimBusinessPage() {
   const { username = "" } = useParams();
