@@ -36,6 +36,7 @@ interface BusinessDetails {
   google_maps_url: string | null;
   hero_image_url: string | null;
   logo_url: string | null;
+  links: Array<{ label: string; url: string }> | null;
 }
 
 const leadSchema = z.object({
