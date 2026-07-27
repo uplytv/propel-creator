@@ -51,9 +51,13 @@ export default function ClaimBusinessPage() {
   const [authUser, setAuthUser] = useState<AuthUserInfo | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [detailsName, setDetailsName] = useState("");
+  const [detailsPhone, setDetailsPhone] = useState("");
   const [authEmail, setAuthEmail] = useState("");
-  const [emailSending, setEmailSending] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
+  const [authPassword, setAuthPassword] = useState("");
+  const [emailSubmitting, setEmailSubmitting] = useState(false);
+  const [emailMode, setEmailMode] = useState<"signin" | "signup">("signin");
   const [existingClaim, setExistingClaim] = useState<{ id: string; status: string; requester_phone?: string | null } | null>(null);
   const [justClaimed, setJustClaimed] = useState(false);
   const [phoneText, setPhoneText] = useState("");
