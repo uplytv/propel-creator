@@ -127,18 +127,260 @@ var create_post_default = defineTool4({
   }
 });
 
+// src/lib/mcp/tools/create-business-profile.ts
+import { createClient as createClient5 } from "npm:@supabase/supabase-js@^2.98.0";
+import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { z as z4 } from "npm:zod@^4.4.3";
+function supabaseForUser5(ctx) {
+  return createClient5(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
+    global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+}
+async function requireAdmin(ctx) {
+  const supabase = supabaseForUser5(ctx);
+  const { data, error } = await supabase.rpc("has_role", { _user_id: ctx.getUserId(), _role: "admin" });
+  if (error || !data) throw new Error("Admin only");
+  return supabase;
+}
+var create_business_profile_default = defineTool5({
+  name: "create_business_profile",
+  title: "Create business profile",
+  description: "Admin only. Create (or promote) a business tenant: sets the profile's account_type='business' and creates a business_details row. Uses an existing profile by username or user_id.",
+  inputSchema: {
+    username: z4.string().trim().min(1).max(64).optional(),
+    user_id: z4.string().uuid().optional(),
+    business_name: z4.string().trim().min(1).max(200),
+    category: z4.string().trim().max(100).optional(),
+    tagline: z4.string().trim().max(500).optional(),
+    address: z4.string().trim().max(500).optional(),
+    city: z4.string().trim().max(100).optional(),
+    phone: z4.string().trim().max(30).optional(),
+    email: z4.string().trim().email().max(255).optional(),
+    google_maps_url: z4.string().url().optional(),
+    google_rating: z4.number().min(0).max(5).optional(),
+    google_reviews_count: z4.number().int().min(0).optional(),
+    status: z4.enum(["draft", "claimed", "live"]).default("draft")
+  },
+  annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+  handler: async (input, ctx) => {
+    if (!ctx.isAuthenticated()) return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    try {
+      const supabase = await requireAdmin(ctx);
+      let profileId = null;
+      if (input.user_id) {
+        const { data } = await supabase.from("profiles").select("id").eq("user_id", input.user_id).maybeSingle();
+        profileId = data?.id ?? null;
+      } else if (input.username) {
+        const { data } = await supabase.from("profiles").select("id").ilike("username", input.username).maybeSingle();
+        profileId = data?.id ?? null;
+      }
+      if (!profileId) return { content: [{ type: "text", text: "Profile not found. Create the user account first." }], isError: true };
+      await supabase.from("profiles").update({ account_type: "business", business_status: input.status }).eq("id", profileId);
+      const { data: biz, error } = await supabase.from("business_details").upsert(
+        {
+          profile_id: profileId,
+          business_name: input.business_name,
+          category: input.category ?? null,
+          tagline: input.tagline ?? null,
+          address: input.address ?? null,
+          city: input.city ?? null,
+          phone: input.phone ?? null,
+          email: input.email ?? null,
+          google_maps_url: input.google_maps_url ?? null,
+          google_rating: input.google_rating ?? null,
+          google_reviews_count: input.google_reviews_count ?? null
+        },
+        { onConflict: "profile_id" }
+      ).select().single();
+      if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+      return {
+        content: [{ type: "text", text: `Business ${biz.business_name} ready (${input.status}).` }],
+        structuredContent: { business: biz }
+      };
+    } catch (e) {
+      return { content: [{ type: "text", text: e instanceof Error ? e.message : String(e) }], isError: true };
+    }
+  }
+});
+
+// src/lib/mcp/tools/update-business-profile.ts
+import { createClient as createClient6 } from "npm:@supabase/supabase-js@^2.98.0";
+import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { z as z5 } from "npm:zod@^4.4.3";
+function supabaseForUser6(ctx) {
+  return createClient6(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
+    global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+}
+var update_business_profile_default = defineTool6({
+  name: "update_business_profile",
+  title: "Update business profile",
+  description: "Admin only. Update fields on an existing business_details row and optionally change the business_status (draft/claimed/live).",
+  inputSchema: {
+    business_id: z5.string().uuid(),
+    business_name: z5.string().trim().min(1).max(200).optional(),
+    category: z5.string().trim().max(100).optional(),
+    tagline: z5.string().trim().max(500).optional(),
+    address: z5.string().trim().max(500).optional(),
+    city: z5.string().trim().max(100).optional(),
+    phone: z5.string().trim().max(30).optional(),
+    email: z5.string().trim().email().max(255).optional(),
+    google_maps_url: z5.string().url().optional(),
+    hours: z5.record(z5.string(), z5.string()).optional(),
+    services: z5.array(z5.object({ title: z5.string(), description: z5.string().optional(), price: z5.string().optional() })).optional(),
+    testimonials: z5.array(z5.object({ author: z5.string(), text: z5.string(), rating: z5.number().int().min(1).max(5).optional() })).optional(),
+    status: z5.enum(["draft", "claimed", "live"]).optional()
+  },
+  annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+  handler: async (input, ctx) => {
+    if (!ctx.isAuthenticated()) return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    const supabase = supabaseForUser6(ctx);
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: ctx.getUserId(), _role: "admin" });
+    if (!isAdmin) return { content: [{ type: "text", text: "Admin only" }], isError: true };
+    const patch = {};
+    for (const [k, v] of Object.entries(input)) {
+      if (k === "business_id" || k === "status") continue;
+      if (v !== void 0) patch[k] = v;
+    }
+    if (Object.keys(patch).length > 0) {
+      const { error } = await supabase.from("business_details").update(patch).eq("id", input.business_id);
+      if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    }
+    if (input.status) {
+      const { data: biz } = await supabase.from("business_details").select("profile_id").eq("id", input.business_id).maybeSingle();
+      if (biz?.profile_id) {
+        await supabase.from("profiles").update({ business_status: input.status }).eq("id", biz.profile_id);
+      }
+    }
+    return { content: [{ type: "text", text: `Business ${input.business_id} updated.` }] };
+  }
+});
+
+// src/lib/mcp/tools/create-business-post.ts
+import { createClient as createClient7 } from "npm:@supabase/supabase-js@^2.98.0";
+import { defineTool as defineTool7 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { z as z6 } from "npm:zod@^4.4.3";
+function supabaseForUser7(ctx) {
+  return createClient7(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
+    global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+}
+var create_business_post_default = defineTool7({
+  name: "create_business_post",
+  title: "Create business post",
+  description: "Admin only. Publish a post on behalf of a business owner (writes to posts as the business's user_id).",
+  inputSchema: {
+    business_id: z6.string().uuid(),
+    content: z6.string().trim().min(1).max(4e3),
+    category: z6.string().trim().max(64).optional()
+  },
+  annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+  handler: async ({ business_id, content, category }, ctx) => {
+    if (!ctx.isAuthenticated()) return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    const supabase = supabaseForUser7(ctx);
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: ctx.getUserId(), _role: "admin" });
+    if (!isAdmin) return { content: [{ type: "text", text: "Admin only" }], isError: true };
+    const { data: biz } = await supabase.from("business_details").select("profile_id").eq("id", business_id).maybeSingle();
+    if (!biz?.profile_id) return { content: [{ type: "text", text: "Business not found" }], isError: true };
+    const { data: prof } = await supabase.from("profiles").select("user_id").eq("id", biz.profile_id).maybeSingle();
+    if (!prof?.user_id) return { content: [{ type: "text", text: "Owner not found" }], isError: true };
+    const { data, error } = await supabase.from("posts").insert({ user_id: prof.user_id, content, category: category ?? null }).select("id, content, created_at").single();
+    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    return { content: [{ type: "text", text: `Post created (${data.id}).` }], structuredContent: { post: data } };
+  }
+});
+
+// src/lib/mcp/tools/list-business-leads.ts
+import { createClient as createClient8 } from "npm:@supabase/supabase-js@^2.98.0";
+import { defineTool as defineTool8 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { z as z7 } from "npm:zod@^4.4.3";
+function supabaseForUser8(ctx) {
+  return createClient8(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
+    global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+}
+var list_business_leads_default = defineTool8({
+  name: "list_business_leads",
+  title: "List business leads",
+  description: "Admin only. List recent leads captured on a business profile page.",
+  inputSchema: {
+    business_id: z7.string().uuid(),
+    limit: z7.number().int().min(1).max(100).optional(),
+    only_unhandled: z7.boolean().optional()
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ business_id, limit, only_unhandled }, ctx) => {
+    if (!ctx.isAuthenticated()) return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    const supabase = supabaseForUser8(ctx);
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: ctx.getUserId(), _role: "admin" });
+    if (!isAdmin) return { content: [{ type: "text", text: "Admin only" }], isError: true };
+    let q = supabase.from("business_leads").select("id, name, phone, email, message, source, handled, created_at").eq("business_id", business_id).order("created_at", { ascending: false }).limit(limit ?? 25);
+    if (only_unhandled) q = q.eq("handled", false);
+    const { data, error } = await q;
+    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    return {
+      content: [{ type: "text", text: `${data.length} leads.` }],
+      structuredContent: { leads: data }
+    };
+  }
+});
+
+// src/lib/mcp/tools/get-business-analytics.ts
+import { createClient as createClient9 } from "npm:@supabase/supabase-js@^2.98.0";
+import { defineTool as defineTool9 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { z as z8 } from "npm:zod@^4.4.3";
+function supabaseForUser9(ctx) {
+  return createClient9(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
+    global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+}
+var get_business_analytics_default = defineTool9({
+  name: "get_business_analytics",
+  title: "Business analytics summary",
+  description: "Admin only. Returns 7-day views, call taps, maps taps, blog views, and lead counts for a business.",
+  inputSchema: { business_id: z8.string().uuid() },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ business_id }, ctx) => {
+    if (!ctx.isAuthenticated()) return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    const supabase = supabaseForUser9(ctx);
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: ctx.getUserId(), _role: "admin" });
+    if (!isAdmin) return { content: [{ type: "text", text: "Admin only" }], isError: true };
+    const { data, error } = await supabase.from("business_weekly_summary").select("*").eq("business_id", business_id).maybeSingle();
+    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    return {
+      content: [{ type: "text", text: `Analytics for ${business_id}` }],
+      structuredContent: { summary: data ?? { business_id, views_7d: 0, call_taps_7d: 0, maps_taps_7d: 0, blog_views_7d: 0, leads_7d: 0, top_blog_post_id: null } }
+    };
+  }
+});
+
 // src/lib/mcp/index.ts
 var projectRef = "dbjlhmbgskvhuzqvqfrl";
 var mcp_default = defineMcp({
   name: "uply-mcp",
   title: "UPLY",
-  version: "0.1.0",
-  instructions: "Tools for a UPLY creator's own account. `whoami` returns the signed-in creator's profile. `list_my_products` and `list_my_posts` read the creator's catalog and feed. `create_post` publishes a new social post as the signed-in creator. All tools act as the signed-in user via Supabase RLS.",
+  version: "0.2.0",
+  instructions: "Tools for a UPLY creator's own account. `whoami`, `list_my_products`, `list_my_posts`, `create_post` act as the signed-in creator. Admin-only business tenant tools: `create_business_profile`, `update_business_profile`, `create_business_post`, `list_business_leads`, `get_business_analytics`. All tools authorize via Supabase RLS and public.has_role.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated"
   }),
-  tools: [whoami_default, list_products_default, list_posts_default, create_post_default]
+  tools: [
+    whoami_default,
+    list_products_default,
+    list_posts_default,
+    create_post_default,
+    create_business_profile_default,
+    update_business_profile_default,
+    create_business_post_default,
+    list_business_leads_default,
+    get_business_analytics_default
+  ]
 });
 
 // lovable-mcp-supabase-entry.ts

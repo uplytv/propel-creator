@@ -12,7 +12,7 @@
   "mcp": {
     "server": {
       "name": "uply-mcp",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "title": "UPLY"
     },
     "tools": [
@@ -105,6 +105,303 @@
           },
           "required": [
             "content"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_business_profile",
+        "title": "Create business profile",
+        "description": "Admin only. Create (or promote) a business tenant: sets the profile's account_type='business' and creates a business_details row. Uses an existing profile by username or user_id.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "user_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "business_name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "category": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "tagline": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "address": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "city": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "phone": {
+              "type": "string",
+              "maxLength": 30
+            },
+            "email": {
+              "type": "string",
+              "maxLength": 255,
+              "format": "email",
+              "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+            },
+            "google_maps_url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "google_rating": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "google_reviews_count": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "status": {
+              "default": "draft",
+              "type": "string",
+              "enum": [
+                "draft",
+                "claimed",
+                "live"
+              ]
+            }
+          },
+          "required": [
+            "business_name"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "update_business_profile",
+        "title": "Update business profile",
+        "description": "Admin only. Update fields on an existing business_details row and optionally change the business_status (draft/claimed/live).",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "business_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "business_name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "category": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "tagline": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "address": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "city": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "phone": {
+              "type": "string",
+              "maxLength": 30
+            },
+            "email": {
+              "type": "string",
+              "maxLength": 255,
+              "format": "email",
+              "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+            },
+            "google_maps_url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "hours": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "services": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "price": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "title"
+                ]
+              }
+            },
+            "testimonials": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "author": {
+                    "type": "string"
+                  },
+                  "text": {
+                    "type": "string"
+                  },
+                  "rating": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
+                  }
+                },
+                "required": [
+                  "author",
+                  "text"
+                ]
+              }
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "claimed",
+                "live"
+              ]
+            }
+          },
+          "required": [
+            "business_id"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_business_post",
+        "title": "Create business post",
+        "description": "Admin only. Publish a post on behalf of a business owner (writes to posts as the business's user_id).",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "business_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "content": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            },
+            "category": {
+              "type": "string",
+              "maxLength": 64
+            }
+          },
+          "required": [
+            "business_id",
+            "content"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_business_leads",
+        "title": "List business leads",
+        "description": "Admin only. List recent leads captured on a business profile page.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "business_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "only_unhandled": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "business_id"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_business_analytics",
+        "title": "Business analytics summary",
+        "description": "Admin only. Returns 7-day views, call taps, maps taps, blog views, and lead counts for a business.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "business_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "required": [
+            "business_id"
           ]
         },
         "outputSchema": null
