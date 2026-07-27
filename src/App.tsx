@@ -255,6 +255,7 @@ const Inbox = lazy(() => import("./pages/Inbox"));
 const FounderServices = lazy(() => import("./pages/FounderServices"));
 const FounderOfferSuccess = lazy(() => import("./pages/FounderOfferSuccess"));
 const FounderOfferCanceled = lazy(() => import("./pages/FounderOfferCanceled"));
+const BusinessAnalytics = lazy(() => import("./pages/BusinessAnalytics"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
