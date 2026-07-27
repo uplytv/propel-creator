@@ -60,6 +60,7 @@ export default function ClaimBusinessPage() {
   const [phoneSaving, setPhoneSaving] = useState(false);
 
   const isCheckoutReturn = params.get("checkout") === "success";
+  const isCheckoutCancel = params.get("checkout") === "cancel";
 
   const getClaimReturnUrl = useCallback((targetUsername = username) => {
     const cleanUsername = targetUsername || username;
@@ -217,10 +218,16 @@ export default function ClaimBusinessPage() {
   }, [authUser, biz, clearCheckoutIntent, existingClaim, isCheckoutReturn]);
 
   useEffect(() => {
+    if (isCheckoutCancel) {
+      clearCheckoutIntent();
+      setSubmitting(false);
+      toast({ title: "Checkout canceled", description: "Your page is still ready to claim when you are." });
+      return;
+    }
     if (loading || isCheckoutReturn || !biz || !authUser || existingClaim || submitting) return;
     if (!hasCheckoutIntent()) return;
     startCheckout(biz.id);
-  }, [authUser, biz, existingClaim, hasCheckoutIntent, isCheckoutReturn, loading, startCheckout, submitting]);
+  }, [authUser, biz, clearCheckoutIntent, existingClaim, hasCheckoutIntent, isCheckoutCancel, isCheckoutReturn, loading, startCheckout, submitting]);
 
   const startClaim = async () => {
     if (!biz) return;
