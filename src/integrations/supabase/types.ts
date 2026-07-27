@@ -22585,9 +22585,11 @@ export type Database = {
       }
       profiles_public: {
         Row: {
+          account_type: string | null
           avatar_url: string | null
           bio: string | null
           business_category: string | null
+          business_status: string | null
           cover_image_url: string | null
           created_at: string | null
           creator_layout: string | null
@@ -22607,9 +22609,11 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          account_type?: string | null
           avatar_url?: string | null
           bio?: string | null
           business_category?: string | null
+          business_status?: string | null
           cover_image_url?: string | null
           created_at?: string | null
           creator_layout?: string | null
@@ -22629,9 +22633,11 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          account_type?: string | null
           avatar_url?: string | null
           bio?: string | null
           business_category?: string | null
+          business_status?: string | null
           cover_image_url?: string | null
           created_at?: string | null
           creator_layout?: string | null
@@ -22956,8 +22962,10 @@ export type Database = {
       get_public_profile_by_username: {
         Args: { _username: string }
         Returns: {
+          account_type: string
           avatar_url: string
           bio: string
+          business_status: string
           cover_image_url: string
           creator_layout: string
           creator_type: string
