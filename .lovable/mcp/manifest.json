@@ -42,17 +42,16 @@
           "openWorldHint": false
         },
         "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "limit": {
+              "description": "Max rows (default 25).",
               "type": "integer",
               "minimum": 1,
-              "maximum": 100,
-              "description": "Max rows (default 25)."
+              "maximum": 100
             }
-          },
-          "additionalProperties": false,
-          "$schema": "http://json-schema.org/draft-07/schema#"
+          }
         },
         "outputSchema": null
       },
@@ -66,17 +65,16 @@
           "openWorldHint": false
         },
         "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "limit": {
+              "description": "Max rows (default 20).",
               "type": "integer",
               "minimum": 1,
-              "maximum": 100,
-              "description": "Max rows (default 20)."
+              "maximum": 100
             }
-          },
-          "additionalProperties": false,
-          "$schema": "http://json-schema.org/draft-07/schema#"
+          }
         },
         "outputSchema": null
       },
@@ -90,6 +88,7 @@
           "openWorldHint": false
         },
         "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "content": {
@@ -99,16 +98,14 @@
               "description": "Post body text."
             },
             "category": {
+              "description": "Optional category tag (e.g. content, growth, wins).",
               "type": "string",
-              "maxLength": 64,
-              "description": "Optional category tag (e.g. content, growth, wins)."
+              "maxLength": 64
             }
           },
           "required": [
             "content"
-          ],
-          "additionalProperties": false,
-          "$schema": "http://json-schema.org/draft-07/schema#"
+          ]
         },
         "outputSchema": null
       }
