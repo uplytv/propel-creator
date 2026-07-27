@@ -433,3 +433,30 @@ function LeadForm({ businessId, businessName, disabled }: { businessId: string; 
     </section>
   );
 }
+
+function LinksSection({ links, businessId }: { links: Array<{ label: string; url: string }>; businessId: string }) {
+  const logTap = async (label: string) => {
+    await (supabase as unknown as { from: (t: string) => { insert: (r: unknown) => Promise<unknown> } })
+      .from("business_page_events")
+      .insert({ business_id: businessId, event_type: "link_tap", metadata: { label } });
+  };
+  return (
+    <section className="max-w-2xl mx-auto px-4 py-8">
+      <h2 className="text-xl font-bold mb-4">Links</h2>
+      <div className="grid gap-3">
+        {links.map((l, i) => (
+          <a
+            key={i}
+            href={l.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => logTap(l.label)}
+            className="block w-full text-center rounded-xl px-5 py-4 bg-white/[0.04] border border-border hover:border-[#6B5BFF]/60 hover:bg-white/[0.06] transition-colors font-semibold min-h-[52px]"
+          >
+            {l.label}
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
