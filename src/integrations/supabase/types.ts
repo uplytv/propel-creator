@@ -23170,6 +23170,14 @@ export type Database = {
         Args: { _min_role?: string; _playlist_id: string; _user_id: string }
         Returns: boolean
       }
+      is_previewable_tenant_profile: {
+        Args: { _profile_id: string }
+        Returns: boolean
+      }
+      is_previewable_tenant_user: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       is_stream_chat_blocked: { Args: { _stream_id: string }; Returns: boolean }
       is_visible_business_profile: {
         Args: { _profile_id: string }
