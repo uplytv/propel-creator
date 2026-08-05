@@ -32,7 +32,11 @@ export default function BusinessLinksPage() {
         .select("id, account_type, business_status")
         .eq("username", username)
         .maybeSingle();
-      if (!p || (p as any).account_type !== "business") {
+      const acct = (p as any)?.account_type;
+      const status = (p as any)?.business_status;
+      // Tenant links pages exist for business tenants and for creator
+      // tenants seeded with the same draft → claim pattern.
+      if (!p || !(acct === "business" || (acct === "creator" && status))) {
         setLoading(false);
         return;
       }
