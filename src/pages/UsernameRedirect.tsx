@@ -96,8 +96,12 @@ export default function UsernameRedirect() {
     return <SocialCreatorPage />;
   }
 
-  if (businessProfile) {
-    return <BusinessSitePage profile={businessProfile} />;
+  if (tenantProfile) {
+    return tenantProfile.account_type === "creator" ? (
+      <CreatorTenantPage profile={tenantProfile} />
+    ) : (
+      <BusinessSitePage profile={tenantProfile} />
+    );
   }
 
   if (target === undefined) {
