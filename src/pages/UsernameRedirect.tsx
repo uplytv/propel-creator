@@ -54,14 +54,20 @@ export default function UsernameRedirect() {
         return;
       }
 
-      if (profile.account_type === "business") {
+      const isTenant =
+        profile.account_type === "business" ||
+        (profile.account_type === "creator" && !!profile.business_status);
+
+      if (isTenant) {
         if (!cancelled) {
-          setBusinessProfile({
+          setTenantProfile({
             id: profile.id,
             user_id: profile.user_id,
             username: profile.username,
             display_name: profile.display_name,
             avatar_url: profile.avatar_url,
+            bio: (profile as { bio?: string | null }).bio ?? null,
+            account_type: profile.account_type ?? "business",
             business_status: profile.business_status ?? "draft",
           });
         }
