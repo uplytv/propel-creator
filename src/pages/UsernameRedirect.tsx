@@ -5,21 +5,24 @@ import SocialCreatorPage from "@/components/creatorprofile/social/SocialCreatorP
 import { getProfileHandleCandidates } from "@/lib/profileSlug";
 import { resolveCreatorDestination } from "@/lib/resolveCreatorDestination";
 import BusinessSitePage from "./BusinessSitePage";
+import CreatorTenantPage from "./CreatorTenantPage";
 
 /**
  * Resolves /:username (and /:username/page) to the canonical /@<slug> social
- * creator page, or renders the BusinessSitePage when the profile is a
- * business tenant.
+ * creator page, or renders the tenant page (business or creator tenant)
+ * when the profile is a seeded/claimable tenant.
  */
 export default function UsernameRedirect() {
   const { username } = useParams<{ username: string }>();
   const [target, setTarget] = useState<string | undefined>(undefined);
-  const [businessProfile, setBusinessProfile] = useState<{
+  const [tenantProfile, setTenantProfile] = useState<{
     id: string;
     user_id: string;
     username: string;
     display_name: string | null;
     avatar_url: string | null;
+    bio?: string | null;
+    account_type: string;
     business_status: string | null;
   } | null>(null);
 
