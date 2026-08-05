@@ -176,11 +176,8 @@ export default function CreatorTenantPage({ profile }: { profile: CreatorProfile
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SEOHead
-        title={`${name} — DMV Real Estate, Defined`}
-        description={
-          details?.tagline ||
-          `${name} on UPLY — DMV-native REALTOR® for first-time buyers and investors.`
-        }
+        title={SEO[profile.username]?.title ?? `${name} on UPLY`}
+        description={SEO[profile.username]?.description ?? details?.tagline ?? `${name} on UPLY.`}
         noindex={!isLive}
       />
 
