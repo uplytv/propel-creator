@@ -49,6 +49,12 @@ interface LessonRow {
 
 const ACCENT = "#6B5BFF";
 
+/** Per-creator legal/compliance disclosure shown in the page footer. */
+const DISCLOSURES: Record<string, string> = {
+  anousha:
+    "Anousha Nikjouian, REALTOR® — licensed in DC, MD & VA. [Brokerage name pending]. Equal Housing Opportunity. Educational content only — not legal, tax, or financial advice.",
+};
+
 /** Splits "Title\n\nBody" blog content into a heading + body. */
 function splitPost(content: string) {
   const [first, ...rest] = content.split("\n\n");
