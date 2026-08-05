@@ -5,21 +5,24 @@ import SocialCreatorPage from "@/components/creatorprofile/social/SocialCreatorP
 import { getProfileHandleCandidates } from "@/lib/profileSlug";
 import { resolveCreatorDestination } from "@/lib/resolveCreatorDestination";
 import BusinessSitePage from "./BusinessSitePage";
+import CreatorTenantPage from "./CreatorTenantPage";
 
 /**
  * Resolves /:username (and /:username/page) to the canonical /@<slug> social
- * creator page, or renders the BusinessSitePage when the profile is a
- * business tenant.
+ * creator page, or renders the tenant page (business or creator tenant)
+ * when the profile is a seeded/claimable tenant.
  */
 export default function UsernameRedirect() {
   const { username } = useParams<{ username: string }>();
   const [target, setTarget] = useState<string | undefined>(undefined);
-  const [businessProfile, setBusinessProfile] = useState<{
+  const [tenantProfile, setTenantProfile] = useState<{
     id: string;
     user_id: string;
     username: string;
     display_name: string | null;
     avatar_url: string | null;
+    bio?: string | null;
+    account_type: string;
     business_status: string | null;
   } | null>(null);
 
@@ -54,14 +57,20 @@ export default function UsernameRedirect() {
         return;
       }
 
-      if (profile.account_type === "business") {
+      const isTenant =
+        profile.account_type === "business" ||
+        (profile.account_type === "creator" && !!profile.business_status);
+
+      if (isTenant) {
         if (!cancelled) {
-          setBusinessProfile({
+          setTenantProfile({
             id: profile.id,
             user_id: profile.user_id,
             username: profile.username,
             display_name: profile.display_name,
             avatar_url: profile.avatar_url,
+            bio: (profile as { bio?: string | null }).bio ?? null,
+            account_type: profile.account_type ?? "business",
             business_status: profile.business_status ?? "draft",
           });
         }
@@ -87,8 +96,12 @@ export default function UsernameRedirect() {
     return <SocialCreatorPage />;
   }
 
-  if (businessProfile) {
-    return <BusinessSitePage profile={businessProfile} />;
+  if (tenantProfile) {
+    return tenantProfile.account_type === "creator" ? (
+      <CreatorTenantPage profile={tenantProfile} />
+    ) : (
+      <BusinessSitePage profile={tenantProfile} />
+    );
   }
 
   if (target === undefined) {

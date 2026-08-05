@@ -27,12 +27,16 @@ export default function BusinessLinksPage() {
 
   useEffect(() => {
     (async () => {
+      // Resolve via the security-definer RPC so anonymous visitors can open
+      // draft tenant links pages (direct profiles reads are RLS-restricted).
       const { data: p } = await supabase
-        .from("profiles")
-        .select("id, account_type, business_status")
-        .eq("username", username)
+        .rpc("get_public_profile_by_username", { _username: username })
         .maybeSingle();
-      if (!p || (p as any).account_type !== "business") {
+      const acct = (p as any)?.account_type;
+      const status = (p as any)?.business_status;
+      // Tenant links pages exist for business tenants and for creator
+      // tenants seeded with the same draft → claim pattern.
+      if (!p || !(acct === "business" || (acct === "creator" && status))) {
         setLoading(false);
         return;
       }

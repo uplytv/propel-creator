@@ -162,7 +162,11 @@ export default function ClaimBusinessPage() {
         | { id: string; user_id: string; username: string; account_type: string | null; business_status: string | null }
         | undefined;
 
-      if (!p || p.account_type !== "business") {
+      // Claimable tenants: business pages, and creator pages seeded with the
+      // same draft → preview → claim pattern (business_status set).
+      const claimable =
+        p?.account_type === "business" || (p?.account_type === "creator" && !!p?.business_status);
+      if (!p || !claimable) {
         setLoading(false);
         return;
       }
