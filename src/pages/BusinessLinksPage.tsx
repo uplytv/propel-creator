@@ -27,10 +27,10 @@ export default function BusinessLinksPage() {
 
   useEffect(() => {
     (async () => {
+      // Resolve via the security-definer RPC so anonymous visitors can open
+      // draft tenant links pages (direct profiles reads are RLS-restricted).
       const { data: p } = await supabase
-        .from("profiles")
-        .select("id, account_type, business_status")
-        .eq("username", username)
+        .rpc("get_public_profile_by_username", { _username: username })
         .maybeSingle();
       const acct = (p as any)?.account_type;
       const status = (p as any)?.business_status;
