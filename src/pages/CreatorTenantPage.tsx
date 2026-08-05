@@ -391,7 +391,6 @@ export default function CreatorTenantPage({ profile }: { profile: CreatorProfile
       )}
 
       <footer className="border-t border-border py-10 pb-28 md:pb-10 px-5 text-center text-xs text-muted-foreground space-y-3">
-        <p className="max-w-2xl mx-auto leading-relaxed">
         {DISCLOSURES[profile.username] && (
           <p className="max-w-2xl mx-auto leading-relaxed">{DISCLOSURES[profile.username]}</p>
         )}
