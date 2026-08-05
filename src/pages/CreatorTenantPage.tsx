@@ -49,6 +49,15 @@ interface LessonRow {
 
 const ACCENT = "#6B5BFF";
 
+/** Per-creator SEO overrides. */
+const SEO: Record<string, { title: string; description: string }> = {
+  anousha: {
+    title: "Anousha Nikjouian — DMV Real Estate, Defined",
+    description:
+      "DMV-native REALTOR® licensed in DC, MD & VA. Guidance for first-time buyers and investors, plus The Defined Circle community and The Blueprint classroom on UPLY.",
+  },
+};
+
 /** Per-creator legal/compliance disclosure shown in the page footer. */
 const DISCLOSURES: Record<string, string> = {
   anousha:
