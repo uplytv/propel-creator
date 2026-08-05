@@ -375,10 +375,14 @@ export default function SocialCreatorPage() {
     // to the first tier that exists.
     return <CreatorDestinationRedirect handle={slug} />;
   }
-  // Business tenants always render at /:username via BusinessSitePage —
-  // the social creator shell is meaningless for them (no music/works/etc).
-  // Redirect /@handle → /handle so every share/discovery link lands there.
-  if (basic.account_type === "business" && basic.username) {
+  // Tenant pages (business, and creator tenants seeded with a
+  // business_status) always render at /:username — the social creator shell
+  // is meaningless for them. Redirect /@handle → /handle so every
+  // share/discovery link lands on the tenant page.
+  const isTenant =
+    basic.account_type === "business" ||
+    (basic.account_type === "creator" && !!(basic as { business_status?: string | null }).business_status);
+  if (isTenant && basic.username) {
     return <Navigate to={`/${basic.username}`} replace />;
   }
 
