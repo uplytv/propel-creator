@@ -129,6 +129,13 @@ export interface ArtistRosterEntry {
   /** ISO date (YYYY-MM-DD) the artist's profile was established on UPLY — rendered as "Est. <Mon YYYY>" on roster cards. */
   joinedAt?: string;
   bookingEmail?: string;
+  /**
+   * Optional external call-scheduler URL (e.g. Calendly). When set, the
+   * booking / "Work with me" section renders a prominent "Book a call"
+   * button above the inquiry form; when unset the form-only layout is
+   * unchanged. Additive — existing artists are unaffected.
+   */
+  bookCallUrl?: string;
   location?: string;
   /** Optional pitch line shown in the booking section. */
   bookingTagline?: string;
@@ -1526,6 +1533,142 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     ],
     disclaimers: [
       "Educational content only — marketing outcomes depend on your product, market, and consistency. No income or growth results are guaranteed.",
+    ],
+  },
+
+  // ============================================================
+  // ANOUSHA NIK — founder of SheWins (vision · discipline · wealth
+  // for women). NOTE: personal-history facts are [Anousha: …]
+  // placeholders pending her sign-off — see ANOUSHA-ONBOARDING.md.
+  // Never fill these in for her. Portrait intentionally omitted —
+  // awaiting an uploaded photo; do NOT scrape or hotlink Instagram.
+  // ============================================================
+  {
+    slug: "anousha",
+    aliases: ["anousha-nik", "anoushanik", "anousha.nik", "shewins"],
+    displayName: "Anousha Nik",
+    eyebrow: "Founder of SheWins",
+    tagline: "Plan the life. Build the wealth. Become Her.",
+    bio:
+      "Anousha Nik is the founder of SheWins — a community for women who are done playing small and ready to get specific: about the life they actually want, the discipline that builds it, and the wealth that funds it.\n\n" +
+      "SheWins runs on three pillars taught together, because they only work together. Vision: deciding what your life should look like instead of only knowing what you're done with. Discipline: systems that hold on the weeks motivation doesn't. Wealth: keeping and growing what you earn, not just earning it. [Anousha: your own story — where this started and the turning point — goes here in your words.]\n\n" +
+      "You don't have to have it all figured out — but you do need a vision, a plan, and the discipline to become her.",
+    gradient: { from: "#2e0716", to: "#0a0a0a" },
+    accent: "#D6336C",
+    // portraitUrl intentionally omitted — awaiting an uploaded photo.
+    socials: [
+      { kind: "instagram", label: "Instagram", sub: "@anousha.nik", href: "https://www.instagram.com/anousha.nik/", handle: "anousha.nik" },
+      { kind: "email", label: "Email", sub: "Via UPLY — [Anousha: confirm public address]", href: "mailto:hello@uply.tv" },
+    ],
+    videos: [
+      { title: "Latest from @anousha.nik", instagramUrl: "https://www.instagram.com/anousha.nik/" },
+    ],
+    searchKeywords: [
+      "anousha", "anousha nik", "anousha.nik", "anoushanik", "shewins", "she wins",
+      "women's community", "women building wealth", "vision planning", "discipline",
+      "life planning", "wealth mindset", "become her", "coach",
+    ],
+    verified: false,
+    creatorType: "Coach",
+    joinedAt: "2026-08-25",
+    // Placeholder inbox — swap for Anousha's address once confirmed.
+    bookingEmail: "hello@uply.tv",
+    // Placeholder scheduler link — swap for Anousha's real Calendly.
+    bookCallUrl: "https://calendly.com/PLACEHOLDER-anousha/intro",
+    heroChip: "SheWins — founding member enrollment open",
+    bookingTagline:
+      "Speaking, workshops, podcasts, and partnerships on vision, discipline, and wealth for women. Tell us the audience and the goal — every inquiry gets a reply.",
+    marquee: [
+      "A community for women who are done playing small",
+      "Win in your mind. Win with your money. Win in your life.",
+      "Build the mindset. Map the vision. Create the wealth.",
+      "For women building wealth, clarity, and direction",
+    ],
+    milestones: [
+      { year: "[Anousha: year]", text: "[Anousha: where the SheWins idea started — one line in your words.]" },
+      { year: "[Anousha: year]", text: "[Anousha: the turning point — the moment you decided to stop playing small.]" },
+      { year: "2026", text: "Launched SheWins on UPLY — vision, discipline, and wealth for women, under one roof." },
+    ],
+    stats: [
+      { k: "Community", v: "SheWins" },
+      { k: "Pillars", v: "Vision · Discipline · Wealth" },
+      { k: "For", v: "Women building the plan" },
+      { k: "Based in", v: "[Anousha: city]" },
+    ],
+    featuredPostSlug: "plan-the-life-vision-exercise",
+    posts: [
+      {
+        slug: "plan-the-life-vision-exercise",
+        title: "Plan the life: the vision exercise that actually works",
+        excerpt:
+          "Most women can list what they're done with and go quiet on what they're building. Anousha's One Ordinary Day exercise turns a vague future into a plan you can start this week.",
+        readTime: "5 min read",
+        publishedAt: "2026-08-25",
+        tag: "Vision",
+        body:
+          "Ask a woman what she wants her life to look like in five years and you'll usually get a detailed list of what she doesn't want. Not this job. Not this apartment. Not this feeling of working hard and moving sideways. We're fluent in what we're done with and strangely quiet about what we're building — not because we lack ambition, but because nobody ever taught us to answer the question properly.\n\n" +
+          "So here's the exercise I start with inside SheWins. It's not a vision board, and it doesn't involve a single inspirational quote. It's called One Ordinary Day, and it takes about forty minutes and a blank page.\n\n" +
+          "Write one ordinary weekday, five years from now, in the present tense. Not a milestone day — not the launch, the wedding, the closing. A Tuesday. Where do you wake up? What does the first hour look like? What work fills the middle of the day, and who is it with? What did you say no to that week? What does money feel like — not the number, the feeling: is there room in the day, or is the day still squeezed? Write it hour by hour until you reach the evening, and be suspicious of anything that sounds impressive but doesn't sound like you.\n\n" +
+          "The reason this works when vision boards don't is simple: dreams live in adjectives, but plans live in details. \"Successful, free, abundant\" gives you nothing to build. A Tuesday gives you everything — because every detail is a requirement in disguise. If your Tuesday has a slow morning, your plan needs income that doesn't bill by the hour. If your Tuesday has your own office, your plan has a lease in it somewhere. The picture quietly writes the spec.\n\n" +
+          "Then you work backwards, and this is the part most people skip. From the five-year Tuesday, pull the three-year checkpoint: what must already be true at the halfway mark? From three years, pull this year's one big move — the single change that makes the checkpoint possible. From this year, pull ninety days. From ninety days, pull this week. When the chain is honest, this week's task is usually small, unglamorous, and completely doable — which is exactly why women who do this stop starting over. You don't need a new plan every January when the plan is attached to a picture you actually believe.\n\n" +
+          "If you've never answered \"what do I actually want my life to look like?\" with anything more specific than \"not this\" — that's the work, and it's the first thing we do together inside SheWins.\n\n" +
+          "You don't have to have it all figured out — but you do need a vision, a plan, and the discipline to become her. Start with your Tuesday, then come build the rest with us at /anousha/community.",
+      },
+      {
+        slug: "discipline-is-a-system",
+        title: "Discipline is a system, not a personality trait",
+        excerpt:
+          "You don't need more willpower — you need fewer open decisions. How the women who follow through actually do it, and the three-part system anyone can build.",
+        readTime: "5 min read",
+        publishedAt: "2026-08-22",
+        tag: "Discipline",
+        body:
+          "Every woman I've ever talked to about her goals eventually says some version of the same sentence: \"I just need to be more disciplined.\" As if discipline were an ingredient some people are born holding. As if the women who train, build, and follow through simply got a personality you didn't. Here's the truth that changes everything once you believe it: discipline is not a trait. It's a system — and a system can be built by anyone willing to stop negotiating with herself.\n\n" +
+          "Look closely at any \"disciplined\" woman and you'll find something surprising: she isn't using much willpower at all. She's removed the decision. She doesn't decide whether to train today — training is at seven, and seven is not a debate. She doesn't decide whether to work on the business tonight — the block is on the calendar, and the calendar wins. What looks like iron will from the outside is mostly the absence of argument on the inside. Willpower is a battery, and it drains a little every time you reopen a decision you already made. Discipline is wiring the decision shut.\n\n" +
+          "The system has three parts. One: decide once. Take the two or three actions your vision actually requires — not ten, two or three — and give each a fixed time and place. Not \"work out more\"; \"Tuesday, 7 a.m., the gym by work.\" A decision with a time and a place stops being a daily vote on who you are.\n\n" +
+          "Two: shrink the unit. The version of the habit you commit to should be almost embarrassingly small — ten minutes of the workout, one page of the plan, one line in the money tracker. You can always do more, and most days you will. But the streak is measured against the small unit, so the streak survives your worst weeks — and the streak, not the intensity, is what compounds. The all-or-nothing woman restarts forever. The small-unit woman just keeps going.\n\n" +
+          "Three: track it where you can see it. Not an app buried four taps deep — a paper calendar, a wall chart, a note on the mirror. Marking the day is a tiny ceremony, and the unbroken chain becomes something you protect. Focus works the same way, by the way: you don't \"become\" a focused person, you build a container — phone in another room, one ninety-minute block, one task written at the top of the page. The container does the focusing. You just show up inside it.\n\n" +
+          "And because you're human, build a restart rule before you need it. You will miss a day — sick kids, brutal week, life. The rule inside SheWins is simple: never miss twice. One missed day is a data point; two is the start of a story about who you are, and that story is the real enemy. Miss, forgive fast, restart small the very next day.\n\n" +
+          "Stop waiting to feel like her. Build the system she would run, and the feeling follows.\n\n" +
+          "You don't have to have it all figured out — but you do need a vision, a plan, and the discipline to become her. If you want the system — and a room full of women running it with you — SheWins is at /anousha/community.",
+      },
+      {
+        slug: "build-wealth-not-just-income",
+        title: "Build wealth, not just income",
+        excerpt:
+          "The raise came and the freedom didn't. On the difference between money that flows through your hands and money that stays — and the habits that turn one into the other.",
+        readTime: "6 min read",
+        publishedAt: "2026-08-19",
+        tag: "Wealth",
+        body:
+          "There's a moment that surprises almost every woman who starts earning real money: the number went up and the freedom didn't. The raise arrived, the invoices got bigger — and somehow the month still ends tight, the safety net is still thin, and the life still depends entirely on next month's work showing up. That moment teaches the most important money lesson there is: income and wealth are not the same thing, and chasing one does not automatically produce the other.\n\n" +
+          "Income is what flows through your hands. Wealth is what stays and grows. Income is rented — it stops the moment you stop, and someone else usually controls the tap. Wealth is owned — savings, investments, a business that runs beyond your hours, anything that holds value while you sleep. So the question that changes your financial life isn't \"how do I make more?\" It's \"how much of what I make do I keep — and where does what I keep live?\"\n\n" +
+          "Because wealth isn't built in the earning. It's built in the gap between what you earn and what you spend — and the gap is a decision, not a leftover. If you wait to save whatever remains at the end of the month, the month will eat it every single time; lifestyle expands quietly to fit the income it's given. The women who build wealth flip the order: the keeping happens first, automatically, the day money lands — a fixed percentage moved out of reach before the spending month even begins. Start embarrassingly small if you have to. The percentage can grow; the habit is the asset.\n\n" +
+          "Then give the money a job, because money without a vision leaks. This is where wealth stops being a spreadsheet and connects to the bigger picture: if you've written your five-year vision, you already know what the money is for — the exit fund, the business runway, the house, the year of options. Money with a name is money you'll defend. \"Savings\" gets raided; \"the freedom fund\" doesn't.\n\n" +
+          "And finally, let time do the heavy lifting. What you keep should be positioned to grow — that's the entire, unglamorous magic of compounding, where growth starts earning growth of its own and the years quietly do more than the hustle ever could. Which assets and accounts fit your life is real homework: learn the basics, understand anything before you put money in it, and never hand that thinking to a stranger on the internet with a screenshot. Real wealth-building is boring on purpose. If it feels like a casino, it isn't the plan — it's the leak.\n\n" +
+          "One honest note: this is financial education, not financial advice. Your decisions have to fit your own situation, and the big ones deserve a qualified professional who knows your numbers.\n\n" +
+          "But the order of operations is universal, and it's the one we work through inside SheWins: win in your mind, win with your money, win in your life. Decide the vision. Automate the keeping. Name the money. Let it compound.\n\n" +
+          "You don't have to have it all figured out — but you do need a vision, a plan, and the discipline to become her. Come do the work with us — SheWins is at /anousha/community.",
+      },
+    ],
+    community: {
+      name: "SheWins",
+      description:
+        "A community for women who are done playing small — built on one belief: you don't have to have it all figured out, but you do need a vision, a plan, and the discipline to become her. This is the room for women asking: What do I actually want my life to look like? How do I become more disciplined and focused? How do I build wealth, not just make money? How do I create a plan instead of constantly starting over? Inside, we answer them together — on a schedule, with accountability. Wealth content is financial education, not financial advice.",
+      membersLabel: "Founding members",
+      perks: [
+        "Weekly vision & planning session — map the week against the five-year picture",
+        "Wealth-building frameworks and worksheets (education, not financial advice)",
+        "Discipline accountability — small units, tracked streaks, never-miss-twice check-ins",
+        "Direct access to Anousha in the members-only feed",
+        "First access to workshops, live events, and founding-member offers",
+      ],
+      // Placeholder pending [Anousha: confirm launch price] — see
+      // ANOUSHA-ONBOARDING.md (contactForPricing available if premium).
+      priceUsd: 49,
+    },
+    disclaimers: [
+      "Wealth and money content is financial education only — not financial, investment, tax, or legal advice. Personal results depend on your circumstances, decisions, and consistency.",
     ],
   },
 

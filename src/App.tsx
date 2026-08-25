@@ -529,8 +529,12 @@ const App = () => (
                     <Route path="/blake-the-great/join" element={<BlakeTheGreatSite />} />
                     <Route path="/blake-the-great/blog" element={<BlakeTheGreatBlog />} />
                     <Route path="/blake-the-great/members" element={<BlakeTheGreatMembers />} />
-                    {/* Roster artists — driven by src/data/artistRoster.ts */}
-                    {(["omid", "omid-music", "omidmusic", "morvarid", "morvarid-shahbazi", "morvaridshahbazi", "andy", "andy-music", "andymusic1"]).map((s) => (
+                    {/* Roster artists — driven by src/data/artistRoster.ts.
+                        NOTE: "anousha" here intentionally shadows the seeded
+                        creator-tenant page previously served at /:username →
+                        CreatorTenantPage; her UPLY front door is now the
+                        roster link hub (see ANOUSHA-ONBOARDING.md). */}
+                    {(["omid", "omid-music", "omidmusic", "morvarid", "morvarid-shahbazi", "morvaridshahbazi", "andy", "andy-music", "andymusic1", "anousha"]).map((s) => (
                       <Route key={s} path={`/${s}`} element={<ArtistLinkRoute />} />
                     ))}
                     {/* Every roster artist gets the shared editorial site at /:slug-site.

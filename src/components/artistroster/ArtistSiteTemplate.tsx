@@ -990,6 +990,25 @@ function BookingSection({
 
           {/* Right: form */}
           <div className="arya-card p-5 sm:p-6">
+            {/* Optional call scheduler — renders only when the artist sets bookCallUrl. */}
+            {artist.bookCallUrl && !submitted && (
+              <div className="mb-5 pb-5 border-b border-white/10">
+                <p className="text-sm text-[var(--arya-text-dim)] mb-3">
+                  Prefer to talk? Book a call with {artist.displayName}&apos;s team.
+                </p>
+                <a
+                  href={artist.bookCallUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="arya-btn arya-btn--primary arya-btn--lg w-full"
+                >
+                  <Calendar className="h-4 w-4" /> Book a call
+                </a>
+                <p className="mt-3 text-[11px] text-[var(--arya-text-faint)] text-center">
+                  Or send an inquiry below — every message gets a reply.
+                </p>
+              </div>
+            )}
             {submitted ? (
               <div className="min-h-[420px] flex flex-col items-center justify-center text-center">
                 <div className="h-14 w-14 rounded-full bg-[var(--arya-cta)] text-[var(--arya-cta-fg)] flex items-center justify-center mb-4 shadow-[var(--arya-glow)]">
