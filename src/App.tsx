@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import CuratedFollowAnnouncer from "@/components/CuratedFollowAnnouncer";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AppProvider } from "@/context/AppContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
@@ -256,6 +256,7 @@ import CartDrawer from "@/components/shop/CartDrawer";
 const Shop = lazy(() => import("./pages/Shop"));
 const Inbox = lazy(() => import("./pages/Inbox"));
 const FounderServices = lazy(() => import("./pages/FounderServices"));
+const PartnerNexaflow = lazy(() => import("./pages/PartnerNexaflow"));
 const FounderOfferSuccess = lazy(() => import("./pages/FounderOfferSuccess"));
 const FounderOfferCanceled = lazy(() => import("./pages/FounderOfferCanceled"));
 const BusinessAnalytics = lazy(() => import("./pages/BusinessAnalytics"));
@@ -656,6 +657,10 @@ const App = () => (
                     <Route path="/create/story/editor" element={<ProtectedRoute><StoryEditor /></ProtectedRoute>} />
                     <Route path="/create/short/editor" element={<ProtectedRoute><ShortEditor /></ProtectedRoute>} />
                     <Route path="/create/video/editor" element={<ProtectedRoute><VideoEditorPage /></ProtectedRoute>} />
+
+                    {/* Partnership landing — MUST be before /:username catch-all */}
+                    <Route path="/partners/nexaflow" element={<PartnerNexaflow />} />
+                    <Route path="/nexaflow" element={<Navigate to="/partners/nexaflow" replace />} />
 
                     {/* Founder Services — MUST be before /:username catch-all */}
                     <Route path="/founder-services" element={<FounderServices />} />
