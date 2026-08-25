@@ -34,7 +34,7 @@ const STATIC_RESERVED: string[] = [
   // — App.tsx segments not present in the route registry —
   "apply", "aria", "arya", "aryaxo", "aryaxoblog", "aryaxolinks",
   "aryaxosite", "blake", "blakethegreat", "founders", "founderoffers",
-  "founderservices", "health", "ppv", "upgrade",
+  "founderservices", "health", "ppv", "upgrade", "nexaflow", "partners",
   // — roster artist vanity slugs (ARTIST_ROSTER + hardcoded aliases) —
   "omid", "omidmusic", "omid_music", "morvarid", "morvaridshahbazi",
   "andy", "andymusic", "andymusic1", "bazi", "bobby", "sonuha",
