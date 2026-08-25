@@ -15,6 +15,10 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
     verify_jwt = false
   [functions.create-clip]
     verify_jwt = false
+  [functions.create-partner-checkout]
+    verify_jwt = false
+  [functions.notify-partner-lead]
+    verify_jwt = false
   [functions.create-platform-checkout]
     verify_jwt = false
   [functions.create-whitelabel-checkout]
