@@ -257,6 +257,7 @@ const Shop = lazy(() => import("./pages/Shop"));
 const Inbox = lazy(() => import("./pages/Inbox"));
 const FounderServices = lazy(() => import("./pages/FounderServices"));
 const PartnerNexaflow = lazy(() => import("./pages/PartnerNexaflow"));
+const Services = lazy(() => import("./pages/Services"));
 const FounderOfferSuccess = lazy(() => import("./pages/FounderOfferSuccess"));
 const FounderOfferCanceled = lazy(() => import("./pages/FounderOfferCanceled"));
 const BusinessAnalytics = lazy(() => import("./pages/BusinessAnalytics"));
@@ -661,6 +662,10 @@ const App = () => (
                     {/* Partnership landing — MUST be before /:username catch-all */}
                     <Route path="/partners/nexaflow" element={<PartnerNexaflow />} />
                     <Route path="/nexaflow" element={<Navigate to="/partners/nexaflow" replace />} />
+
+                    {/* AI Growth Systems agency landing — MUST be before /:username catch-all */}
+                    <Route path="/services" element={<Services />} />
+                    <Route path="/agency" element={<Navigate to="/services" replace />} />
 
                     {/* Founder Services — MUST be before /:username catch-all */}
                     <Route path="/founder-services" element={<FounderServices />} />
