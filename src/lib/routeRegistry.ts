@@ -65,6 +65,8 @@ export const KNOWN_PATTERNS: string[] = [
   "/pricing",
   "/partners/nexaflow",
   "/nexaflow",
+  "/services",
+  "/agency",
   "/ppv",
   "/upgrade",
   "/ad-integrations",
