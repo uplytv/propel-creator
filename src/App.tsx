@@ -115,6 +115,7 @@ const AdminAffiliates = lazy(() => import("./pages/AdminAffiliates"));
 const AdminReferrals = lazy(() => import("./pages/AdminReferrals"));
 const AdminBlakeSubscribers = lazy(() => import("./pages/AdminBlakeSubscribers"));
 const AdminClaimRequests = lazy(() => import("./pages/AdminClaimRequests"));
+const AdminLeads = lazy(() => import("./pages/AdminLeads"));
 const ClaimBusinessPage = lazy(() => import("./pages/ClaimBusinessPage"));
 const BusinessLinksPage = lazy(() => import("./pages/BusinessLinksPage"));
 const ReferralRedirect = lazy(() => import("./pages/ReferralRedirect"));
@@ -664,6 +665,7 @@ const App = () => (
                     <Route path="/admin/event-fees" element={<AdminRoute><AdminEventFees /></AdminRoute>} />
                     <Route path="/admin/competition-entries" element={<AdminRoute><AdminCompetitionEntries /></AdminRoute>} />
                     <Route path="/admin/claim-requests" element={<AdminRoute><AdminClaimRequests /></AdminRoute>} />
+                    <Route path="/admin/leads" element={<AdminRoute><AdminLeads /></AdminRoute>} />
 
                     {/* In-app camera & post-capture editors */}
                     <Route path="/camera" element={<ProtectedRoute><Camera /></ProtectedRoute>} />

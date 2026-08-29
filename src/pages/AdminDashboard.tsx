@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import {
   ShieldCheck, Users, DollarSign, ToggleLeft, Link2, Share2,
-  RefreshCw, BarChart3, Heart, Radio, Zap, Shield, TrendingUp, ListChecks, Settings
+  RefreshCw, BarChart3, Heart, Radio, Zap, Shield, TrendingUp, ListChecks, Settings, Inbox,
 } from "lucide-react";
 import { DateRange } from "@/hooks/useAdminHealthData";
 import OverviewTab from "@/components/admin/OverviewTab";
@@ -72,6 +72,9 @@ export default function AdminDashboard() {
             <AdminNotificationBell />
             <Button size="sm" variant="outline" onClick={() => navigate("/admin/users")}>
               <Users className="w-4 h-4 mr-1" /> Users
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => navigate("/admin/leads")}>
+              <Inbox className="w-4 h-4 mr-1" /> Leads
             </Button>
             <Button size="sm" variant="outline" onClick={() => navigate("/admin/payouts")}>
               <DollarSign className="w-4 h-4 mr-1" /> Payouts

@@ -48,6 +48,7 @@ export const KNOWN_PATTERNS: string[] = [
   "/admin/competition-entries",
   "/admin/event-fees",
   "/admin/features",
+  "/admin/leads",
   "/admin/payouts",
   "/admin/referrals",
   "/admin/settings",

@@ -2483,6 +2483,7 @@ export type Database = {
       }
       business_leads: {
         Row: {
+          admin_notes: string | null
           business_id: string
           created_at: string
           email: string | null
@@ -2492,8 +2493,11 @@ export type Database = {
           name: string | null
           phone: string | null
           source: string
+          status: string
+          status_updated_at: string | null
         }
         Insert: {
+          admin_notes?: string | null
           business_id: string
           created_at?: string
           email?: string | null
@@ -2503,8 +2507,11 @@ export type Database = {
           name?: string | null
           phone?: string | null
           source?: string
+          status?: string
+          status_updated_at?: string | null
         }
         Update: {
+          admin_notes?: string | null
           business_id?: string
           created_at?: string
           email?: string | null
@@ -2514,6 +2521,8 @@ export type Database = {
           name?: string | null
           phone?: string | null
           source?: string
+          status?: string
+          status_updated_at?: string | null
         }
         Relationships: [
           {
