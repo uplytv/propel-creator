@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -55,6 +56,8 @@ export default function AdminLeads() {
   const [business, setBusiness] = useState("all");
   const [range, setRange] = useState("all");
   const [sort, setSort] = useState("newest");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   const { data, isLoading, isFetching, refetch } = useQuery({
     queryKey: ["admin-leads"],
@@ -181,6 +184,42 @@ export default function AdminLeads() {
       toast.success(`Marked as ${next}`);
     }
   };
+
+  const bulkUpdateStatus = async (next: string) => {
+    const ids = visible.filter((l) => selected.has(l.id)).map((l) => l.id);
+    if (!ids.length) return;
+    setBulkBusy(true);
+    const prev = qc.getQueryData<Lead[]>(["admin-leads"]);
+    qc.setQueryData<Lead[]>(["admin-leads"], (old) =>
+      (old || []).map((l) => (ids.includes(l.id) ? { ...l, status: next } : l)),
+    );
+    const { error } = await supabase
+      .from("business_leads")
+      .update({ status: next } as never)
+      .in("id", ids);
+    setBulkBusy(false);
+    if (error) {
+      qc.setQueryData(["admin-leads"], prev);
+      toast.error("Couldn't update leads", { description: error.message });
+    } else {
+      toast.success(`Marked ${ids.length} lead${ids.length === 1 ? "" : "s"} as ${next}`);
+      setSelected(new Set());
+    }
+  };
+
+  const toggleOne = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+
+  const allVisibleSelected = visible.length > 0 && visible.every((l) => selected.has(l.id));
+  const toggleAll = () =>
+    setSelected(allVisibleSelected ? new Set() : new Set(visible.map((l) => l.id)));
+  const selectedCount = visible.filter((l) => selected.has(l.id)).length;
+
+
 
   const exportCsv = () => {
     const headers = [
@@ -353,9 +392,47 @@ export default function AdminLeads() {
           </Card>
         ) : (
           <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card px-3 py-2">
+              <label className="flex items-center gap-2 text-sm cursor-pointer select-none min-h-[44px]">
+                <Checkbox checked={allVisibleSelected} onCheckedChange={toggleAll} />
+                Select all ({visible.length})
+              </label>
+              {selectedCount > 0 && (
+                <>
+                  <span className="text-sm text-muted-foreground">{selectedCount} selected</span>
+                  <Select value="" onValueChange={bulkUpdateStatus} disabled={bulkBusy}>
+                    <SelectTrigger className="w-[190px]">
+                      <SelectValue placeholder={bulkBusy ? "Updating…" : "Set status for selected"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STATUSES.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          Mark as {s}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>
+                    Clear
+                  </Button>
+                </>
+              )}
+            </div>
             {visible.map((l) => (
-              <Card key={l.id} className="bg-card border-border">
+              <Card
+                key={l.id}
+                className={cn(
+                  "bg-card border-border",
+                  selected.has(l.id) && "border-primary/50 ring-1 ring-primary/30",
+                )}
+              >
                 <CardContent className="p-4 flex flex-col md:flex-row md:items-start gap-3">
+                  <Checkbox
+                    className="mt-1 shrink-0"
+                    checked={selected.has(l.id)}
+                    onCheckedChange={() => toggleOne(l.id)}
+                    aria-label="Select lead"
+                  />
                   <div className="min-w-0 flex-1 space-y-1.5">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold truncate">{l.name || "Anonymous"}</span>
