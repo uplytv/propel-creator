@@ -391,9 +391,47 @@ export default function AdminLeads() {
           </Card>
         ) : (
           <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card px-3 py-2">
+              <label className="flex items-center gap-2 text-sm cursor-pointer select-none min-h-[44px]">
+                <Checkbox checked={allVisibleSelected} onCheckedChange={toggleAll} />
+                Select all ({visible.length})
+              </label>
+              {selectedCount > 0 && (
+                <>
+                  <span className="text-sm text-muted-foreground">{selectedCount} selected</span>
+                  <Select value="" onValueChange={bulkUpdateStatus} disabled={bulkBusy}>
+                    <SelectTrigger className="w-[190px]">
+                      <SelectValue placeholder={bulkBusy ? "Updating…" : "Set status for selected"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STATUSES.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          Mark as {s}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>
+                    Clear
+                  </Button>
+                </>
+              )}
+            </div>
             {visible.map((l) => (
-              <Card key={l.id} className="bg-card border-border">
+              <Card
+                key={l.id}
+                className={cn(
+                  "bg-card border-border",
+                  selected.has(l.id) && "border-primary/50 ring-1 ring-primary/30",
+                )}
+              >
                 <CardContent className="p-4 flex flex-col md:flex-row md:items-start gap-3">
+                  <Checkbox
+                    className="mt-1 shrink-0"
+                    checked={selected.has(l.id)}
+                    onCheckedChange={() => toggleOne(l.id)}
+                    aria-label="Select lead"
+                  />
                   <div className="min-w-0 flex-1 space-y-1.5">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold truncate">{l.name || "Anonymous"}</span>
