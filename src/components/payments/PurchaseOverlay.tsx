@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
+import { getStripe } from '@/lib/stripeClient';
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { X, Loader2, ShieldCheck, TicketPercent, Plus, Check, Package } from 'lucide-react';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+const stripePromise = getStripe();
 
 interface PurchaseOverlayProps {
   isOpen: boolean;

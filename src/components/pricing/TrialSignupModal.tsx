@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CalendarCheck, Loader2, MailCheck, PartyPopper, ShieldCheck } from "lucide-react";
-import { loadStripe } from "@stripe/stripe-js";
+import { getStripe } from "@/lib/stripeClient";
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import {
   Dialog,
@@ -47,7 +47,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Same PCI-safe pattern as PurchaseOverlay: card entry happens inside
 // Stripe's embedded-checkout iframe — no card data ever touches our code.
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "");
+const stripePromise = getStripe();
 
 /** Shared wizard header: centered title + two-step tab indicator with active underline. */
 function WizardHeader({ active, days }: { active: 1 | 2; days: number }) {
