@@ -240,7 +240,7 @@ export default function AdminLeads() {
               <RefreshCw className={cn("w-4 h-4 mr-1.5", isFetching && "animate-spin")} />
               Refresh
             </Button>
-            <Button size="sm" onClick={exportCsv} disabled={!filtered.length}>
+            <Button size="sm" onClick={exportCsv} disabled={!visible.length}>
               <Download className="w-4 h-4 mr-1.5" /> Export CSV
             </Button>
           </div>
@@ -353,7 +353,7 @@ export default function AdminLeads() {
           </Card>
         ) : (
           <div className="space-y-2">
-            {filtered.map((l) => (
+            {visible.map((l) => (
               <Card key={l.id} className="bg-card border-border">
                 <CardContent className="p-4 flex flex-col md:flex-row md:items-start gap-3">
                   <div className="min-w-0 flex-1 space-y-1.5">
