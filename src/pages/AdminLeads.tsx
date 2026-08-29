@@ -182,6 +182,42 @@ export default function AdminLeads() {
     }
   };
 
+  const bulkUpdateStatus = async (next: string) => {
+    const ids = visible.filter((l) => selected.has(l.id)).map((l) => l.id);
+    if (!ids.length) return;
+    setBulkBusy(true);
+    const prev = qc.getQueryData<Lead[]>(["admin-leads"]);
+    qc.setQueryData<Lead[]>(["admin-leads"], (old) =>
+      (old || []).map((l) => (ids.includes(l.id) ? { ...l, status: next } : l)),
+    );
+    const { error } = await supabase
+      .from("business_leads")
+      .update({ status: next } as never)
+      .in("id", ids);
+    setBulkBusy(false);
+    if (error) {
+      qc.setQueryData(["admin-leads"], prev);
+      toast.error("Couldn't update leads", { description: error.message });
+    } else {
+      toast.success(`Marked ${ids.length} lead${ids.length === 1 ? "" : "s"} as ${next}`);
+      setSelected(new Set());
+    }
+  };
+
+  const toggleOne = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+
+  const allVisibleSelected = visible.length > 0 && visible.every((l) => selected.has(l.id));
+  const toggleAll = () =>
+    setSelected(allVisibleSelected ? new Set() : new Set(visible.map((l) => l.id)));
+  const selectedCount = visible.filter((l) => selected.has(l.id)).length;
+
+
+
   const exportCsv = () => {
     const headers = [
       "created_at",
