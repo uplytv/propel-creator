@@ -54,6 +54,7 @@ export default function AdminLeads() {
   const [status, setStatus] = useState("all");
   const [business, setBusiness] = useState("all");
   const [range, setRange] = useState("all");
+  const [sort, setSort] = useState("newest");
 
   const { data, isLoading, isFetching, refetch } = useQuery({
     queryKey: ["admin-leads"],
@@ -128,6 +129,29 @@ export default function AdminLeads() {
     return rows;
   }, [data, source, status, business, range, search]);
 
+  const visible = useMemo(() => {
+    const rows = [...filtered];
+    const time = (r: Lead) => new Date(r.created_at).getTime();
+    switch (sort) {
+      case "oldest":
+        return rows.sort((a, b) => time(a) - time(b));
+      case "source":
+        return rows.sort(
+          (a, b) => (a.source || "").localeCompare(b.source || "") || time(b) - time(a),
+        );
+      case "status":
+        return rows.sort((a, b) => a.status.localeCompare(b.status) || time(b) - time(a));
+      case "business":
+        return rows.sort(
+          (a, b) => a.businessName.localeCompare(b.businessName) || time(b) - time(a),
+        );
+      default:
+        return rows.sort((a, b) => time(b) - time(a));
+    }
+  }, [filtered, sort]);
+
+
+
   const stats = useMemo(() => {
     const rows = filtered;
     const by = (s: Status) => rows.filter((r) => r.status === s).length;
@@ -172,7 +196,7 @@ export default function AdminLeads() {
     ];
     const csv = [
       headers.join(","),
-      ...filtered.map((r) =>
+      ...visible.map((r) =>
         [
           r.created_at,
           r.businessName,
@@ -192,10 +216,13 @@ export default function AdminLeads() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `leads-${new Date().toISOString().split("T")[0]}.csv`;
+    const scope = source === "all" ? "all-sources" : source;
+    a.download = `leads-${scope}-${sort}-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success(`Exported ${filtered.length} leads`);
+    toast.success(`Exported ${visible.length} leads`, {
+      description: `${source === "all" ? "All sources" : `Source: ${source}`} · sorted by ${sort}`,
+    });
   };
 
   return (
@@ -213,7 +240,7 @@ export default function AdminLeads() {
               <RefreshCw className={cn("w-4 h-4 mr-1.5", isFetching && "animate-spin")} />
               Refresh
             </Button>
-            <Button size="sm" onClick={exportCsv} disabled={!filtered.length}>
+            <Button size="sm" onClick={exportCsv} disabled={!visible.length}>
               <Download className="w-4 h-4 mr-1.5" /> Export CSV
             </Button>
           </div>
@@ -294,6 +321,18 @@ export default function AdminLeads() {
               <SelectItem value="90">Last 90 days</SelectItem>
             </SelectContent>
           </Select>
+          <Select value={sort} onValueChange={setSort}>
+            <SelectTrigger className="w-[170px]">
+              <SelectValue placeholder="Sort" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest first</SelectItem>
+              <SelectItem value="oldest">Oldest first</SelectItem>
+              <SelectItem value="source">Source (A–Z)</SelectItem>
+              <SelectItem value="status">Status (A–Z)</SelectItem>
+              <SelectItem value="business">Page (A–Z)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {isLoading ? (
@@ -302,7 +341,7 @@ export default function AdminLeads() {
               <Skeleton key={i} className="h-20" />
             ))}
           </div>
-        ) : filtered.length === 0 ? (
+        ) : visible.length === 0 ? (
           <Card className="bg-card border-border">
             <CardContent className="py-16 flex flex-col items-center text-center gap-2">
               <Inbox className="w-8 h-8 text-muted-foreground" />
@@ -314,7 +353,7 @@ export default function AdminLeads() {
           </Card>
         ) : (
           <div className="space-y-2">
-            {filtered.map((l) => (
+            {visible.map((l) => (
               <Card key={l.id} className="bg-card border-border">
                 <CardContent className="p-4 flex flex-col md:flex-row md:items-start gap-3">
                   <div className="min-w-0 flex-1 space-y-1.5">
