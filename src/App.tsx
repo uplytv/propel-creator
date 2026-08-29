@@ -115,6 +115,7 @@ const AdminAffiliates = lazy(() => import("./pages/AdminAffiliates"));
 const AdminReferrals = lazy(() => import("./pages/AdminReferrals"));
 const AdminBlakeSubscribers = lazy(() => import("./pages/AdminBlakeSubscribers"));
 const AdminClaimRequests = lazy(() => import("./pages/AdminClaimRequests"));
+const AdminLeads = lazy(() => import("./pages/AdminLeads"));
 const ClaimBusinessPage = lazy(() => import("./pages/ClaimBusinessPage"));
 const BusinessLinksPage = lazy(() => import("./pages/BusinessLinksPage"));
 const ReferralRedirect = lazy(() => import("./pages/ReferralRedirect"));
