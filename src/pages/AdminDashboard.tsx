@@ -73,6 +73,9 @@ export default function AdminDashboard() {
             <Button size="sm" variant="outline" onClick={() => navigate("/admin/users")}>
               <Users className="w-4 h-4 mr-1" /> Users
             </Button>
+            <Button size="sm" variant="outline" onClick={() => navigate("/admin/leads")}>
+              <Inbox className="w-4 h-4 mr-1" /> Leads
+            </Button>
             <Button size="sm" variant="outline" onClick={() => navigate("/admin/payouts")}>
               <DollarSign className="w-4 h-4 mr-1" /> Payouts
             </Button>
