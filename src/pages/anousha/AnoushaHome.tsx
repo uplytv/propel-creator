@@ -17,6 +17,7 @@ export default function AnoushaHome() {
 
   return (
     <AnoushaShell
+      overHero
       sticky={<CTA to="/anousha#work" className="w-full">Work with Anousha</CTA>}
     >
       <SEOHead

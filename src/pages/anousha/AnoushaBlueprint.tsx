@@ -10,7 +10,7 @@ export default function AnoushaBlueprint() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <AnoushaShell sticky={<CTA to="/anousha/circle#tiers" className="w-full">Enroll in The Blueprint</CTA>}>
+    <AnoushaShell overHero sticky={<CTA to="/anousha/circle#tiers" className="w-full">Enroll in The Blueprint</CTA>}>
       <SEOHead
         title="The Blueprint — Real Estate Classroom by Anousha Nikjouian"
         description={`A ${MODULES.length}-module, ${LESSON_COUNT}-lesson DMV real estate curriculum: foundations, first purchase, first investment, scaling rentals, flipping, and the ten-year wealth plan.`}

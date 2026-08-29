@@ -8,7 +8,7 @@ export default function AnoushaCircle() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <AnoushaShell sticky={<CTA href="#tiers" className="w-full">Join Defined Circle</CTA>}>
+    <AnoushaShell overHero sticky={<CTA href="#tiers" className="w-full">Join Defined Circle</CTA>}>
       <SEOHead
         title="The Defined Circle — Anousha Nikjouian"
         description="A members-only community for people who want real estate in their future — first-time buyers, first-time investors, and portfolio builders across DC, Maryland and Virginia. Tiers from $19/mo."

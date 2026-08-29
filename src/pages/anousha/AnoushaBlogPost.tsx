@@ -21,7 +21,7 @@ export default function AnoushaBlogPost() {
   const mid = Math.ceil(post.body.length / 2);
 
   return (
-    <AnoushaShell sticky={<CTA to="/anousha#work" className="w-full">Work with Anousha</CTA>}>
+    <AnoushaShell overHero sticky={<CTA to="/anousha#work" className="w-full">Work with Anousha</CTA>}>
       <SEOHead
         title={post.title}
         description={post.dek}

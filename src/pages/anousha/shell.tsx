@@ -119,7 +119,7 @@ export function CTA({
 
 /* ------------------------------------------------------------------- header */
 
-function Header() {
+function Header({ overHero = false }: { overHero?: boolean }) {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
   const [solid, setSolid] = useState(false);
@@ -130,6 +130,10 @@ function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
   useEffect(() => setOpen(false), [pathname]);
+  // Over a full-bleed dark hero the chrome inverts to ivory until scrolled.
+  const light = overHero && !solid;
+  const fg = light ? "#FBF7F1" : ink;
+  const accent = light ? "#E6D2AE" : gold;
 
   return (
     <header
@@ -142,8 +146,8 @@ function Header() {
     >
       <div className="max-w-[1240px] mx-auto px-5 sm:px-8 h-[72px] flex items-center justify-between">
         <Link to="/anousha" className="leading-none">
-          <span className="block text-[17px]" style={{ ...serif, color: ink }}>Anousha Nikjouian</span>
-          <span className="block text-[9px] tracking-[0.3em] uppercase mt-1" style={{ ...sans, color: gold }}>
+          <span className="block text-[17px]" style={{ ...serif, color: fg }}>Anousha Nikjouian</span>
+          <span className="block text-[9px] tracking-[0.3em] uppercase mt-1" style={{ ...sans, color: accent }}>
             {BRAND.wordmark}
           </span>
         </Link>
@@ -153,19 +157,25 @@ function Header() {
               key={n.to}
               to={n.to}
               className="text-[12px] tracking-[0.14em] uppercase transition-opacity hover:opacity-60"
-              style={{ ...sans, color: ink }}
+              style={{ ...sans, color: fg }}
             >
               {n.label}
             </Link>
           ))}
-          <CTA to="/anousha#work" variant="solid" className="!min-h-[44px] !px-5">Work with me</CTA>
+          <CTA
+            to="/anousha#work"
+            variant={light ? "gold" : "solid"}
+            className="!min-h-[44px] !px-5"
+          >
+            Work with me
+          </CTA>
         </nav>
         <button
           type="button"
           aria-label={open ? "Close menu" : "Open menu"}
           onClick={() => setOpen((o) => !o)}
           className="md:hidden h-11 w-11 -mr-2 inline-flex items-center justify-center"
-          style={{ color: ink }}
+          style={{ color: fg }}
         >
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
@@ -334,10 +344,10 @@ export function LeadForm({
 
 /* -------------------------------------------------------------- page wrapper */
 
-export function AnoushaShell({ children, sticky }: { children: ReactNode; sticky?: ReactNode }) {
+export function AnoushaShell({ children, sticky, overHero = false }: { children: ReactNode; sticky?: ReactNode; overHero?: boolean }) {
   return (
     <div className="min-h-screen" style={{ background: "#FBF7F1", color: ink, ...sans }}>
-      <Header />
+      <Header overHero={overHero} />
       {children}
       <Footer />
       {sticky && (
