@@ -129,6 +129,29 @@ export default function AdminLeads() {
     return rows;
   }, [data, source, status, business, range, search]);
 
+  const visible = useMemo(() => {
+    const rows = [...filtered];
+    const time = (r: Lead) => new Date(r.created_at).getTime();
+    switch (sort) {
+      case "oldest":
+        return rows.sort((a, b) => time(a) - time(b));
+      case "source":
+        return rows.sort(
+          (a, b) => (a.source || "").localeCompare(b.source || "") || time(b) - time(a),
+        );
+      case "status":
+        return rows.sort((a, b) => a.status.localeCompare(b.status) || time(b) - time(a));
+      case "business":
+        return rows.sort(
+          (a, b) => a.businessName.localeCompare(b.businessName) || time(b) - time(a),
+        );
+      default:
+        return rows.sort((a, b) => time(b) - time(a));
+    }
+  }, [filtered, sort]);
+
+
+
   const stats = useMemo(() => {
     const rows = filtered;
     const by = (s: Status) => rows.filter((r) => r.status === s).length;
