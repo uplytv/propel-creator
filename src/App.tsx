@@ -258,6 +258,13 @@ const Inbox = lazy(() => import("./pages/Inbox"));
 const FounderServices = lazy(() => import("./pages/FounderServices"));
 const PartnerNexaflow = lazy(() => import("./pages/PartnerNexaflow"));
 const Services = lazy(() => import("./pages/Services"));
+// Anousha Nikjouian — "Defined Real Estate" flagship brand site
+const AnoushaHome = lazy(() => import("./pages/anousha/AnoushaHome"));
+const AnoushaLinks = lazy(() => import("./pages/anousha/AnoushaLinks"));
+const AnoushaCircle = lazy(() => import("./pages/anousha/AnoushaCircle"));
+const AnoushaBlueprint = lazy(() => import("./pages/anousha/AnoushaBlueprint"));
+const AnoushaBlog = lazy(() => import("./pages/anousha/AnoushaBlog"));
+const AnoushaBlogPost = lazy(() => import("./pages/anousha/AnoushaBlogPost"));
 const FounderOfferSuccess = lazy(() => import("./pages/FounderOfferSuccess"));
 const FounderOfferCanceled = lazy(() => import("./pages/FounderOfferCanceled"));
 const BusinessAnalytics = lazy(() => import("./pages/BusinessAnalytics"));
