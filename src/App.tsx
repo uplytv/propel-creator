@@ -258,6 +258,13 @@ const Inbox = lazy(() => import("./pages/Inbox"));
 const FounderServices = lazy(() => import("./pages/FounderServices"));
 const PartnerNexaflow = lazy(() => import("./pages/PartnerNexaflow"));
 const Services = lazy(() => import("./pages/Services"));
+// Anousha Nikjouian — "Defined Real Estate" flagship brand site
+const AnoushaHome = lazy(() => import("./pages/anousha/AnoushaHome"));
+const AnoushaLinks = lazy(() => import("./pages/anousha/AnoushaLinks"));
+const AnoushaCircle = lazy(() => import("./pages/anousha/AnoushaCircle"));
+const AnoushaBlueprint = lazy(() => import("./pages/anousha/AnoushaBlueprint"));
+const AnoushaBlog = lazy(() => import("./pages/anousha/AnoushaBlog"));
+const AnoushaBlogPost = lazy(() => import("./pages/anousha/AnoushaBlogPost"));
 const FounderOfferSuccess = lazy(() => import("./pages/FounderOfferSuccess"));
 const FounderOfferCanceled = lazy(() => import("./pages/FounderOfferCanceled"));
 const BusinessAnalytics = lazy(() => import("./pages/BusinessAnalytics"));
@@ -531,12 +538,18 @@ const App = () => (
                     <Route path="/blake-the-great/join" element={<BlakeTheGreatSite />} />
                     <Route path="/blake-the-great/blog" element={<BlakeTheGreatBlog />} />
                     <Route path="/blake-the-great/members" element={<BlakeTheGreatMembers />} />
-                    {/* Roster artists — driven by src/data/artistRoster.ts.
-                        NOTE: "anousha" here intentionally shadows the seeded
-                        creator-tenant page previously served at /:username →
-                        CreatorTenantPage; her UPLY front door is now the
-                        roster link hub (see ANOUSHA-ONBOARDING.md). */}
-                    {(["omid", "omid-music", "omidmusic", "morvarid", "morvarid-shahbazi", "morvaridshahbazi", "andy", "andy-music", "andymusic1", "anousha"]).map((s) => (
+                    {/* Anousha Nikjouian — "Defined Real Estate" flagship brand site.
+                        These MUST stay above the /:slug/* roster routes and the
+                        /:username catch-all (which remains last). */}
+                    <Route path="/anousha" element={<AnoushaHome />} />
+                    <Route path="/anousha/links" element={<AnoushaLinks />} />
+                    <Route path="/anousha/circle" element={<AnoushaCircle />} />
+                    <Route path="/anousha/community" element={<AnoushaCircle />} />
+                    <Route path="/anousha/blueprint" element={<AnoushaBlueprint />} />
+                    <Route path="/anousha/blog" element={<AnoushaBlog />} />
+                    <Route path="/anousha/blog/:slug" element={<AnoushaBlogPost />} />
+                    {/* Roster artists — driven by src/data/artistRoster.ts. */}
+                    {(["omid", "omid-music", "omidmusic", "morvarid", "morvarid-shahbazi", "morvaridshahbazi", "andy", "andy-music", "andymusic1"]).map((s) => (
                       <Route key={s} path={`/${s}`} element={<ArtistLinkRoute />} />
                     ))}
                     {/* Every roster artist gets the shared editorial site at /:slug-site.

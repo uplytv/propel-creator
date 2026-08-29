@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -17293,6 +17293,48 @@ export type Database = {
           platform_fee?: number | null
           sender_id?: string
           stripe_payment_intent_id?: string | null
+        }
+        Relationships: []
+      }
+      partner_leads: {
+        Row: {
+          billing_period: string | null
+          business: string | null
+          created_at: string
+          email: string
+          id: string
+          monthly_revenue: string | null
+          name: string
+          partner: string
+          phone: string | null
+          source: string | null
+          tier: string | null
+        }
+        Insert: {
+          billing_period?: string | null
+          business?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          monthly_revenue?: string | null
+          name: string
+          partner?: string
+          phone?: string | null
+          source?: string | null
+          tier?: string | null
+        }
+        Update: {
+          billing_period?: string | null
+          business?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          monthly_revenue?: string | null
+          name?: string
+          partner?: string
+          phone?: string | null
+          source?: string | null
+          tier?: string | null
         }
         Relationships: []
       }
