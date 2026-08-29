@@ -321,6 +321,18 @@ export default function AdminLeads() {
               <SelectItem value="90">Last 90 days</SelectItem>
             </SelectContent>
           </Select>
+          <Select value={sort} onValueChange={setSort}>
+            <SelectTrigger className="w-[170px]">
+              <SelectValue placeholder="Sort" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest first</SelectItem>
+              <SelectItem value="oldest">Oldest first</SelectItem>
+              <SelectItem value="source">Source (A–Z)</SelectItem>
+              <SelectItem value="status">Status (A–Z)</SelectItem>
+              <SelectItem value="business">Page (A–Z)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {isLoading ? (
