@@ -196,7 +196,7 @@ export default function AdminLeads() {
     ];
     const csv = [
       headers.join(","),
-      ...filtered.map((r) =>
+      ...visible.map((r) =>
         [
           r.created_at,
           r.businessName,
@@ -216,10 +216,13 @@ export default function AdminLeads() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `leads-${new Date().toISOString().split("T")[0]}.csv`;
+    const scope = source === "all" ? "all-sources" : source;
+    a.download = `leads-${scope}-${sort}-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success(`Exported ${filtered.length} leads`);
+    toast.success(`Exported ${visible.length} leads`, {
+      description: `${source === "all" ? "All sources" : `Source: ${source}`} · sorted by ${sort}`,
+    });
   };
 
   return (
