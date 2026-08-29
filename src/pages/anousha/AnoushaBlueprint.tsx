@@ -128,7 +128,7 @@ export default function AnoushaBlueprint() {
         <Reveal delay={120}>
           <div className="h-full p-10 border border-[#14110E]/12" style={{ background: "#FFFDFA" }}>
             <div className="flex items-center gap-4">
-              <img src={IMAGES.portrait} alt="Anousha Nikjouian" className="h-16 w-16 rounded-full object-cover" />
+              <span className="h-16 w-16 shrink-0 inline-flex items-center justify-center border text-[18px]" style={{ borderColor: gold, color: gold, ...serif }}>AN</span>
               <div>
                 <p className="text-[20px]" style={{ ...serif, color: ink }}>Anousha Nikjouian</p>
                 <p className="text-[11px] tracking-[0.18em] uppercase mt-1" style={{ ...sans, color: gold }}>REALTOR® · Compass, Chevy Chase</p>

@@ -55,7 +55,7 @@ export default function AnoushaBlogPost() {
 
       {/* author */}
       <div className="max-w-[820px] mx-auto px-5 sm:px-8 py-8 flex items-center gap-4 border-b border-[#14110E]/10">
-        <img src={IMAGES.portrait} alt={BRAND.name} className="h-12 w-12 rounded-full object-cover" />
+        <span className="h-12 w-12 shrink-0 inline-flex items-center justify-center border" style={{ borderColor: gold, color: gold, ...serif }}>AN</span>
         <div>
           <p className="text-[16px]" style={{ ...serif, color: ink }}>{BRAND.name}</p>
           <p className="text-[11px] tracking-[0.14em] uppercase mt-0.5" style={{ ...sans, color: "#8A8078" }}>

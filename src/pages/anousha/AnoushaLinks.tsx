@@ -15,9 +15,10 @@ export default function AnoushaLinks() {
       <div className="max-w-[560px] mx-auto px-5 pt-12 pb-20">
         <Reveal>
           <div className="text-center">
-            {/* Portrait slot — swap for her IG headshot */}
-            <div className="relative mx-auto h-[132px] w-[132px] overflow-hidden rounded-full">
+            {/* Portrait slot — swap for her IG headshot (keeps the same frame) */}
+            <div className="relative mx-auto w-[168px] aspect-[4/5] overflow-hidden">
               <img src={IMAGES.portrait} alt={BRAND.name} className="h-full w-full object-cover" />
+              <span className="absolute inset-0 m-2 border border-[#E6D2AE]/70 pointer-events-none" />
             </div>
             <Display className="text-[30px] mt-6" as="h1">{BRAND.name}</Display>
             <p className="mt-2 text-[11px] tracking-[0.28em] uppercase" style={{ ...sans, color: gold }}>
