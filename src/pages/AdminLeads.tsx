@@ -55,6 +55,8 @@ export default function AdminLeads() {
   const [business, setBusiness] = useState("all");
   const [range, setRange] = useState("all");
   const [sort, setSort] = useState("newest");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   const { data, isLoading, isFetching, refetch } = useQuery({
     queryKey: ["admin-leads"],
