@@ -101,7 +101,19 @@ export function CTA({
   };
   const cls = `${base} ${styles[variant]} ${className}`;
   if (to) return <Link to={to} className={cls} style={sans}>{children}</Link>;
-  if (href) return <a href={href} target="_blank" rel="noopener noreferrer" className={cls} style={sans}>{children}</a>;
+  if (href) {
+    const external = !href.startsWith("#");
+    return (
+      <a
+        href={href}
+        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+        className={cls}
+        style={sans}
+      >
+        {children}
+      </a>
+    );
+  }
   return <button type="button" onClick={onClick} className={cls} style={sans}>{children}</button>;
 }
 

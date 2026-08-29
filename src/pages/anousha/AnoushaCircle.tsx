@@ -8,7 +8,7 @@ export default function AnoushaCircle() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <AnoushaShell sticky={<CTA to="#tiers" className="w-full">Join Defined Circle</CTA>}>
+    <AnoushaShell sticky={<CTA href="#tiers" className="w-full">Join Defined Circle</CTA>}>
       <SEOHead
         title="The Defined Circle — Anousha Nikjouian"
         description="A members-only community for people who want real estate in their future — first-time buyers, first-time investors, and portfolio builders across DC, Maryland and Virginia. Tiers from $19/mo."
@@ -106,7 +106,7 @@ export default function AnoushaCircle() {
                     ))}
                   </ul>
                   <CTA
-                    to={`/anousha/circle/join?tier=${t.id}`}
+                    href="#join"
                     variant={t.featured ? "gold" : "outline"}
                     className="mt-8 w-full"
                   >
@@ -147,7 +147,7 @@ export default function AnoushaCircle() {
         </div>
       </section>
 
-      <section className="max-w-[860px] mx-auto px-5 sm:px-8 pb-24">
+      <section id="join" className="max-w-[860px] mx-auto px-5 sm:px-8 pb-24 scroll-mt-20">
         <Reveal>
           <LeadForm
             source="anousha-circle"
