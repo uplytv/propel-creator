@@ -341,7 +341,7 @@ export default function AdminLeads() {
               <Skeleton key={i} className="h-20" />
             ))}
           </div>
-        ) : filtered.length === 0 ? (
+        ) : visible.length === 0 ? (
           <Card className="bg-card border-border">
             <CardContent className="py-16 flex flex-col items-center text-center gap-2">
               <Inbox className="w-8 h-8 text-muted-foreground" />
