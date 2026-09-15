@@ -13,16 +13,15 @@ export default function HomepageFinalCTA() {
       </div>
       <div className="relative max-w-4xl mx-auto text-center">
         <h2 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-[-0.03em] text-foreground leading-[1.08] mb-6">
-          You weren't early to YouTube. You weren't early to Instagram.{" "}
-          <span className="text-primary">You weren't early to TikTok Shop.</span>
+          Run the whole creator business{" "}
+          <span className="text-primary">from one login.</span>
         </h2>
         <p className="text-base sm:text-lg md:text-xl text-foreground/70 max-w-3xl mx-auto leading-relaxed mb-8">
-          Every platform that made creators rich — the ones who got there first won the biggest.
-          UPLY is the AI-powered operating system for creators. The infrastructure. One platform
-          that builds, runs, and grows the whole business with you.
+          Streaming, community, courses, ticketed events and the follow-up list — plus ARIA drafting
+          the content you review and publish. Try the whole platform for 14 days.
         </p>
         <p className="text-foreground/60 mb-8">
-          Beta is live. Founding creators are building now.
+          Open to new creators today — no waitlist, no queue.
         </p>
 
         <Button
