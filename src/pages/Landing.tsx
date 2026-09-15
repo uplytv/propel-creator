@@ -8,6 +8,8 @@ import { LANDING_OG_IMAGE_URL } from "@/lib/ogImage";
 
 import HomepageNav from "@/components/landing/v2/HomepageNav";
 import HomepageHero from "@/components/landing/v2/HomepageHero";
+import HomepageProductPreview from "@/components/landing/v2/HomepageProductPreview";
+import HomepageComparison from "@/components/landing/v2/HomepageComparison";
 import HomepageForEveryCreator from "@/components/landing/v2/HomepageForEveryCreator";
 import HomepagePPV from "@/components/landing/v2/HomepagePPV";
 import HomepagePricing from "@/components/landing/v2/HomepagePricing";

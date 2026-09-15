@@ -9,14 +9,11 @@ import {
   type PlatformPlanKey,
 } from "@/components/pricing/plans";
 
-const COMPARISON = [
-  { tool: "Ticketmaster / Live Nation", they: "27–37% fees + venue cut", uply: "5% flat" },
-  { tool: "Patreon", they: "8–12% + processing", uply: "5% flat" },
-  { tool: "Kajabi", they: "$199 / mo + transaction fees", uply: "From $97 / mo · 5% flat" },
-  { tool: "Twitch / Kick", they: "Up to 50% revenue split", uply: "5% flat" },
-  { tool: "Linktree / Beacons", they: "Paywall on basics", uply: "Included" },
-  { tool: "Eventbrite", they: "3.7% + $1.79 per ticket", uply: "5% flat — no per-ticket fee" },
-];
+// The undated competitor fee table that used to live here was removed: the
+// quoted rates were not sourced or dated. Verified, dated comparison copy now
+// lives in HomepageComparison.tsx (Skool, with an official source link).
+
+
 
 export default function HomepagePricing() {
   const [modalOpen, setModalOpen] = useState(false);
