@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowRight } from "lucide-react";
 import TrialSignupModal from "@/components/pricing/TrialSignupModal";
+import { ARIA_PLAN_NOTE, FEE_DISCLOSURE_SHORT } from "@/components/pricing/plans";
 
 const ROTATING = [
   "If you're a musician, ToneDen is dead. We replaced it.",

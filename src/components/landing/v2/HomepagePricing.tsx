@@ -2,7 +2,12 @@ import { useState } from "react";
 import SectionShell from "./SectionShell";
 import PlanCard from "@/components/pricing/PlanCard";
 import TrialSignupModal from "@/components/pricing/TrialSignupModal";
-import { PLATFORM_PLANS, type PlatformPlanKey } from "@/components/pricing/plans";
+import {
+  PLATFORM_PLANS,
+  ARIA_PLAN_NOTE,
+  FEE_DISCLOSURE,
+  type PlatformPlanKey,
+} from "@/components/pricing/plans";
 
 const COMPARISON = [
   { tool: "Ticketmaster / Live Nation", they: "27–37% fees + venue cut", uply: "5% flat" },
