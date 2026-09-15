@@ -118,8 +118,11 @@ export default function Landing() {
         <main>
           <HomepageHero />
 
-          {/* Focused funnel: proof → what it is → PPV highlight → price → CTA.
-              The nine persona sections are consolidated into HomepageForEveryCreator. */}
+          {/* Show the actual product immediately below the hero, then proof →
+              what it is → PPV highlight → comparison → price → CTA. */}
+          <HomepageProductPreview />
+
+          <SectionSeam />
           <FeaturedCreatorsSection />
 
           <SectionSeam />
@@ -129,13 +132,19 @@ export default function Landing() {
           <HomepagePPV />
 
           <SectionSeam />
+          <HomepageComparison />
+
+          <SectionSeam />
           <HomepagePricing />
 
           <HomepageFinalCTA />
         </main>
 
         <HomepageFooter />
-        <FoundersStickyCTA />
+        {/* FoundersStickyCTA intentionally not rendered here: its floating
+            "seats remaining" urgency conflicted with the honest availability
+            copy in the hero and pricing sections. The component and its route
+            gating are untouched for other surfaces. */}
       </div>
     </div>
   );
