@@ -17,28 +17,28 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageFinalCTA m
     <h2
       class="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-[-0.03em] text-foreground leading-[1.08] mb-6"
     >
-      You weren't early to YouTube. You weren't early to Instagram.
+      Run the whole creator business
        
       <span
         class="text-primary"
       >
-        You weren't early to TikTok Shop.
+        from one login.
       </span>
     </h2>
     <p
       class="text-base sm:text-lg md:text-xl text-foreground/70 max-w-3xl mx-auto leading-relaxed mb-8"
     >
-      Every platform that made creators rich — the ones who got there first won the biggest. UPLY is the AI-powered operating system for creators. The infrastructure. One platform that builds, runs, and grows the whole business with you.
+      Streaming, community, courses, ticketed events and the follow-up list — plus ARIA drafting the content you review and publish. Try the whole platform for 14 days.
     </p>
     <p
       class="text-foreground/60 mb-8"
     >
-      Beta is live. Founding creators are building now.
+      Open to new creators today — no waitlist, no queue.
     </p>
     <button
       class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display hover:-translate-y-px hover:shadow-[var(--shadow-glow)] rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_60px_hsl(var(--primary)/0.5)] font-bold text-base px-8 py-6 h-auto"
     >
-      Claim Your Founding Creator Spot 
+      Start your 14-day free trial 
       <svg
         class="lucide lucide-arrow-right w-5 h-5 ml-2"
         fill="none"
@@ -65,9 +65,9 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageFinalCTA m
       14 days free · No obligation · Cancel at any time
     </p>
     <p
-      class="mt-6 text-sm text-primary font-semibold"
+      class="mt-6 text-sm text-foreground/60"
     >
-      100,000 creators and this offer closes. Forever.
+      Flat 5% UPLY platform fee on sales · Stripe's own processing and payout fees apply separately.
     </p>
   </div>
 </section>
@@ -250,17 +250,19 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageHero match
       AI growth team · Live streaming · Courses & community · Music · Events & tickets · Live shopping · Roku TV
     </p>
     <div
-      class="inline-flex items-start sm:items-center gap-2 rounded-sm border border-gold-hairline bg-[hsl(var(--gold)/0.08)] px-4 py-2.5 max-w-xl text-left"
+      class="flex flex-col items-center gap-2 max-w-xl"
     >
-      <span
-        class="rounded-sm bg-gold px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide shrink-0"
-      >
-        First 100
-      </span>
       <p
-        class="text-xs sm:text-sm font-semibold text-foreground/85"
+        class="text-xs sm:text-sm text-foreground/70 leading-relaxed"
       >
-        We build your website funnel, SEO blog post, and community & courses — free, done for you.
+        The ARIA AI team is part of Unlimited ($297/mo) and Agency Pro ($497/mo). Starter ($97/mo) includes the core creator platform — profile, streaming, community, courses and events.
+      </p>
+      <p
+        class="text-xs text-foreground/55 leading-relaxed"
+      >
+        Every plan includes a free setup call with a real person to help you get your pages, community and first offer live. A full done-for-you build is available as a separate paid service. 
+        Flat 5% UPLY platform fee · Stripe fees separate
+        .
       </p>
     </div>
     <button
@@ -369,7 +371,12 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepagePricing ma
       <p
         class="text-foreground/70 text-base sm:text-lg"
       >
-        Every plan starts with a 14-day free trial. This ends at 100,000 creators.
+        Every plan starts with a 14-day free trial. Open to new creators today — no waitlist.
+      </p>
+      <p
+        class="text-foreground/60 text-sm mt-3"
+      >
+        The ARIA AI team is part of Unlimited ($297/mo) and Agency Pro ($497/mo). Starter ($97/mo) includes the core creator platform — profile, streaming, community, courses and events.
       </p>
     </div>
     <div
@@ -583,13 +590,9 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepagePricing ma
           <p
             class="mt-3 text-center text-xs text-muted-foreground"
           >
-            14 days free · cancel anytime
+            14
+             days free · cancel anytime
           </p>
-        </div>
-        <div
-          class="mt-4 text-center text-gold text-sm font-bold"
-        >
-          95% payout. Always.
         </div>
       </div>
       <div
@@ -897,13 +900,9 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepagePricing ma
           <p
             class="mt-3 text-center text-xs text-muted-foreground"
           >
-            14 days free · cancel anytime
+            14
+             days free · cancel anytime
           </p>
-        </div>
-        <div
-          class="mt-4 text-center text-gold text-sm font-bold"
-        >
-          95% payout. Always.
         </div>
       </div>
       <div
@@ -1183,176 +1182,16 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepagePricing ma
           <p
             class="mt-3 text-center text-xs text-muted-foreground"
           >
-            14 days free · cancel anytime
+            14
+             days free · cancel anytime
           </p>
-        </div>
-        <div
-          class="mt-4 text-center text-gold text-sm font-bold"
-        >
-          95% payout. Always.
-        </div>
-      </div>
-    </div>
-    <div
-      class="mt-14 max-w-5xl mx-auto"
-    >
-      <div
-        class="text-center mb-6"
-      >
-        <p
-          class="eyebrow-gold mb-3"
-        >
-          The Math
-        </p>
-        <h3
-          class="type-display-md text-foreground"
-        >
-          UPLY vs. 
-          <span
-            class="italic text-gold font-normal"
-          >
-            the legacy stack
-          </span>
-        </h3>
-      </div>
-      <div
-        class="card-editorial rounded-md overflow-hidden"
-      >
-        <div
-          class="grid grid-cols-[1.4fr_1fr_1fr] text-[10px] sm:text-xs font-bold uppercase tracking-[0.22em] text-muted-foreground px-4 sm:px-6 py-3 border-b border-border/60"
-        >
-          <div>
-            Tool
-          </div>
-          <div>
-            They charge
-          </div>
-          <div
-            class="text-gold"
-          >
-            UPLY
-          </div>
-        </div>
-        <div
-          class="grid grid-cols-[1.4fr_1fr_1fr] items-center px-4 sm:px-6 py-3 sm:py-4 text-sm "
-        >
-          <div
-            class="font-semibold text-foreground"
-          >
-            Ticketmaster / Live Nation
-          </div>
-          <div
-            class="text-muted-foreground"
-          >
-            27–37% fees + venue cut
-          </div>
-          <div
-            class="font-bold text-gold"
-          >
-            5% flat
-          </div>
-        </div>
-        <div
-          class="grid grid-cols-[1.4fr_1fr_1fr] items-center px-4 sm:px-6 py-3 sm:py-4 text-sm bg-card/40"
-        >
-          <div
-            class="font-semibold text-foreground"
-          >
-            Patreon
-          </div>
-          <div
-            class="text-muted-foreground"
-          >
-            8–12% + processing
-          </div>
-          <div
-            class="font-bold text-gold"
-          >
-            5% flat
-          </div>
-        </div>
-        <div
-          class="grid grid-cols-[1.4fr_1fr_1fr] items-center px-4 sm:px-6 py-3 sm:py-4 text-sm "
-        >
-          <div
-            class="font-semibold text-foreground"
-          >
-            Kajabi
-          </div>
-          <div
-            class="text-muted-foreground"
-          >
-            $199 / mo + transaction fees
-          </div>
-          <div
-            class="font-bold text-gold"
-          >
-            From $97 / mo · 5% flat
-          </div>
-        </div>
-        <div
-          class="grid grid-cols-[1.4fr_1fr_1fr] items-center px-4 sm:px-6 py-3 sm:py-4 text-sm bg-card/40"
-        >
-          <div
-            class="font-semibold text-foreground"
-          >
-            Twitch / Kick
-          </div>
-          <div
-            class="text-muted-foreground"
-          >
-            Up to 50% revenue split
-          </div>
-          <div
-            class="font-bold text-gold"
-          >
-            5% flat
-          </div>
-        </div>
-        <div
-          class="grid grid-cols-[1.4fr_1fr_1fr] items-center px-4 sm:px-6 py-3 sm:py-4 text-sm "
-        >
-          <div
-            class="font-semibold text-foreground"
-          >
-            Linktree / Beacons
-          </div>
-          <div
-            class="text-muted-foreground"
-          >
-            Paywall on basics
-          </div>
-          <div
-            class="font-bold text-gold"
-          >
-            Included
-          </div>
-        </div>
-        <div
-          class="grid grid-cols-[1.4fr_1fr_1fr] items-center px-4 sm:px-6 py-3 sm:py-4 text-sm bg-card/40"
-        >
-          <div
-            class="font-semibold text-foreground"
-          >
-            Eventbrite
-          </div>
-          <div
-            class="text-muted-foreground"
-          >
-            3.7% + $1.79 per ticket
-          </div>
-          <div
-            class="font-bold text-gold"
-          >
-            5% flat — no per-ticket fee
-          </div>
         </div>
       </div>
     </div>
     <p
-      class="text-center text-foreground/60 text-sm mt-8"
+      class="mx-auto mt-8 max-w-3xl text-center text-xs sm:text-sm text-foreground/60 leading-relaxed"
     >
-      Every plan. 95% payout. Always. No exceptions.
+      Flat 5% UPLY platform fee on sales made through UPLY. The remaining 95% of the charge is transferred to your own connected Stripe account. Stripe's payment-processing, payout and any tax charges are set by Stripe and apply separately. Your plan price is billed separately.
     </p>
   </div>
 </section>
