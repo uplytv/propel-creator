@@ -93,6 +93,8 @@ export default function TrialSignupModal({
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  // Explicit, separate SMS marketing consent. Never implied by entering a phone.
+  const [smsConsent, setSmsConsent] = useState(false);
   const [password, setPassword] = useState("");
   const [selectedPlan, setSelectedPlan] = useState<PlatformPlanKey>(defaultPlan);
   const [agreed, setAgreed] = useState(false);
@@ -129,6 +131,7 @@ export default function TrialSignupModal({
       setSelectedPlan(defaultPlan);
       setErrors({});
       setAgreed(false);
+      setSmsConsent(false);
       setAwaitingEmailConfirm(false);
       setClientSecret(null);
       setCheckoutError(null);
@@ -153,12 +156,15 @@ export default function TrialSignupModal({
 
   const validateStep1 = () => {
     const next: typeof errors = {};
-    if (!company.trim()) next.company = "Company or brand name is required";
+    // Company and phone are OPTIONAL — neither Stripe checkout nor Supabase
+    // auth requires them (create-platform-checkout stamps them onto metadata
+    // only when present). Blank values are simply never written.
     if (!fullName.trim()) next.fullName = "Full name is required";
     if (!email.trim()) next.email = "Email is required";
     else if (!EMAIL_RE.test(email.trim())) next.email = "Enter a valid email address";
-    if (!phone.trim()) next.phone = "Phone number is required";
-    else if (phone.replace(/\D/g, "").length < 7) next.phone = "Enter a valid phone number";
+    // Only validate the phone's shape when the user chose to give one.
+    if (phone.trim() && phone.replace(/\D/g, "").length < 7)
+      next.phone = "Enter a valid phone number, or leave it blank";
     if (!isAuthed && existingAccount) {
       if (!password) next.password = "Enter your existing UPLY password";
     }
@@ -403,9 +409,10 @@ export default function TrialSignupModal({
           plan: selectedPlan,
           trial: true,
           embedded: true,
-          company: company.trim(),
+          // Optional fields are omitted entirely when blank.
+          ...(company.trim() ? { company: company.trim() } : {}),
           full_name: fullName.trim(),
-          phone: phone.trim(),
+          ...(phone.trim() ? { phone: phone.trim(), sms_consent: smsConsent } : {}),
           email: email.trim(),
           // Additive: server clamps to {14, 30}.
           trial_days: effectiveTrialDays,
@@ -540,7 +547,7 @@ export default function TrialSignupModal({
                   id="trial-company"
                   aria-label="Company name"
                   className="rounded-sm h-11"
-                  placeholder="Company name"
+                  placeholder="Company name (optional)"
                   value={company}
                   onChange={(e) => setCompany(e.target.value)}
                 />
@@ -590,12 +597,25 @@ export default function TrialSignupModal({
                   type="tel"
                   aria-label="Phone number"
                   className="rounded-sm h-11"
-                  placeholder="Phone number"
+                  placeholder="Phone number (optional)"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                 />
                 {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
               </div>
+              {/* SMS is opt-in and only offered once a phone is actually given —
+                  a supplied number never enrolls anyone in texts by itself. */}
+              {phone.trim().length > 0 && (
+                <label className="flex items-start gap-2 text-xs text-muted-foreground">
+                  <Checkbox
+                    id="trial-sms-consent"
+                    checked={smsConsent}
+                    onCheckedChange={(v) => setSmsConsent(v === true)}
+                    className="mt-0.5"
+                  />
+                  <span>Text me about my trial and setup. Optional — message rates may apply.</span>
+                </label>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -608,7 +628,7 @@ export default function TrialSignupModal({
                 {creatingAccount ? "Creating your account…" : "Go to step 2"}
               </Button>
               <p className="text-center text-xs text-muted-foreground">
-                We'll send trial updates and offers by email and text.
+                We'll email you about your trial. Company and phone are optional.
               </p>
             </div>
           </>

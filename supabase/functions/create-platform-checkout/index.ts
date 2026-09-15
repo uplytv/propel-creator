@@ -64,7 +64,11 @@ serve(async (req) => {
     }
 
     const {
+      // company and phone are OPTIONAL — they are only stamped onto metadata
+      // when supplied. sms_consent is an explicit opt-in captured next to the
+      // phone field; a phone alone never implies SMS consent.
       price_id, embedded, plan, trial, company, full_name, phone,
+      sms_consent: smsConsentRaw,
       email: guestEmailRaw,
       // Additive: affiliate attribution + extended-trial support (founding offer).
       affiliate_code: affiliateCodeRaw,
@@ -162,7 +166,10 @@ serve(async (req) => {
     if (plan) metadata.platform_plan = plan;
     if (company) metadata.company = String(company).slice(0, 500);
     if (full_name) metadata.full_name = String(full_name).slice(0, 500);
-    if (phone) metadata.phone = String(phone).slice(0, 500);
+    if (phone) {
+      metadata.phone = String(phone).slice(0, 500);
+      metadata.sms_consent = smsConsentRaw === true ? "true" : "false";
+    }
     // Attribution only — read later by the affiliate-commission-reconciler
     // (cron). Pricing, split math, and the webhook are untouched.
     if (affiliateCode) metadata.affiliate_code = affiliateCode;

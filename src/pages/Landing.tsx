@@ -8,12 +8,13 @@ import { LANDING_OG_IMAGE_URL } from "@/lib/ogImage";
 
 import HomepageNav from "@/components/landing/v2/HomepageNav";
 import HomepageHero from "@/components/landing/v2/HomepageHero";
+import HomepageProductPreview from "@/components/landing/v2/HomepageProductPreview";
+import HomepageComparison from "@/components/landing/v2/HomepageComparison";
 import HomepageForEveryCreator from "@/components/landing/v2/HomepageForEveryCreator";
 import HomepagePPV from "@/components/landing/v2/HomepagePPV";
 import HomepagePricing from "@/components/landing/v2/HomepagePricing";
 import HomepageFinalCTA from "@/components/landing/v2/HomepageFinalCTA";
 import HomepageFooter from "@/components/landing/v2/HomepageFooter";
-import FoundersStickyCTA from "@/components/founders/FoundersStickyCTA";
 import FeaturedCreatorsSection from "@/components/landing/FeaturedCreatorsSection";
 
 const JSON_LD = {
@@ -116,8 +117,11 @@ export default function Landing() {
         <main>
           <HomepageHero />
 
-          {/* Focused funnel: proof → what it is → PPV highlight → price → CTA.
-              The nine persona sections are consolidated into HomepageForEveryCreator. */}
+          {/* Show the actual product immediately below the hero, then proof →
+              what it is → PPV highlight → comparison → price → CTA. */}
+          <HomepageProductPreview />
+
+          <SectionSeam />
           <FeaturedCreatorsSection />
 
           <SectionSeam />
@@ -127,13 +131,19 @@ export default function Landing() {
           <HomepagePPV />
 
           <SectionSeam />
+          <HomepageComparison />
+
+          <SectionSeam />
           <HomepagePricing />
 
           <HomepageFinalCTA />
         </main>
 
         <HomepageFooter />
-        <FoundersStickyCTA />
+        {/* FoundersStickyCTA intentionally not rendered here: its floating
+            "seats remaining" urgency conflicted with the honest availability
+            copy in the hero and pricing sections. The component and its route
+            gating are untouched for other surfaces. */}
       </div>
     </div>
   );

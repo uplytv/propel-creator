@@ -13,16 +13,15 @@ export default function HomepageFinalCTA() {
       </div>
       <div className="relative max-w-4xl mx-auto text-center">
         <h2 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-[-0.03em] text-foreground leading-[1.08] mb-6">
-          You weren't early to YouTube. You weren't early to Instagram.{" "}
-          <span className="text-primary">You weren't early to TikTok Shop.</span>
+          Run the whole creator business{" "}
+          <span className="text-primary">from one login.</span>
         </h2>
         <p className="text-base sm:text-lg md:text-xl text-foreground/70 max-w-3xl mx-auto leading-relaxed mb-8">
-          Every platform that made creators rich — the ones who got there first won the biggest.
-          UPLY is the AI-powered operating system for creators. The infrastructure. One platform
-          that builds, runs, and grows the whole business with you.
+          Streaming, community, courses, ticketed events and the follow-up list — plus ARIA drafting
+          the content you review and publish. Try the whole platform for 14 days.
         </p>
         <p className="text-foreground/60 mb-8">
-          Beta is live. Founding creators are building now.
+          Open to new creators today — no waitlist, no queue.
         </p>
 
         <Button
@@ -30,12 +29,12 @@ export default function HomepageFinalCTA() {
           onClick={() => setTrialOpen(true)}
           className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_60px_hsl(var(--primary)/0.5)] font-bold text-base px-8 py-6 h-auto"
         >
-          Claim Your Founding Creator Spot <ArrowRight className="w-5 h-5 ml-2" />
+          Start your 14-day free trial <ArrowRight className="w-5 h-5 ml-2" />
         </Button>
 
         <p className="mt-4 text-xs text-foreground/55">14 days free · No obligation · Cancel at any time</p>
-        <p className="mt-6 text-sm text-primary font-semibold">
-          100,000 creators and this offer closes. Forever.
+        <p className="mt-6 text-sm text-foreground/60">
+          Flat 5% UPLY platform fee on sales · Stripe's own processing and payout fees apply separately.
         </p>
       </div>
 

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowRight } from "lucide-react";
 import TrialSignupModal from "@/components/pricing/TrialSignupModal";
+import { ARIA_PLAN_NOTE, FEE_DISCLOSURE_SHORT } from "@/components/pricing/plans";
 
 const ROTATING = [
   "If you're a musician, ToneDen is dead. We replaced it.",
@@ -105,13 +106,15 @@ export default function HomepageHero() {
           AI growth team · Live streaming · Courses &amp; community · Music · Events &amp; tickets · Live shopping · Roku TV
         </p>
 
-        {/* First-100 founding offer — scarcity chip */}
-        <div className="inline-flex items-start sm:items-center gap-2 rounded-sm border border-gold-hairline bg-[hsl(var(--gold)/0.08)] px-4 py-2.5 max-w-xl text-left">
-          <span className="rounded-sm bg-gold px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide shrink-0">
-            First 100
-          </span>
-          <p className="text-xs sm:text-sm font-semibold text-foreground/85">
-            We build your website funnel, SEO blog post, and community &amp; courses — free, done for you.
+        {/* Plan clarity + onboarding — no scarcity claims */}
+        <div className="flex flex-col items-center gap-2 max-w-xl">
+          <p className="text-xs sm:text-sm text-foreground/70 leading-relaxed">
+            {ARIA_PLAN_NOTE}
+          </p>
+          <p className="text-xs text-foreground/55 leading-relaxed">
+            Every plan includes a free setup call with a real person to help you get your pages,
+            community and first offer live. A full done-for-you build is available as a separate paid
+            service. {FEE_DISCLOSURE_SHORT}.
           </p>
         </div>
 
