@@ -61,7 +61,7 @@ export default function Pricing() {
         <div className="text-center mb-10">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground">Choose Your Plan</h1>
           <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-            Every plan starts with a 14-day free trial. Full platform, 95% payouts, cancel anytime.
+            Every plan starts with a 14-day free trial. Open to new creators today — no waitlist. Cancel anytime.
           </p>
         </div>
 
@@ -84,6 +84,9 @@ export default function Pricing() {
 
         <p className="text-xs text-center text-muted-foreground mt-8">
           All plans include unlimited community members, live streaming, and course creation. Cancel anytime.
+          <br />
+          <span className="mt-2 block">{ARIA_PLAN_NOTE}</span>
+          <span className="mt-2 block">{FEE_DISCLOSURE}</span>
         </p>
 
         {/* Manage current plan (paid/trialing holders only) */}
