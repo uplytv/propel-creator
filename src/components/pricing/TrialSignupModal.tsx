@@ -131,6 +131,7 @@ export default function TrialSignupModal({
       setSelectedPlan(defaultPlan);
       setErrors({});
       setAgreed(false);
+      setSmsConsent(false);
       setAwaitingEmailConfirm(false);
       setClientSecret(null);
       setCheckoutError(null);
@@ -408,9 +409,10 @@ export default function TrialSignupModal({
           plan: selectedPlan,
           trial: true,
           embedded: true,
-          company: company.trim(),
+          // Optional fields are omitted entirely when blank.
+          ...(company.trim() ? { company: company.trim() } : {}),
           full_name: fullName.trim(),
-          phone: phone.trim(),
+          ...(phone.trim() ? { phone: phone.trim(), sms_consent: smsConsent } : {}),
           email: email.trim(),
           // Additive: server clamps to {14, 30}.
           trial_days: effectiveTrialDays,

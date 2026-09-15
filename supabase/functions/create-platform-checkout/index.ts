@@ -64,7 +64,11 @@ serve(async (req) => {
     }
 
     const {
+      // company and phone are OPTIONAL — they are only stamped onto metadata
+      // when supplied. sms_consent is an explicit opt-in captured next to the
+      // phone field; a phone alone never implies SMS consent.
       price_id, embedded, plan, trial, company, full_name, phone,
+      sms_consent: smsConsentRaw,
       email: guestEmailRaw,
       // Additive: affiliate attribution + extended-trial support (founding offer).
       affiliate_code: affiliateCodeRaw,
