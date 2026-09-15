@@ -29,12 +29,12 @@ export default function HomepageFinalCTA() {
           onClick={() => setTrialOpen(true)}
           className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_60px_hsl(var(--primary)/0.5)] font-bold text-base px-8 py-6 h-auto"
         >
-          Claim Your Founding Creator Spot <ArrowRight className="w-5 h-5 ml-2" />
+          Start your 14-day free trial <ArrowRight className="w-5 h-5 ml-2" />
         </Button>
 
         <p className="mt-4 text-xs text-foreground/55">14 days free · No obligation · Cancel at any time</p>
-        <p className="mt-6 text-sm text-primary font-semibold">
-          100,000 creators and this offer closes. Forever.
+        <p className="mt-6 text-sm text-foreground/60">
+          Flat 5% UPLY platform fee on sales · Stripe's own processing and payout fees apply separately.
         </p>
       </div>
 
