@@ -153,12 +153,15 @@ export default function TrialSignupModal({
 
   const validateStep1 = () => {
     const next: typeof errors = {};
-    if (!company.trim()) next.company = "Company or brand name is required";
+    // Company and phone are OPTIONAL — neither Stripe checkout nor Supabase
+    // auth requires them (create-platform-checkout stamps them onto metadata
+    // only when present). Blank values are simply never written.
     if (!fullName.trim()) next.fullName = "Full name is required";
     if (!email.trim()) next.email = "Email is required";
     else if (!EMAIL_RE.test(email.trim())) next.email = "Enter a valid email address";
-    if (!phone.trim()) next.phone = "Phone number is required";
-    else if (phone.replace(/\D/g, "").length < 7) next.phone = "Enter a valid phone number";
+    // Only validate the phone's shape when the user chose to give one.
+    if (phone.trim() && phone.replace(/\D/g, "").length < 7)
+      next.phone = "Enter a valid phone number, or leave it blank";
     if (!isAuthed && existingAccount) {
       if (!password) next.password = "Enter your existing UPLY password";
     }
