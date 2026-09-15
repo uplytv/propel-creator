@@ -109,6 +109,34 @@ export const TRIAL_PROFILE_STORAGE_KEY = "uply_trial_profile";
 export const TRIAL_RISK_REVERSAL = "14 days free · No obligation · Cancel at any time";
 
 /**
+ * Fee disclosure — the ONLY verified numbers we publish.
+ *
+ * Code evidence (Sep 2026):
+ *  - supabase/functions/stripe-create-checkout: application_fee_percent: 5 with
+ *    transfer_data.destination = the creator's connected Stripe account.
+ *  - supabase/functions/stripe-create-product-checkout: application_fee_amount =
+ *    round(base * 0.05), same destination transfer.
+ *  - supabase/functions/stripe-create-event-checkout: fee = price * qty * 0.05.
+ *
+ * NOT verified in this codebase, so never stated as a guarantee: Stripe's own
+ * payment-processing rates, payout/instant-payout fees, currency conversion,
+ * chargeback fees, and applicable tax — those are set by Stripe and the
+ * creator's account configuration.
+ */
+export const PLATFORM_FEE_PCT = 5;
+export const FEE_DISCLOSURE =
+  "Flat 5% UPLY platform fee on sales made through UPLY. The remaining 95% of the charge is transferred to your own connected Stripe account. Stripe's payment-processing, payout and any tax charges are set by Stripe and apply separately. Your plan price is billed separately.";
+export const FEE_DISCLOSURE_SHORT = "Flat 5% UPLY platform fee · Stripe fees separate";
+
+/**
+ * AI entitlement positioning. ARIA is listed as part of the Unlimited and
+ * Agency Pro plans (see PLATFORM_PLANS features). No entitlement logic is
+ * changed by this constant — it is display copy only.
+ */
+export const ARIA_PLAN_NOTE =
+  "The ARIA AI team is part of Unlimited ($297/mo) and Agency Pro ($497/mo). Starter ($97/mo) includes the core creator platform — profile, streaming, community, courses and events.";
+
+/**
  * Free human-led setup call offered right after trial checkout.
  * PLACEHOLDER — replace with the real booking link before launch.
  */
