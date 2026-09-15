@@ -15,7 +15,6 @@ import HomepagePPV from "@/components/landing/v2/HomepagePPV";
 import HomepagePricing from "@/components/landing/v2/HomepagePricing";
 import HomepageFinalCTA from "@/components/landing/v2/HomepageFinalCTA";
 import HomepageFooter from "@/components/landing/v2/HomepageFooter";
-import FoundersStickyCTA from "@/components/founders/FoundersStickyCTA";
 import FeaturedCreatorsSection from "@/components/landing/FeaturedCreatorsSection";
 
 const JSON_LD = {

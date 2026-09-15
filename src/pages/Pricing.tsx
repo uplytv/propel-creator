@@ -9,7 +9,12 @@ import { useQuery } from "@tanstack/react-query";
 import PlanCard from "@/components/pricing/PlanCard";
 import TrialSignupModal from "@/components/pricing/TrialSignupModal";
 import CancelSubscriptionModal from "@/components/pricing/CancelSubscriptionModal";
-import { PLATFORM_PLANS, type PlatformPlanKey } from "@/components/pricing/plans";
+import {
+  PLATFORM_PLANS,
+  ARIA_PLAN_NOTE,
+  FEE_DISCLOSURE,
+  type PlatformPlanKey,
+} from "@/components/pricing/plans";
 
 export default function Pricing() {
   const { user } = useAuth();
