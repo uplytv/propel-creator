@@ -13,15 +13,15 @@ serve(async (req) => {
   const auth = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
     global: { headers: { Authorization: authorization } }, auth: { persistSession: false },
   });
-  const { data: { user }, error: authError } = await auth.auth.getUser(authorization.slice(7));
-  if (authError || !user) return err("Unauthorized", 401);
+  const { data: { user: caller }, error: authError } = await auth.auth.getUser(authorization.slice(7));
+  if (authError || !caller) return err("Unauthorized", 401);
   try {
     const { description, event_type = "concert", capacity, city } = await req.json();
     if (!description) return err("description required");
 
     // Verified callers only; block AI spend when the limiter is unavailable.
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
-    if (!(await checkEdgeRateLimit(supabase, user.id, "aria-event-copilot", { maxCalls: 10, windowMs: 10 * 60_000, failClosed: true }))) {
+    if (!(await checkEdgeRateLimit(supabase, caller.id, "aria-event-copilot", { maxCalls: 10, windowMs: 10 * 60_000, failClosed: true }))) {
       return err("Too many drafts in a short time. Please wait a few minutes and try again.", 429);
     }
 

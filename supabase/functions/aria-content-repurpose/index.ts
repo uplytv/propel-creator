@@ -14,15 +14,15 @@ serve(async (req) => {
   const auth = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
     global: { headers: { Authorization: authorization } }, auth: { persistSession: false },
   });
-  const { data: { user }, error: authError } = await auth.auth.getUser(authorization.slice(7));
-  if (authError || !user) return err("Unauthorized", 401);
+  const { data: { user: caller }, error: authError } = await auth.auth.getUser(authorization.slice(7));
+  if (authError || !caller) return err("Unauthorized", 401);
   try {
     const { title = "", source = "", content_type = "video" } = await req.json();
     if (!title && !source) return err("Provide a title and/or transcript/notes to repurpose");
 
     // Verified callers only; block AI spend when the limiter is unavailable.
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
-    if (!(await checkEdgeRateLimit(supabase, user.id, "aria-content-repurpose", { maxCalls: 10, windowMs: 60 * 60_000, failClosed: true }))) {
+    if (!(await checkEdgeRateLimit(supabase, caller.id, "aria-content-repurpose", { maxCalls: 10, windowMs: 60 * 60_000, failClosed: true }))) {
       return err("Too many requests in a short time. Please wait a while and try again.", 429);
     }
 

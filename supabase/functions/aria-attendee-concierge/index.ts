@@ -13,15 +13,15 @@ serve(async (req) => {
   const auth = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
     global: { headers: { Authorization: authorization } }, auth: { persistSession: false },
   });
-  const { data: { user }, error: authError } = await auth.auth.getUser(authorization.slice(7));
-  if (authError || !user) return err("Unauthorized", 401);
+  const { data: { user: caller }, error: authError } = await auth.auth.getUser(authorization.slice(7));
+  if (authError || !caller) return err("Unauthorized", 401);
   const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
   try {
     const { event_id, question } = await req.json();
     if (!event_id || !question) return err("event_id and question required");
 
     // Verified callers only; block AI spend when the limiter is unavailable.
-    if (!(await checkEdgeRateLimit(supabase, user.id, "aria-attendee-concierge", { maxCalls: 10, windowMs: 10 * 60_000, failClosed: true }))) {
+    if (!(await checkEdgeRateLimit(supabase, caller.id, "aria-attendee-concierge", { maxCalls: 10, windowMs: 10 * 60_000, failClosed: true }))) {
       return err("Too many questions in a short time. Please wait a few minutes and try again.", 429);
     }
 
