@@ -4,7 +4,7 @@
 //
 // IMPORTANT: This function uses verify_jwt = false because Meta hits it directly
 // (the user is not in our app context at callback time). User identity comes from
-// the signed `state` parameter we created in oauth-meta-start.
+// the stored single-use nonce after validating signed state from oauth-meta-start.
 //
 // Required Supabase secrets:
 //   META_APP_ID, META_APP_SECRET, META_REDIRECT_URI, AD_TOKEN_ENCRYPTION_KEY
@@ -100,13 +100,14 @@ Deno.serve(async (req) => {
 
   let userId: string;
   try {
-    const secret = Deno.env.get("META_OAUTH_STATE_SECRET") || Deno.env.get("META_APP_SECRET");
+    const secret = Deno.env.get("OAUTH_STATE_SECRET");
     if (!secret) throw new Error("Missing state secret");
     const parsed = await verifyMetaState(state, secret);
-    userId = parsed.uid;
-    if (!userId || typeof userId !== "string") throw new Error("bad state");
-    // Reject states older than 15 minutes
-    if (Date.now() - parsed.t > 15 * 60 * 1000) throw new Error("state expired");
+    const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    // Consumption and age checking are atomic, so concurrent callbacks cannot replay it.
+    const { data: storedUserId, error: stateError } = await admin.rpc("consume_meta_oauth_state", { p_nonce: parsed.n });
+    if (stateError || typeof storedUserId !== "string" || !storedUserId) throw new Error("bad state");
+    userId = storedUserId;
   } catch (_e) {
     return new Response(htmlClose(false, "Invalid OAuth state."), {
       status: 400,
