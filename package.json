@@ -1,6 +1,10 @@
 {
   "name": "vite_react_shadcn_ts",
   "private": true,
+  "overrides": {
+    "tar": "^7.5.16",
+    "dompurify": "^3.4.17"
+  },
   "version": "0.0.0",
   "type": "module",
   "scripts": {

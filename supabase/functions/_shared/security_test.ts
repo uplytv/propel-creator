@@ -13,8 +13,10 @@ async function loadHandler(name: string, client: unknown, extra: Record<string, 
   let handler: (req: Request) => Promise<Response> = async () => { throw new Error("not registered"); };
   const register = (value: typeof handler) => { handler = value; };
   const deps = { createClient: () => client, serve: register, constantTimeEqual, isAuthorizedCron,
-    checkEdgeRateLimit, fetchPublicPage,
+    checkEdgeRateLimit, fetchPublicPage, verifyMetaState, signMetaState,
     ...(name === "release-expired-ticket-holds" ? { corsHeaders: { "Access-Control-Allow-Origin": "*" } } : {}),
+    err: (message: string, status = 400) => new Response(JSON.stringify({ error: message }), { status }),
+    logError: async () => {},
     json: (body: unknown, status = 200) => new Response(JSON.stringify(body), {
       status, headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
     }), ...extra };
@@ -45,26 +47,27 @@ Deno.test("secret comparison rejects altered and different-length values", async
   assert(!await constantTimeEqual("secret", "secret-long"));
 });
 
-Deno.test("Meta HMAC accepts authentic state and rejects forged identity or key", async () => {
-  const payload = { uid: "creator-1", n: "nonce", t: Date.now() };
+Deno.test("Meta HMAC accepts nonce-only state and rejects forged nonce or key", async () => {
+  const payload = { n: "nonce" };
   const state = await signMetaState(payload, "test-state-key");
-  assertEquals((await verifyMetaState(state, "test-state-key")).uid, "creator-1");
-  const forged = await signMetaState({ ...payload, uid: "victim" }, "attacker-key");
+  assertEquals(await verifyMetaState(state, "test-state-key"), payload);
+  const forged = await signMetaState({ n: "victim-nonce" }, "attacker-key");
   await assertRejects(() => verifyMetaState(forged, "test-state-key"));
   await assertRejects(() => verifyMetaState(state.split(".")[0] + ".forged", "test-state-key"));
   await assertRejects(() => verifyMetaState(btoa(JSON.stringify(payload)), "test-state-key"));
 });
 
-Deno.test("Meta state expires after 15 minutes", async () => {
-  const now = Date.now();
-  const original = Date.now;
-  const state = await signMetaState({ uid: "creator", n: "nonce", t: now }, "test-key");
-  try {
-    Date.now = () => now + 15 * 60_000;
-    assertEquals((await verifyMetaState(state, "test-key")).uid, "creator");
-    Date.now = () => now + 15 * 60_000 + 1;
-    await assertRejects(() => verifyMetaState(state, "test-key"));
-  } finally { Date.now = original; }
+Deno.test("Meta callback obtains identity only through single-use stored nonce consumption", async () => {
+  testEnv(); Deno.env.set("OAUTH_STATE_SECRET", "test-key");
+  let consumed = 0;
+  const state = await signMetaState({ n: "nonce" }, "test-key");
+  const handler = await loadHandler("oauth-meta-callback", { rpc: async (name: string, args: unknown) => {
+    assertEquals(name, "consume_meta_oauth_state"); assertEquals(args, { p_nonce: "nonce" });
+    consumed++; return { data: consumed === 1 ? "stored-user" : null, error: null };
+  } });
+  assertEquals((await handler(new Request(`https://example.com/?code=test&state=${state}`))).status, 200);
+  assertEquals((await handler(new Request(`https://example.com/?code=test&state=${state}`))).status, 400);
+  assertEquals(consumed, 2);
 });
 
 Deno.test("cron rollout allows with warning when secret absent and rejects anonymous when set", async () => {
@@ -176,7 +179,7 @@ for (const [name, maxCalls] of [["import-from-url", 10], ["generate-product-copy
     let updates = 0;
     const expired = { ...chain, select: () => expired, eq: () => expired,
       maybeSingle: async () => ({ data: { call_count: maxCalls, window_start: new Date(Date.now() - 600_001).toISOString() } }),
-      upsert: async () => { updates++; } };
+      upsert: async () => { updates++; return {}; } };
     assert(await checkEdgeRateLimit({ from: () => expired }, "verified", name, { maxCalls, windowMs: 600_000 }));
     assertEquals(updates, 1);
   });
