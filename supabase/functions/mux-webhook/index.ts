@@ -9,8 +9,7 @@ const corsHeaders = {
 async function verifyMuxSignature(req: Request, body: string): Promise<boolean> {
   const secret = Deno.env.get('MUX_WEBHOOK_SECRET')
   if (!secret) {
-    console.warn('MUX_WEBHOOK_SECRET not set — skipping signature verification')
-    return true
+    return false
   }
 
   const header = req.headers.get('mux-signature')
@@ -104,6 +103,12 @@ serve(async (req) => {
   }
 
   try {
+    if (!Deno.env.get('MUX_WEBHOOK_SECRET')) {
+      return new Response(JSON.stringify({ error: 'Webhook verification not configured' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
     const rawBody = await req.text()
 
     const isValid = await verifyMuxSignature(req, rawBody)
