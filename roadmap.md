@@ -1,9 +1,9 @@
 # Edge-function security hardening
-- [ ] Add single-use 10-minute stored Meta OAuth state and signing secret.
-- [ ] Reject unsigned Mux events and finalize only paid tickets with atomic cent-based wallet credits.
-- [ ] Require JWTs and fail-closed limits for the three requested AI functions.
-- [ ] Require CRON_SECRET for ticket hold releases and update its existing schedule safely.
-- [ ] Patch requested dependencies and run focused security validation.
+- [ ] Apply OAuth nonce/atomic wallet SQL in docs/security-hardening-pending.sql: blocked by unavailable database connection; code is ready and OAUTH_STATE_SECRET is saved.
+- [x] Reject unsigned Mux events and finalize only paid tickets using integer-cent RPC calls in code.
+- [x] Require JWTs and fail-closed limits for the three requested AI functions in code.
+- [ ] Configure CRON_SECRET and update the ticket-release schedule: secure form declined and database access unavailable; strict header enforcement is ready but not deployed.
+- [x] Patch Capacitor, tar, DOMPurify and React Router; proxy-addr is absent. Run audit fix and focused security/regression validation.
 - [x] P0: authenticate, validate and escape weekly report email.
 - [x] Sign and verify Meta OAuth state; verify heartbeat caller.
 - [x] Authenticate/rate-limit AI calls and guard URL imports against SSRF.

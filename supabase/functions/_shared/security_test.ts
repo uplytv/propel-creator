@@ -277,6 +277,20 @@ for (const name of ["aria-event-copilot", "aria-content-repurpose", "aria-attend
     });
     assertEquals((await handler(request({ description: "Event", title: "Video", event_id: "event", question: "Parking?" }, "Bearer valid"))).status, 429);
   });
+  Deno.test(`${name} permits verified callers when the limiter succeeds`, async () => {
+    testEnv(); let generated = 0;
+    const chain = { select: () => chain, eq: () => chain,
+      maybeSingle: async () => ({ data: null }), upsert: async () => ({}),
+    };
+    const events = { select: () => events, eq: () => events, maybeSingle: async () => ({ data: { status: "published" } }) };
+    const tiers = { select: () => tiers, eq: () => tiers, then: (resolve: (value: unknown) => unknown) => Promise.resolve({ data: [] }).then(resolve) };
+    const handler = await loadHandler(name, {
+      auth: { getUser: async () => ({ data: { user: { id: "verified" } }, error: null }) },
+      from: (table: string) => table === "events" ? events : table === "ticket_tiers" ? tiers : chain,
+    }, { callClaude: async () => { generated++; return { answer: "Illustrative test result" }; } });
+    assertEquals((await handler(request({ description: "Event", title: "Video", event_id: "event", question: "Parking?" }, "Bearer valid"))).status, 200);
+    assertEquals(generated, 1);
+  });
 }
 
 Deno.test("fail-closed limiter blocks read errors, write errors and exceptions", async () => {
