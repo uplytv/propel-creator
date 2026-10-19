@@ -1,3 +1,4 @@
+import { isAuthorizedCron } from "../_shared/cronAuth.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -15,6 +16,7 @@ serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     { auth: { persistSession: false } },
   );
+  if (!await isAuthorizedCron(req, supabase)) return json({ error: "Unauthorized" }, 401);
   const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
     apiVersion: "2025-08-27.basil",
   });

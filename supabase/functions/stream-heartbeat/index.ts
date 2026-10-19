@@ -1,51 +1,34 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkEdgeRateLimit } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-async function checkRateLimit(supabase: any, userId: string, fnName: string): Promise<boolean> {
-  const key = `ratelimit:${userId}:${fnName}`;
-  const now = new Date();
-  const windowMs = 60_000;
-  const maxCalls = 10;
-
-  const { data } = await supabase
-    .from("edge_function_rate_limits")
-    .select("call_count, window_start")
-    .eq("key", key)
-    .single();
-
-  if (data) {
-    const windowAge = now.getTime() - new Date(data.window_start).getTime();
-    if (windowAge < windowMs && data.call_count >= maxCalls) return false;
-    if (windowAge >= windowMs) {
-      await supabase.from("edge_function_rate_limits").upsert({ key, call_count: 1, window_start: now.toISOString(), updated_at: now.toISOString() });
-    } else {
-      await supabase.from("edge_function_rate_limits").update({ call_count: data.call_count + 1, updated_at: now.toISOString() }).eq("key", key);
-    }
-  } else {
-    await supabase.from("edge_function_rate_limits").upsert({ key, call_count: 1, window_start: now.toISOString(), updated_at: now.toISOString() });
-  }
-  return true;
-}
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { user_id, session_id } = await req.json();
-    if (!user_id) {
-      return new Response(JSON.stringify({ error: "Missing user_id" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const authorization = req.headers.get("Authorization");
+    if (!authorization?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
+    const anon = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authorization } } });
+    const { data, error } = await anon.auth.getUser();
+    if (error || !data.user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const user_id = data.user.id;
+    const { session_id } = await req.json();
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
     // Rate limit
-    const allowed = await checkRateLimit(supabase, user_id, "stream-heartbeat");
+    const allowed = await checkEdgeRateLimit(supabase, user_id, "stream-heartbeat");
     if (!allowed) {
       return new Response(JSON.stringify({ error: "Rate limit exceeded" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }

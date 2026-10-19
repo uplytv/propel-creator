@@ -3,6 +3,7 @@
 // Requires Supabase secrets: META_APP_ID, META_REDIRECT_URI
 import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.95.0/cors";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
+import { signMetaState } from "../_shared/metaOAuthState.ts";
 
 const META_SCOPES = [
   "ads_management",
@@ -46,8 +47,9 @@ Deno.serve(async (req) => {
 
     const appId = Deno.env.get("META_APP_ID");
     const redirectUri = Deno.env.get("META_REDIRECT_URI");
+    const stateSecret = Deno.env.get("META_OAUTH_STATE_SECRET") || Deno.env.get("META_APP_SECRET");
 
-    if (!appId || !redirectUri) {
+    if (!appId || !redirectUri || !stateSecret) {
       return new Response(
         JSON.stringify({
           error:
@@ -60,7 +62,7 @@ Deno.serve(async (req) => {
 
     // CSRF state: signed with user id + random nonce
     const nonce = crypto.randomUUID();
-    const state = btoa(JSON.stringify({ uid: userId, n: nonce, t: Date.now() }));
+    const state = await signMetaState({ uid: userId, n: nonce, t: Date.now() }, stateSecret);
 
     const url = new URL("https://www.facebook.com/v21.0/dialog/oauth");
     url.searchParams.set("client_id", appId);

@@ -10,15 +10,16 @@
 //   META_APP_ID, META_APP_SECRET, META_REDIRECT_URI, AD_TOKEN_ENCRYPTION_KEY
 import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.95.0/cors";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
+import { verifyMetaState } from "../_shared/metaOAuthState.ts";
 
 // AES-GCM encryption helpers (32-byte key from secret)
 async function importKey(): Promise<CryptoKey> {
   const raw = Deno.env.get("AD_TOKEN_ENCRYPTION_KEY");
   if (!raw) throw new Error("AD_TOKEN_ENCRYPTION_KEY not set");
   // Accept hex (64 chars) or base64 (44 chars) or raw 32 chars
-  let bytes: Uint8Array;
+  let bytes: Uint8Array<ArrayBuffer>;
   if (/^[0-9a-fA-F]{64}$/.test(raw)) {
-    bytes = new Uint8Array(raw.match(/.{2}/g)!.map((h) => parseInt(h, 16)));
+    bytes = new Uint8Array((raw.match(/.{2}/g) ?? []).map((h) => parseInt(h, 16)));
   } else {
     try {
       const b = atob(raw);
@@ -99,7 +100,9 @@ Deno.serve(async (req) => {
 
   let userId: string;
   try {
-    const parsed = JSON.parse(atob(state));
+    const secret = Deno.env.get("META_OAUTH_STATE_SECRET") || Deno.env.get("META_APP_SECRET");
+    if (!secret) throw new Error("Missing state secret");
+    const parsed = await verifyMetaState(state, secret);
     userId = parsed.uid;
     if (!userId || typeof userId !== "string") throw new Error("bad state");
     // Reject states older than 15 minutes
