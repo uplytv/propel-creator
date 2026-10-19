@@ -224,7 +224,7 @@ Deno.test("URL fetch revalidates redirects and permits at most three hops", asyn
   const original = globalThis.fetch; let calls = 0;
   try {
     globalThis.fetch = async (_input, options) => {
-      calls++; assertEquals(options?.redirect, "manual");
+      calls++; assertEquals((options as { redirect?: string } | undefined)?.redirect, "manual");
       return new Response(null, { status: 302, headers: { location: "http://127.0.0.1" } });
     };
     await assertRejects(() => fetchPublicPage("http://8.8.8.8")); assertEquals(calls, 1);
@@ -248,7 +248,7 @@ Deno.test("URL fetch uses an eight-second abort deadline", async () => {
   try {
     globalThis.setTimeout = ((callback: () => void, ms: number) => { delay = ms; return originalTimeout(callback, 1); }) as typeof setTimeout;
     globalThis.fetch = async (_input, options) => new Promise((_, reject) => {
-      options?.signal?.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
+      (options as { signal?: AbortSignal } | undefined)?.signal?.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
     });
     await assertRejects(() => fetchPublicPage("http://8.8.8.8")); assertEquals(delay, 8000);
   } finally { globalThis.fetch = originalFetch; globalThis.setTimeout = originalTimeout; }
