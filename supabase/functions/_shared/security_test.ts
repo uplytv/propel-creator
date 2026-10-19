@@ -260,3 +260,84 @@ Deno.test("URL fetch uses an eight-second abort deadline", async () => {
     await assertRejects(() => fetchPublicPage("http://8.8.8.8")); assertEquals(delay, 8000);
   } finally { globalThis.fetch = originalFetch; globalThis.setTimeout = originalTimeout; }
 });
+
+for (const name of ["aria-event-copilot", "aria-content-repurpose", "aria-attendee-concierge"]) {
+  Deno.test(`${name} rejects missing/invalid JWT before spending AI credits`, async () => {
+    testEnv();
+    const handler = await loadHandler(name, { auth: { getUser: async () => ({ data: { user: null }, error: null }) } });
+    assertEquals((await handler(request({}))).status, 401);
+    assertEquals((await handler(request({}, "Bearer invalid"))).status, 401);
+  });
+  Deno.test(`${name} blocks AI work on limiter database failure`, async () => {
+    testEnv();
+    const chain = { select: () => chain, eq: () => chain,
+      maybeSingle: async () => ({ data: null, error: new Error("database unavailable") }) };
+    const handler = await loadHandler(name, {
+      auth: { getUser: async () => ({ data: { user: { id: "verified" } }, error: null }) }, from: () => chain,
+    });
+    assertEquals((await handler(request({ description: "Event", title: "Video", event_id: "event", question: "Parking?" }, "Bearer valid"))).status, 429);
+  });
+}
+
+Deno.test("fail-closed limiter blocks read errors, write errors and exceptions", async () => {
+  for (const mode of ["read", "write", "throw"]) {
+    const chain = { select: () => chain, eq: () => chain,
+      maybeSingle: async () => {
+        if (mode === "throw") throw new Error("offline");
+        return { data: null, error: mode === "read" ? new Error("offline") : null };
+      }, upsert: async () => ({ error: new Error("offline") }) };
+    assert(!await checkEdgeRateLimit({ from: () => chain }, "user", "ai", { failClosed: true }));
+    assert(await checkEdgeRateLimit({ from: () => chain }, "user", "other"));
+  }
+});
+
+Deno.test("ticket releases require CRON_SECRET even without INTERNAL_CRON_SECRET", async () => {
+  testEnv(); Deno.env.delete("INTERNAL_CRON_SECRET"); Deno.env.delete("CRON_SECRET");
+  const handler = await loadHandler("release-expired-ticket-holds", {});
+  assertEquals((await handler(request({}))).status, 401);
+  Deno.env.set("CRON_SECRET", "release-secret");
+  assertEquals((await handler(request({}, "Bearer test-service"))).status, 401);
+  const wrong = request({}); wrong.headers.set("x-cron-secret", "release-secret-wrong");
+  assertEquals((await handler(wrong)).status, 401);
+  const good = request({}); good.headers.set("x-cron-secret", "release-secret");
+  const allowed = await loadHandler("release-expired-ticket-holds", { from: () => ({
+    select: () => ({ in: () => ({ eq: () => ({ lt: () => ({ limit: async () => ({ data: [] }) }) }) }) }),
+  }) }, { Stripe: class {} });
+  assertEquals((await allowed(good)).status, 200);
+});
+
+Deno.test("Mux rejects event POSTs with 500 if its signing secret is absent", async () => {
+  Deno.env.delete("MUX_WEBHOOK_SECRET");
+  const handler = await loadHandler("mux-webhook", {});
+  assertEquals((await handler(request({ type: "video.asset.ready" }))).status, 500);
+});
+
+Deno.test("complete but unpaid Stripe session cannot claim an order or issue tickets", async () => {
+  testEnv();
+  const chain = { select: () => chain, eq: () => chain,
+    maybeSingle: async () => ({ data: { id: "order", order_type: "primary_ticket", status: "pending", stripe_checkout_session_id: "session" } }) };
+  const handler = await loadHandler("finalize-ticket-order", { from: () => chain }, {
+    Stripe: class { checkout = { sessions: { retrieve: async () => ({ status: "complete", payment_status: "unpaid" }) } }; },
+  });
+  assertEquals((await handler(request({ order_id: "order" }))).status, 402);
+});
+
+Deno.test("paid resale credits integer cents through RPC, never a client balance write", async () => {
+  testEnv(); let credited = 0;
+  const order = { id: "order", buyer_id: "buyer", order_type: "resale_ticket", status: "pending", stripe_checkout_session_id: "session",
+    subtotal_cents: 12345, metadata: { seller_id: "seller" }, line_items: [{ ticket_id: "ticket" }] };
+  const client = { from: (table: string) => {
+    if (table === "wallets" || table === "transactions") throw new Error("non-atomic wallet access");
+    const chain = { select: () => chain, eq: () => chain, update: () => chain, insert: async () => ({}),
+      maybeSingle: async () => ({ data: table === "orders" ? order : { owner_id: "seller", qr_code_token: "qr" } }) };
+    return chain;
+  }, rpc: async (name: string, args: unknown) => {
+    assertEquals(name, "increment_wallet_balance"); assertEquals(args, { p_order_id: "order", p_amount_cents: 12345 });
+    credited++; return { error: null };
+  }, functions: { invoke: async () => ({}) } };
+  const handler = await loadHandler("finalize-ticket-order", client, {
+    Stripe: class { checkout = { sessions: { retrieve: async () => ({ status: "complete", payment_status: "paid" }) } }; },
+  });
+  assertEquals((await handler(request({ order_id: "order" }))).status, 200);
+  assertEquals(credited, 1);
+});
