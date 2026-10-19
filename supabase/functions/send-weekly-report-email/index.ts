@@ -1,9 +1,16 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { constantTimeEqual } from "../_shared/constantTime.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  })[character] ?? character);
+}
 
 function buildReportEmailHtml(report: {
   displayName: string;
@@ -31,8 +38,8 @@ function buildReportEmailHtml(report: {
       (h) => `
       <tr>
         <td style="padding: 12px 16px; border-bottom: 1px solid #f0f0f0;">
-          <div style="font-weight: 600; color: ${foreground}; font-size: 14px; margin-bottom: 2px;">${h.label}</div>
-          <div style="color: ${mutedForeground}; font-size: 13px; line-height: 1.5;">${h.insight}</div>
+          <div style="font-weight: 600; color: ${foreground}; font-size: 14px; margin-bottom: 2px;">${escapeHtml(h.label)}</div>
+          <div style="color: ${mutedForeground}; font-size: 13px; line-height: 1.5;">${escapeHtml(h.insight)}</div>
         </td>
       </tr>`
     )
@@ -57,8 +64,8 @@ function buildReportEmailHtml(report: {
         <!-- Greeting + Summary -->
         <tr>
           <td style="padding: 24px 24px 16px;">
-            <div style="font-size: 16px; font-weight: 600; color: ${foreground}; margin-bottom: 12px;">Hey ${report.displayName} 👋</div>
-            <div style="font-size: 14px; color: ${mutedForeground}; line-height: 1.6;">${report.summary}</div>
+            <div style="font-size: 16px; font-weight: 600; color: ${foreground}; margin-bottom: 12px;">Hey ${escapeHtml(report.displayName)} 👋</div>
+            <div style="font-size: 14px; color: ${mutedForeground}; line-height: 1.6;">${escapeHtml(report.summary)}</div>
           </td>
         </tr>
 
@@ -79,7 +86,7 @@ function buildReportEmailHtml(report: {
               <tr>
                 <td style="padding: 16px;">
                   <div style="font-size: 11px; font-weight: 700; color: ${primaryColor}; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px;">🎯 This Week's Focus</div>
-                  <div style="font-size: 14px; color: ${foreground}; line-height: 1.5; font-weight: 500;">${report.actionItem}</div>
+                  <div style="font-size: 14px; color: ${foreground}; line-height: 1.5; font-weight: 500;">${escapeHtml(report.actionItem)}</div>
                 </td>
               </tr>
             </table>
@@ -97,7 +104,7 @@ function buildReportEmailHtml(report: {
         <tr>
           <td style="padding: 16px 24px; border-top: 1px solid #f0f0f0; text-align: center;">
             <div style="font-size: 12px; color: #999; margin-bottom: 8px;">Powered by ARIA · Your AI Growth Partner on UPLY</div>
-            ${report.unsubscribeUrl ? `<div style="font-size: 11px;"><a href="${report.unsubscribeUrl}" style="color: #999; text-decoration: underline;">Unsubscribe from weekly reports</a></div>` : ''}
+            ${report.unsubscribeUrl ? `<div style="font-size: 11px;"><a href="${escapeHtml(report.unsubscribeUrl)}" style="color: #999; text-decoration: underline;">Unsubscribe from weekly reports</a></div>` : ''}
           </td>
         </tr>
 
@@ -114,15 +121,33 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const authorization = req.headers.get('Authorization');
+    if (!serviceRoleKey || !authorization?.startsWith('Bearer ') ||
+        !await constantTimeEqual(authorization.slice(7), serviceRoleKey)) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    if (!supabaseUrl) throw new Error('Missing backend configuration');
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const { recipientEmail, displayName, summary, highlights, actionItem, weekStart, weekEnd } = await req.json();
 
-    if (!recipientEmail || !summary) {
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+    const shortString = (value: unknown) => value === undefined ||
+      (typeof value === 'string' && value.length <= 500);
+    if (typeof recipientEmail !== 'string' || recipientEmail.length > 254 ||
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail) ||
+        typeof summary !== 'string' || !summary || summary.length > 2000 ||
+        ![displayName, actionItem, weekStart, weekEnd].every(shortString) ||
+        (highlights !== undefined && (!Array.isArray(highlights) || highlights.length > 10 ||
+          !highlights.every((h: unknown) => h !== null && typeof h === 'object' &&
+            typeof (h as { label?: unknown }).label === 'string' &&
+            typeof (h as { insight?: unknown }).insight === 'string' &&
+            shortString((h as { label: string }).label) && shortString((h as { insight: string }).insight))))) {
+      return new Response(JSON.stringify({ error: 'Invalid report fields or length limits exceeded' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
