@@ -17,9 +17,9 @@ async function importKey(): Promise<CryptoKey> {
   const raw = Deno.env.get("AD_TOKEN_ENCRYPTION_KEY");
   if (!raw) throw new Error("AD_TOKEN_ENCRYPTION_KEY not set");
   // Accept hex (64 chars) or base64 (44 chars) or raw 32 chars
-  let bytes: Uint8Array;
+  let bytes: Uint8Array<ArrayBuffer>;
   if (/^[0-9a-fA-F]{64}$/.test(raw)) {
-    bytes = new Uint8Array(raw.match(/.{2}/g)!.map((h) => parseInt(h, 16)));
+    bytes = new Uint8Array((raw.match(/.{2}/g) ?? []).map((h) => parseInt(h, 16)));
   } else {
     try {
       const b = atob(raw);
