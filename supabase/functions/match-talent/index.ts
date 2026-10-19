@@ -1,3 +1,5 @@
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { checkEdgeRateLimit } from "../_shared/rateLimit.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { claudeChat } from "../_shared/claudeChat.ts";
 
@@ -11,6 +13,26 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    const authorization = req.headers.get("Authorization");
+    if (!authorization?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const anon = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authorization } } });
+    const { data: auth, error: authError } = await anon.auth.getUser();
+    if (authError || !auth.user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const admin = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
+    if (!await checkEdgeRateLimit(admin, auth.user.id, "match-talent", { maxCalls: 20, windowMs: 10 * 60_000 })) {
+      return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
+        status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const { job_description, skill_category, talent_profiles } = await req.json();
 
     const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");

@@ -1,3 +1,4 @@
+import { isAuthorizedCron } from "../_shared/cronAuth.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -13,6 +14,9 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+    if (!await isAuthorizedCron(req, supabase)) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     const now = new Date();
     const thirtyMinLater = new Date(now.getTime() + 30 * 60 * 1000);
