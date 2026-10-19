@@ -40,7 +40,7 @@ serve(async (req) => {
     // Verify payment with Stripe before doing anything.
     if (!order.stripe_checkout_session_id) return err("No checkout session on order", 400);
     const session = await stripe.checkout.sessions.retrieve(order.stripe_checkout_session_id);
-    if (session.status !== "complete" && session.payment_status !== "paid") {
+    if (session.payment_status !== "paid") {
       return err("Payment not completed yet", 402);
     }
 
@@ -89,28 +89,16 @@ serve(async (req) => {
 
       // Credit the seller's wallet with the sale price (platform keeps the buyer fee).
       const sellerId = (order.metadata as any)?.seller_id;
-      const proceeds = (order.subtotal_cents ?? 0) / 100;
-      if (sellerId && proceeds > 0) {
-        const { data: wallet } = await supabase
-          .from("wallets").select("id, available_balance").eq("user_id", sellerId).maybeSingle();
-        let walletId = wallet?.id as string | undefined;
-        if (!walletId) {
-          const { data: w } = await supabase
-            .from("wallets").insert({ user_id: sellerId, available_balance: proceeds }).select("id").single();
-          walletId = w?.id;
-        } else {
-          await supabase.from("wallets")
-            .update({ available_balance: Number(wallet!.available_balance ?? 0) + proceeds }).eq("id", walletId);
-        }
-        if (walletId) {
-          await supabase.from("transactions").insert({
-            wallet_id: walletId, amount: proceeds, status: "completed",
-            reference_id: order.id, net_amount: proceeds,
-          });
-        }
+      const proceedsCents = order.subtotal_cents ?? 0;
+      if (!Number.isSafeInteger(proceedsCents) || proceedsCents < 0) throw new Error("Invalid proceeds cents");
+      if (sellerId && proceedsCents > 0) {
+        const { error: creditError } = await supabase.rpc("increment_wallet_balance", {
+          p_order_id: order.id, p_amount_cents: proceedsCents,
+        });
+        if (creditError) throw creditError;
         await supabase.from("notifications").insert({
           user_id: sellerId, type: "resale_sold", title: "💸 Your ticket sold",
-          message: `Your resale ticket sold for $${proceeds.toFixed(2)} — added to your wallet.`,
+          message: `Your resale ticket sold for $${Math.floor(proceedsCents / 100)}.${String(proceedsCents % 100).padStart(2, "0")} — added to your wallet.`,
           reference_id: order.event_id,
         });
       }
@@ -137,7 +125,10 @@ serve(async (req) => {
     const lineItems: Array<{ tier_id?: string; quantity?: number; unit_price_cents?: number }> =
       Array.isArray(order.line_items) ? order.line_items : [];
     const totalQty = lineItems.reduce((n, li) => n + (li.quantity ?? 0), 0) || 1;
-    const perTicketFee = (order.fees_cents ?? 0) / 100 / totalQty;
+    const feesCents = order.fees_cents ?? 0;
+    if (!Number.isSafeInteger(feesCents) || feesCents < 0) throw new Error("Invalid fee cents");
+    const perTicketFeeCents = Math.floor(feesCents / totalQty);
+    const remainderFeeCents = feesCents % totalQty;
     const paymentIntent = (session.payment_intent as string) ?? null;
 
     const created: Array<{ id: string; qr_code_token: string }> = [];
@@ -145,10 +136,12 @@ serve(async (req) => {
       for (const li of lineItems) {
         const qty = li.quantity ?? 1;
         const unitCents = li.unit_price_cents ?? 0;
+        if (!Number.isSafeInteger(unitCents) || unitCents < 0) throw new Error("Invalid ticket price cents");
         if (li.tier_id) {
           await supabase.rpc("confirm_ticket_inventory", { p_tier_id: li.tier_id, p_quantity: qty });
         }
         for (let i = 0; i < qty; i++) {
+          const ticketFeeCents = perTicketFeeCents + (created.length < remainderFeeCents ? 1 : 0);
           const { data: tk, error: tErr } = await supabase
             .from("tickets")
             .insert({
@@ -160,8 +153,8 @@ serve(async (req) => {
               order_id: order.id,
               stripe_payment_intent_id: paymentIntent,
               amount_paid: unitCents / 100,
-              platform_fee: perTicketFee,
-              creator_earnings: unitCents / 100 - perTicketFee,
+              platform_fee: ticketFeeCents / 100,
+              creator_earnings: (unitCents - ticketFeeCents) / 100,
               purchase_price_cents: unitCents,
               current_price_cents: unitCents,
               status: "active",
