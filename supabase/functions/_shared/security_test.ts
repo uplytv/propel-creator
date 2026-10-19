@@ -13,8 +13,12 @@ async function loadHandler(name: string, client: unknown, extra: Record<string, 
   let handler: (req: Request) => Promise<Response> = async () => { throw new Error("not registered"); };
   const register = (value: typeof handler) => { handler = value; };
   const deps = { createClient: () => client, serve: register, constantTimeEqual, isAuthorizedCron,
-    checkEdgeRateLimit, fetchPublicPage, ...extra };
-  const compiled = ts.transpileModule(source.replace(/^import .*;\n/gm, ""), {
+    checkEdgeRateLimit, fetchPublicPage,
+    corsHeaders: { "Access-Control-Allow-Origin": "*" },
+    json: (body: unknown, status = 200) => new Response(JSON.stringify(body), {
+      status, headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
+    }), ...extra };
+  const compiled = ts.transpileModule(source.replace(/^import .*;?\n/gm, ""), {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None },
   }).outputText;
   new Function("Deno", ...Object.keys(deps), compiled)(
