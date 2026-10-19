@@ -2,20 +2,26 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, json, err } from "../_shared/eventsCors.ts";
 import { callClaude } from "../_shared/anthropic.ts";
-import { checkEdgeRateLimit, requestIp } from "../_shared/rateLimit.ts";
+import { checkEdgeRateLimit } from "../_shared/rateLimit.ts";
 
 // ARIA Event Copilot: turn a plain-language event idea into a full draft —
 // page copy, suggested ticket tiers + pricing, announcement email, social copy.
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const authorization = req.headers.get("Authorization");
+  if (!authorization?.startsWith("Bearer ")) return err("Unauthorized", 401);
+  const auth = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    global: { headers: { Authorization: authorization } }, auth: { persistSession: false },
+  });
+  const { data: { user: caller }, error: authError } = await auth.auth.getUser(authorization.slice(7));
+  if (authError || !caller) return err("Unauthorized", 401);
   try {
     const { description, event_type = "concert", capacity, city } = await req.json();
     if (!description) return err("description required");
 
-    // Unauthenticated (verify_jwt=false) endpoint that spends Anthropic credits —
-    // rate limit per IP (10 drafts / 10 min), fail-open on infra errors.
+    // Verified callers only; block AI spend when the limiter is unavailable.
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
-    if (!(await checkEdgeRateLimit(supabase, `ip:${requestIp(req)}`, "aria-event-copilot", { maxCalls: 10, windowMs: 10 * 60_000 }))) {
+    if (!(await checkEdgeRateLimit(supabase, caller.id, "aria-event-copilot", { maxCalls: 10, windowMs: 10 * 60_000, failClosed: true }))) {
       return err("Too many drafts in a short time. Please wait a few minutes and try again.", 429);
     }
 

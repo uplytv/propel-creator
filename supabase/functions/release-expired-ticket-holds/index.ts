@@ -1,4 +1,4 @@
-import { isAuthorizedCron } from "../_shared/cronAuth.ts";
+import { constantTimeEqual } from "../_shared/constantTime.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -10,13 +10,17 @@ import { corsHeaders, json, logError } from "../_shared/eventsCors.ts";
 // are left for the webhook to finalize. Schedule every ~5-10 min.
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const secret = Deno.env.get("CRON_SECRET");
+  const supplied = req.headers.get("x-cron-secret");
+  if (!secret || !supplied || !await constantTimeEqual(supplied, secret)) {
+    return json({ error: "Unauthorized" }, 401);
+  }
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     { auth: { persistSession: false } },
   );
-  if (!await isAuthorizedCron(req, supabase)) return json({ error: "Unauthorized" }, 401);
   const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
     apiVersion: "2025-08-27.basil",
   });

@@ -47,22 +47,25 @@ Deno.serve(async (req) => {
 
     const appId = Deno.env.get("META_APP_ID");
     const redirectUri = Deno.env.get("META_REDIRECT_URI");
-    const stateSecret = Deno.env.get("META_OAUTH_STATE_SECRET") || Deno.env.get("META_APP_SECRET");
+    const stateSecret = Deno.env.get("OAUTH_STATE_SECRET");
 
     if (!appId || !redirectUri || !stateSecret) {
       return new Response(
         JSON.stringify({
           error:
-            "Meta credentials not configured. Add META_APP_ID, META_APP_SECRET, and META_REDIRECT_URI in Supabase secrets.",
+            "Meta credentials not configured. Add META_APP_ID, META_APP_SECRET, META_REDIRECT_URI, and OAUTH_STATE_SECRET in Lovable Cloud secrets.",
           configured: false,
         }),
         { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    // CSRF state: signed with user id + random nonce
+    // Store identity server-side; the signed state contains only a random nonce.
     const nonce = crypto.randomUUID();
-    const state = await signMetaState({ uid: userId, n: nonce, t: Date.now() }, stateSecret);
+    const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const { error: stateError } = await admin.from("oauth_states").insert({ nonce, user_id: userId });
+    if (stateError) throw new Error("Unable to create OAuth state");
+    const state = await signMetaState({ n: nonce }, stateSecret);
 
     const url = new URL("https://www.facebook.com/v21.0/dialog/oauth");
     url.searchParams.set("client_id", appId);

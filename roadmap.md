@@ -1,4 +1,9 @@
 # Edge-function security hardening
+- [ ] Add single-use 10-minute stored Meta OAuth state and signing secret.
+- [ ] Reject unsigned Mux events and finalize only paid tickets with atomic cent-based wallet credits.
+- [ ] Require JWTs and fail-closed limits for the three requested AI functions.
+- [ ] Require CRON_SECRET for ticket hold releases and update its existing schedule safely.
+- [ ] Patch requested dependencies and run focused security validation.
 - [x] P0: authenticate, validate and escape weekly report email.
 - [x] Sign and verify Meta OAuth state; verify heartbeat caller.
 - [x] Authenticate/rate-limit AI calls and guard URL imports against SSRF.

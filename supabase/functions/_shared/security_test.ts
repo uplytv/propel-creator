@@ -13,8 +13,10 @@ async function loadHandler(name: string, client: unknown, extra: Record<string, 
   let handler: (req: Request) => Promise<Response> = async () => { throw new Error("not registered"); };
   const register = (value: typeof handler) => { handler = value; };
   const deps = { createClient: () => client, serve: register, constantTimeEqual, isAuthorizedCron,
-    checkEdgeRateLimit, fetchPublicPage,
-    ...(name === "release-expired-ticket-holds" ? { corsHeaders: { "Access-Control-Allow-Origin": "*" } } : {}),
+    checkEdgeRateLimit, fetchPublicPage, verifyMetaState, signMetaState,
+    ...(["release-expired-ticket-holds", "aria-event-copilot", "aria-content-repurpose", "aria-attendee-concierge"].includes(name) ? { corsHeaders: { "Access-Control-Allow-Origin": "*" } } : {}),
+    err: (message: string, status = 400) => new Response(JSON.stringify({ error: message }), { status }),
+    logError: async () => {},
     json: (body: unknown, status = 200) => new Response(JSON.stringify(body), {
       status, headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
     }), ...extra };
@@ -45,26 +47,27 @@ Deno.test("secret comparison rejects altered and different-length values", async
   assert(!await constantTimeEqual("secret", "secret-long"));
 });
 
-Deno.test("Meta HMAC accepts authentic state and rejects forged identity or key", async () => {
-  const payload = { uid: "creator-1", n: "nonce", t: Date.now() };
+Deno.test("Meta HMAC accepts nonce-only state and rejects forged nonce or key", async () => {
+  const payload = { n: "nonce" };
   const state = await signMetaState(payload, "test-state-key");
-  assertEquals((await verifyMetaState(state, "test-state-key")).uid, "creator-1");
-  const forged = await signMetaState({ ...payload, uid: "victim" }, "attacker-key");
+  assertEquals(await verifyMetaState(state, "test-state-key"), payload);
+  const forged = await signMetaState({ n: "victim-nonce" }, "attacker-key");
   await assertRejects(() => verifyMetaState(forged, "test-state-key"));
   await assertRejects(() => verifyMetaState(state.split(".")[0] + ".forged", "test-state-key"));
   await assertRejects(() => verifyMetaState(btoa(JSON.stringify(payload)), "test-state-key"));
 });
 
-Deno.test("Meta state expires after 15 minutes", async () => {
-  const now = Date.now();
-  const original = Date.now;
-  const state = await signMetaState({ uid: "creator", n: "nonce", t: now }, "test-key");
-  try {
-    Date.now = () => now + 15 * 60_000;
-    assertEquals((await verifyMetaState(state, "test-key")).uid, "creator");
-    Date.now = () => now + 15 * 60_000 + 1;
-    await assertRejects(() => verifyMetaState(state, "test-key"));
-  } finally { Date.now = original; }
+Deno.test("Meta callback obtains identity only through single-use stored nonce consumption", async () => {
+  testEnv(); Deno.env.set("OAUTH_STATE_SECRET", "test-key");
+  let consumed = 0;
+  const state = await signMetaState({ n: "nonce" }, "test-key");
+  const handler = await loadHandler("oauth-meta-callback", { rpc: async (name: string, args: unknown) => {
+    assertEquals(name, "consume_meta_oauth_state"); assertEquals(args, { p_nonce: "nonce" });
+    consumed++; return { data: consumed === 1 ? "stored-user" : null, error: null };
+  } });
+  assertEquals((await handler(new Request(`https://example.com/?code=test&state=${state}`))).status, 200);
+  assertEquals((await handler(new Request(`https://example.com/?code=test&state=${state}`))).status, 400);
+  assertEquals(consumed, 2);
 });
 
 Deno.test("cron rollout allows with warning when secret absent and rejects anonymous when set", async () => {
@@ -176,7 +179,7 @@ for (const [name, maxCalls] of [["import-from-url", 10], ["generate-product-copy
     let updates = 0;
     const expired = { ...chain, select: () => expired, eq: () => expired,
       maybeSingle: async () => ({ data: { call_count: maxCalls, window_start: new Date(Date.now() - 600_001).toISOString() } }),
-      upsert: async () => { updates++; } };
+      upsert: async () => { updates++; return {}; } };
     assert(await checkEdgeRateLimit({ from: () => expired }, "verified", name, { maxCalls, windowMs: 600_000 }));
     assertEquals(updates, 1);
   });
@@ -256,4 +259,85 @@ Deno.test("URL fetch uses an eight-second abort deadline", async () => {
     });
     await assertRejects(() => fetchPublicPage("http://8.8.8.8")); assertEquals(delay, 8000);
   } finally { globalThis.fetch = originalFetch; globalThis.setTimeout = originalTimeout; }
+});
+
+for (const name of ["aria-event-copilot", "aria-content-repurpose", "aria-attendee-concierge"]) {
+  Deno.test(`${name} rejects missing/invalid JWT before spending AI credits`, async () => {
+    testEnv();
+    const handler = await loadHandler(name, { auth: { getUser: async () => ({ data: { user: null }, error: null }) } });
+    assertEquals((await handler(request({}))).status, 401);
+    assertEquals((await handler(request({}, "Bearer invalid"))).status, 401);
+  });
+  Deno.test(`${name} blocks AI work on limiter database failure`, async () => {
+    testEnv();
+    const chain = { select: () => chain, eq: () => chain,
+      maybeSingle: async () => ({ data: null, error: new Error("database unavailable") }) };
+    const handler = await loadHandler(name, {
+      auth: { getUser: async () => ({ data: { user: { id: "verified" } }, error: null }) }, from: () => chain,
+    });
+    assertEquals((await handler(request({ description: "Event", title: "Video", event_id: "event", question: "Parking?" }, "Bearer valid"))).status, 429);
+  });
+}
+
+Deno.test("fail-closed limiter blocks read errors, write errors and exceptions", async () => {
+  for (const mode of ["read", "write", "throw"]) {
+    const chain = { select: () => chain, eq: () => chain,
+      maybeSingle: async () => {
+        if (mode === "throw") throw new Error("offline");
+        return { data: null, error: mode === "read" ? new Error("offline") : null };
+      }, upsert: async () => ({ error: new Error("offline") }) };
+    assert(!await checkEdgeRateLimit({ from: () => chain }, "user", "ai", { failClosed: true }));
+    assert(await checkEdgeRateLimit({ from: () => chain }, "user", "other"));
+  }
+});
+
+Deno.test("ticket releases require CRON_SECRET even without INTERNAL_CRON_SECRET", async () => {
+  testEnv(); Deno.env.delete("INTERNAL_CRON_SECRET"); Deno.env.delete("CRON_SECRET");
+  const handler = await loadHandler("release-expired-ticket-holds", {});
+  assertEquals((await handler(request({}))).status, 401);
+  Deno.env.set("CRON_SECRET", "release-secret");
+  assertEquals((await handler(request({}, "Bearer test-service"))).status, 401);
+  const wrong = request({}); wrong.headers.set("x-cron-secret", "release-secret-wrong");
+  assertEquals((await handler(wrong)).status, 401);
+  const good = request({}); good.headers.set("x-cron-secret", "release-secret");
+  const allowed = await loadHandler("release-expired-ticket-holds", { from: () => ({
+    select: () => ({ in: () => ({ eq: () => ({ lt: () => ({ limit: async () => ({ data: [] }) }) }) }) }),
+  }) }, { Stripe: class {} });
+  assertEquals((await allowed(good)).status, 200);
+});
+
+Deno.test("Mux rejects event POSTs with 500 if its signing secret is absent", async () => {
+  Deno.env.delete("MUX_WEBHOOK_SECRET");
+  const handler = await loadHandler("mux-webhook", {});
+  assertEquals((await handler(request({ type: "video.asset.ready" }))).status, 500);
+});
+
+Deno.test("complete but unpaid Stripe session cannot claim an order or issue tickets", async () => {
+  testEnv();
+  const chain = { select: () => chain, eq: () => chain,
+    maybeSingle: async () => ({ data: { id: "order", order_type: "primary_ticket", status: "pending", stripe_checkout_session_id: "session" } }) };
+  const handler = await loadHandler("finalize-ticket-order", { from: () => chain }, {
+    Stripe: class { checkout = { sessions: { retrieve: async () => ({ status: "complete", payment_status: "unpaid" }) } }; },
+  });
+  assertEquals((await handler(request({ order_id: "order" }))).status, 402);
+});
+
+Deno.test("paid resale credits integer cents through RPC, never a client balance write", async () => {
+  testEnv(); let credited = 0;
+  const order = { id: "order", buyer_id: "buyer", order_type: "resale_ticket", status: "pending", stripe_checkout_session_id: "session",
+    subtotal_cents: 12345, metadata: { seller_id: "seller" }, line_items: [{ ticket_id: "ticket" }] };
+  const client = { from: (table: string) => {
+    if (table === "wallets" || table === "transactions") throw new Error("non-atomic wallet access");
+    const chain = { select: () => chain, eq: () => chain, update: () => chain, insert: async () => ({}),
+      maybeSingle: async () => ({ data: table === "orders" ? order : { owner_id: "seller", qr_code_token: "qr" } }) };
+    return chain;
+  }, rpc: async (name: string, args: unknown) => {
+    assertEquals(name, "increment_wallet_balance"); assertEquals(args, { p_order_id: "order", p_amount_cents: 12345 });
+    credited++; return { error: null };
+  }, functions: { invoke: async () => ({}) } };
+  const handler = await loadHandler("finalize-ticket-order", client, {
+    Stripe: class { checkout = { sessions: { retrieve: async () => ({ status: "complete", payment_status: "paid" }) } }; },
+  });
+  assertEquals((await handler(request({ order_id: "order" }))).status, 200);
+  assertEquals(credited, 1);
 });

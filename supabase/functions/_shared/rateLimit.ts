@@ -14,6 +14,8 @@
 type SupabaseClientLike = any;
 
 export interface RateLimitOptions {
+  /** Block on database errors for endpoints that spend AI credits. */
+  failClosed?: boolean;
   /** Max calls allowed inside the window. Default 10. */
   maxCalls?: number;
   /** Window length in ms. Default 60_000 (1 minute). */
@@ -39,40 +41,44 @@ export async function checkEdgeRateLimit(
   const now = new Date();
 
   try {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("edge_function_rate_limits")
       .select("call_count, window_start")
       .eq("key", key)
       .maybeSingle();
+    if (error) throw error;
 
     if (data) {
       const windowAge = now.getTime() - new Date(data.window_start).getTime();
       if (windowAge < windowMs && data.call_count >= maxCalls) return false;
       if (windowAge >= windowMs) {
-        await supabase.from("edge_function_rate_limits").upsert({
+        const { error: writeError } = await supabase.from("edge_function_rate_limits").upsert({
           key,
           call_count: 1,
           window_start: now.toISOString(),
           updated_at: now.toISOString(),
         });
+        if (writeError) throw writeError;
       } else {
-        await supabase
+        const { error: writeError } = await supabase
           .from("edge_function_rate_limits")
           .update({ call_count: data.call_count + 1, updated_at: now.toISOString() })
           .eq("key", key);
+        if (writeError) throw writeError;
       }
     } else {
-      await supabase.from("edge_function_rate_limits").upsert({
+      const { error: writeError } = await supabase.from("edge_function_rate_limits").upsert({
         key,
         call_count: 1,
         window_start: now.toISOString(),
         updated_at: now.toISOString(),
       });
+      if (writeError) throw writeError;
     }
     return true;
   } catch (e) {
-    console.error(`[rateLimit] fail-open for ${fnName}:`, (e as Error)?.message ?? e);
-    return true;
+    console.error(`[rateLimit] ${opts.failClosed ? "fail-closed" : "fail-open"} for ${fnName}:`, (e as Error)?.message ?? e);
+    return !opts.failClosed;
   }
 }
 
