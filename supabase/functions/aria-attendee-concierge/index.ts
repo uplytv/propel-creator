@@ -2,20 +2,26 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, json, err } from "../_shared/eventsCors.ts";
 import { callClaude } from "../_shared/anthropic.ts";
-import { checkEdgeRateLimit, requestIp } from "../_shared/rateLimit.ts";
+import { checkEdgeRateLimit } from "../_shared/rateLimit.ts";
 
 // ARIA Attendee Concierge: answers buyer questions (set times, parking, re-entry,
 // age limits) from the event's own data; escalates to the creator when unsure.
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const authorization = req.headers.get("Authorization");
+  if (!authorization?.startsWith("Bearer ")) return err("Unauthorized", 401);
+  const auth = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    global: { headers: { Authorization: authorization } }, auth: { persistSession: false },
+  });
+  const { data: { user }, error: authError } = await auth.auth.getUser(authorization.slice(7));
+  if (authError || !user) return err("Unauthorized", 401);
   const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
   try {
     const { event_id, question } = await req.json();
     if (!event_id || !question) return err("event_id and question required");
 
-    // Unauthenticated buyer endpoint that spends Anthropic credits — rate limit
-    // per IP (10 questions / 10 min), fail-open on infra errors.
-    if (!(await checkEdgeRateLimit(supabase, `ip:${requestIp(req)}`, "aria-attendee-concierge", { maxCalls: 10, windowMs: 10 * 60_000 }))) {
+    // Verified callers only; block AI spend when the limiter is unavailable.
+    if (!(await checkEdgeRateLimit(supabase, user.id, "aria-attendee-concierge", { maxCalls: 10, windowMs: 10 * 60_000, failClosed: true }))) {
       return err("Too many questions in a short time. Please wait a few minutes and try again.", 429);
     }
 

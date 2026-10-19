@@ -2,21 +2,27 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, json, err } from "../_shared/eventsCors.ts";
 import { callClaude } from "../_shared/anthropic.ts";
-import { checkEdgeRateLimit, requestIp } from "../_shared/rateLimit.ts";
+import { checkEdgeRateLimit } from "../_shared/rateLimit.ts";
 
 // ARIA Content Repurposing: turn one long-form piece (video/podcast/post) into a
 // full multi-platform package — Shorts, social posts, an email, an X thread, and
 // title ideas. Reuses the shared Anthropic caller.
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const authorization = req.headers.get("Authorization");
+  if (!authorization?.startsWith("Bearer ")) return err("Unauthorized", 401);
+  const auth = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    global: { headers: { Authorization: authorization } }, auth: { persistSession: false },
+  });
+  const { data: { user }, error: authError } = await auth.auth.getUser(authorization.slice(7));
+  if (authError || !user) return err("Unauthorized", 401);
   try {
     const { title = "", source = "", content_type = "video" } = await req.json();
     if (!title && !source) return err("Provide a title and/or transcript/notes to repurpose");
 
-    // Unauthenticated (verify_jwt=false) endpoint with a large Anthropic budget —
-    // rate limit per IP (10 packages / hour), fail-open on infra errors.
+    // Verified callers only; block AI spend when the limiter is unavailable.
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
-    if (!(await checkEdgeRateLimit(supabase, `ip:${requestIp(req)}`, "aria-content-repurpose", { maxCalls: 10, windowMs: 60 * 60_000 }))) {
+    if (!(await checkEdgeRateLimit(supabase, user.id, "aria-content-repurpose", { maxCalls: 10, windowMs: 60 * 60_000, failClosed: true }))) {
       return err("Too many requests in a short time. Please wait a while and try again.", 429);
     }
 
