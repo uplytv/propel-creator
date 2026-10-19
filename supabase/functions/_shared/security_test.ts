@@ -14,7 +14,7 @@ async function loadHandler(name: string, client: unknown, extra: Record<string, 
   const register = (value: typeof handler) => { handler = value; };
   const deps = { createClient: () => client, serve: register, constantTimeEqual, isAuthorizedCron,
     checkEdgeRateLimit, fetchPublicPage,
-    corsHeaders: { "Access-Control-Allow-Origin": "*" },
+    ...(name === "release-expired-ticket-holds" ? { corsHeaders: { "Access-Control-Allow-Origin": "*" } } : {}),
     json: (body: unknown, status = 200) => new Response(JSON.stringify(body), {
       status, headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
     }), ...extra };
