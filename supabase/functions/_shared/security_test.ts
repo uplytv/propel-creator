@@ -14,7 +14,7 @@ async function loadHandler(name: string, client: unknown, extra: Record<string, 
   const register = (value: typeof handler) => { handler = value; };
   const deps = { createClient: () => client, serve: register, constantTimeEqual, isAuthorizedCron,
     checkEdgeRateLimit, fetchPublicPage, verifyMetaState, signMetaState,
-    ...(name === "release-expired-ticket-holds" ? { corsHeaders: { "Access-Control-Allow-Origin": "*" } } : {}),
+    ...(["release-expired-ticket-holds", "aria-event-copilot", "aria-content-repurpose", "aria-attendee-concierge"].includes(name) ? { corsHeaders: { "Access-Control-Allow-Origin": "*" } } : {}),
     err: (message: string, status = 400) => new Response(JSON.stringify({ error: message }), { status }),
     logError: async () => {},
     json: (body: unknown, status = 200) => new Response(JSON.stringify(body), {
