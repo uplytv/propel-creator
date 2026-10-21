@@ -14,7 +14,33 @@ import {
   moneyEventRow,
   logMoneyEventSafe,
   type MoneyEventFields,
+  fanClubStatusFromStripe,
 } from "../_shared/stripeWebhookLogic.ts";
+
+// Fan club rows (music_fan_club_subscriptions / music_fan_club_memberships) are
+// written ONLY here, with the service role. Clients cannot insert/update them.
+// deno-lint-ignore no-explicit-any
+async function syncFanClubFromSubscription(supabase: any, sub: Stripe.Subscription) {
+  const md = (sub.metadata || {}) as Record<string, string>;
+  const status = fanClubStatusFromStripe(sub.status);
+  const periodEndUnix = (sub as any).current_period_end ?? (sub as any).items?.data?.[0]?.current_period_end;
+  const current_period_end = periodEndUnix ? new Date(periodEndUnix * 1000).toISOString() : null;
+  if (md.purchase_type === "fan_club_tier" && md.fan_id && md.artist_id && md.tier_id) {
+    await supabase.from("music_fan_club_subscriptions").upsert({
+      fan_id: md.fan_id, artist_id: md.artist_id, tier_id: md.tier_id, status, current_period_end,
+      stripe_subscription_id: sub.id, stripe_customer_id: typeof sub.customer === "string" ? sub.customer : sub.customer?.id,
+    }, { onConflict: "fan_id,tier_id" });
+    return true;
+  }
+  if (md.purchase_type === "fan_club" && md.fan_id && md.club_id) {
+    await supabase.from("music_fan_club_memberships").upsert({
+      club_id: md.club_id, user_id: md.fan_id, status, current_period_end,
+      stripe_subscription_id: sub.id,
+    }, { onConflict: "club_id,user_id" });
+    return true;
+  }
+  return false;
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -836,6 +862,14 @@ Deno.serve(async (req) => {
 
             logStep("Subscription checkout completed", { member_id, creator_id });
           }
+        } else if (branch === "fan_club") {
+          if (session.mode === "subscription" && session.subscription && session.payment_status !== "unpaid") {
+            const sub = await stripe.subscriptions.retrieve(session.subscription as string);
+            await syncFanClubFromSubscription(supabase, sub);
+            logStep("Fan club checkout completed", { subscription: sub.id, status: sub.status });
+          } else {
+            logStep("Fan club checkout not paid; no access granted", { session: session.id });
+          }
         } else if (branch === "live_product") {
           const { live_product_id, buyer_id, creator_id } = metadata;
           if (!live_product_id || !buyer_id || !creator_id) {
@@ -958,6 +992,10 @@ Deno.serve(async (req) => {
 
       case "customer.subscription.updated": {
         const sub = event.data.object as Stripe.Subscription;
+        if (await syncFanClubFromSubscription(supabase, sub)) {
+          logStep("Fan club subscription synced", { id: sub.id, status: sub.status });
+          break;
+        }
         const newStatus = sub.status === "active" ? "active" : sub.status === "past_due" ? "past_due" : sub.status;
         
         const { data: updatedSub } = await supabase
@@ -1005,6 +1043,10 @@ Deno.serve(async (req) => {
 
       case "customer.subscription.deleted": {
         const sub = event.data.object as Stripe.Subscription;
+        if (await syncFanClubFromSubscription(supabase, sub)) {
+          logStep("Fan club subscription synced", { id: sub.id, status: sub.status });
+          break;
+        }
         const { data: canceledSub } = await supabase
           .from("member_subscriptions")
           .update({ status: "canceled" })

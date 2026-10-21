@@ -25,6 +25,7 @@ export type PurchaseBranch =
   | "credits"
   | "subscription"
   | "live_product"
+  | "fan_club"
   | "legacy_fallback";
 
 /**
@@ -47,6 +48,8 @@ export function classifyPurchaseType(
     case "credits": return "credits";
     case "subscription": return "subscription";
     case "live_product": return "live_product";
+    case "fan_club_tier":
+    case "fan_club": return "fan_club";
     default: return "legacy_fallback";
   }
 }
@@ -526,4 +529,22 @@ export function planDisputeActions(
         : `No purchase record matched this payment intent — manual review required.`),
     revokeAccess: false,
   };
+}
+
+// ── Fan club subscriptions (create-fan-club-checkout) ──
+
+/** Map a Stripe subscription status to the fan club row status. */
+export function fanClubStatusFromStripe(status?: string | null): "active" | "canceled" | "expired" {
+  switch (status) {
+    case "active":
+    case "trialing":
+      return "active";
+    case "canceled":
+    case "incomplete_expired":
+    case "unpaid":
+      return "canceled";
+    default:
+      // past_due / incomplete / paused: no access until Stripe confirms payment
+      return "expired";
+  }
 }
