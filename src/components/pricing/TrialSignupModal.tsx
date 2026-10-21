@@ -28,6 +28,7 @@ import {
   TRIAL_RISK_REVERSAL,
   type PlatformPlanKey,
   type BillingInterval,
+  CREATOR_PRICING_CHECKOUT_ENABLED,
 } from "./plans";
 
 interface TrialSignupModalProps {
@@ -222,8 +223,10 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan, bill
 
   const handleContinue = async () => {
     if (!validateStep1() || creatingAccount) return;
-    toast.info("New creator pricing is not activated yet. No account or payment was changed.");
-    return;
+    if (!CREATOR_PRICING_CHECKOUT_ENABLED) {
+      toast.info("New creator pricing is not activated yet. No account or payment was changed.");
+      return;
+    }
 
     if (isAuthed) {
       setStep(2);
@@ -314,7 +317,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan, bill
   // Step 2: create the embedded checkout session (14-day trial, card on file,
   // billed after) as soon as we're authed. Re-runs when the plan radio changes.
   useEffect(() => {
-    if (selectedPlan === "free") return;
+    if (!CREATOR_PRICING_CHECKOUT_ENABLED || selectedPlan === "free") return;
     if (!open || step !== 2 || awaitingEmailConfirm || !(isAuthed || guestCheckout) || trialLive) return;
 
     let cancelled = false;

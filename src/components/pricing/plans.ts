@@ -1,5 +1,6 @@
 // UPLY platform plans , single source of truth for both pricing surfaces
-// and the trial signup modal. All plans start with a 14-day free trial.
+// and the signup modal. Free needs no subscription checkout.
+export const CREATOR_PRICING_CHECKOUT_ENABLED = import.meta.env.VITE_CREATOR_PRICING_CHECKOUT_ENABLED === "true";
 
 export type PlatformPlanKey = "free" | "pro" | "studio";
 export type BillingInterval = "monthly" | "annual";

@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { TRIAL_INTENT_STORAGE_KEY } from "@/components/pricing/plans";
+import { TRIAL_INTENT_STORAGE_KEY, CREATOR_PRICING_CHECKOUT_ENABLED } from "@/components/pricing/plans";
 
 /**
  * Resumes a 14-day-trial signup that was interrupted by account creation.
@@ -32,7 +32,7 @@ export default function TrialIntentResume() {
       localStorage.removeItem(TRIAL_INTENT_STORAGE_KEY);
       return;
     }
-    if (["free", "pro", "studio"].includes(intent.plan ?? "")) return; // New pricing preview is not activated.
+    if (!CREATOR_PRICING_CHECKOUT_ENABLED && ["free", "pro", "studio"].includes(intent.plan ?? "")) return;
     if (!intent.plan) {
       localStorage.removeItem(TRIAL_INTENT_STORAGE_KEY);
       return;
