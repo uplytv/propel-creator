@@ -27,6 +27,7 @@ import {
   TRIAL_INTENT_STORAGE_KEY,
   TRIAL_RISK_REVERSAL,
   type PlatformPlanKey,
+  type BillingInterval,
 } from "./plans";
 
 interface TrialSignupModalProps {
@@ -34,13 +35,15 @@ interface TrialSignupModalProps {
   onOpenChange: (open: boolean) => void;
   /** Plan preselected by the card the user clicked. */
   defaultPlan: PlatformPlanKey;
+  billingInterval?: BillingInterval;
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Same PCI-safe pattern as PurchaseOverlay: card entry happens inside
-// Stripe's embedded-checkout iframe — no card data ever touches our code.
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "");
+// Stripe's embedded-checkout iframe , no card data ever touches our code.
+const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 
 /** Shared wizard header: centered title + two-step tab indicator with active underline. */
 function WizardHeader({ active }: { active: 1 | 2 }) {
@@ -70,7 +73,7 @@ function WizardHeader({ active }: { active: 1 | 2 }) {
   );
 }
 
-export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: TrialSignupModalProps) {
+export default function TrialSignupModal({ open, onOpenChange, defaultPlan, billingInterval = "monthly" }: TrialSignupModalProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -90,7 +93,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
     password?: string;
   }>({});
   const [creatingAccount, setCreatingAccount] = useState(false);
-  // True when supabase.auth.signUp succeeded but returned no session —
+  // True when supabase.auth.signUp succeeded but returned no session ,
   // the project requires email confirmation, so payment resumes via
   // the uply_trial_intent + TrialIntentResume fallback after confirming.
   const [awaitingEmailConfirm, setAwaitingEmailConfirm] = useState(false);
@@ -130,6 +133,8 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
   }, [open, defaultPlan, user]);
 
   const plan = PLATFORM_PLANS.find((p) => p.key === selectedPlan) ?? PLATFORM_PLANS[0];
+  const billedPrice = billingInterval === "annual" ? plan.annualPrice : plan.price;
+  const billedUnit = billingInterval === "annual" ? "year" : "month";
   const isAuthed = !!user || sessionReady;
 
   // GHL-simple step 1: no password field. Accounts are auto-created with a
@@ -139,12 +144,11 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
 
   const validateStep1 = () => {
     const next: typeof errors = {};
-    if (!company.trim()) next.company = "Company or brand name is required";
+
     if (!fullName.trim()) next.fullName = "Full name is required";
     if (!email.trim()) next.email = "Email is required";
     else if (!EMAIL_RE.test(email.trim())) next.email = "Enter a valid email address";
-    if (!phone.trim()) next.phone = "Phone number is required";
-    else if (phone.replace(/\D/g, "").length < 7) next.phone = "Enter a valid phone number";
+    if (phone.trim() && phone.replace(/\D/g, "").length < 7) next.phone = "Enter a valid phone number";
     if (!isAuthed && existingAccount) {
       if (!password) next.password = "Enter your existing UPLY password";
     }
@@ -158,6 +162,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
         TRIAL_INTENT_STORAGE_KEY,
         JSON.stringify({
           plan: selectedPlan,
+          billing_interval: billingInterval,
           company: company.trim(),
           full_name: fullName.trim(),
           email: email.trim(),
@@ -165,11 +170,11 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
         })
       );
     } catch {
-      // localStorage unavailable (private mode) — flow still works without the stash.
+      // localStorage unavailable (private mode) , flow still works without the stash.
     }
   };
 
-  // Guest checkout: the email already has an UPLY account but NO paid plan —
+  // Guest checkout: the email already has an UPLY account but NO paid plan ,
   // don't wall the purchase behind a password. Step 2 checks out by email;
   // Stripe attaches the card + trial to their customer record, and they sign
   // in later for access. The password wall only appears if the backend says
@@ -185,14 +190,14 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
         setGuestCheckout(true);
         stashIntent();
         toast.info("You already have an UPLY account", {
-          description: "No problem — start your trial now and sign in afterwards to access it.",
+          description: "No problem , start your trial now and sign in afterwards to access it.",
         });
         setStep(2);
         return;
       }
-      // Password wall is showing (already_subscribed) but empty — prompt.
+      // Password wall is showing (already_subscribed) but empty , prompt.
       toast.info("Enter your password", {
-        description: "This email already has an active plan — sign in to continue.",
+        description: "This email already has an active plan , sign in to continue.",
       });
       return;
     }
@@ -217,6 +222,8 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
 
   const handleContinue = async () => {
     if (!validateStep1() || creatingAccount) return;
+    toast.info("New creator pricing is not activated yet. No account or payment was changed.");
+    return;
 
     if (isAuthed) {
       setStep(2);
@@ -277,7 +284,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
       });
 
       if (data.session) {
-        // Live session — proceed straight to in-modal payment. Send a
+        // Live session , proceed straight to in-modal payment. Send a
         // set-password link so they can choose their own password later
         // (account was created with a generated one). Fire-and-forget.
         supabase.auth
@@ -291,7 +298,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
           /* noop */
         }
       } else {
-        // Email confirmation required by the Supabase project — stash the
+        // Email confirmation required by the Supabase project , stash the
         // intent so TrialIntentResume relaunches checkout after they confirm.
         stashIntent();
         setAwaitingEmailConfirm(true);
@@ -307,6 +314,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
   // Step 2: create the embedded checkout session (14-day trial, card on file,
   // billed after) as soon as we're authed. Re-runs when the plan radio changes.
   useEffect(() => {
+    if (selectedPlan === "free") return;
     if (!open || step !== 2 || awaitingEmailConfirm || !(isAuthed || guestCheckout) || trialLive) return;
 
     let cancelled = false;
@@ -318,6 +326,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
       .invoke("create-platform-checkout", {
         body: {
           plan: selectedPlan,
+          billing_interval: billingInterval,
           trial: true,
           embedded: true,
           company: company.trim(),
@@ -330,7 +339,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
         if (cancelled) return;
         if (error) throw error;
         if (data?.error === "already_subscribed") {
-          // The email already carries a live paid plan — require sign-in.
+          // The email already carries a live paid plan , require sign-in.
           setGuestCheckout(false);
           setExistingAccount(true);
           setStep(1);
@@ -352,9 +361,9 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
     return () => {
       cancelled = true;
     };
-    // company/fullName/phone/email are frozen once step 2 renders — plan is the only live input.
+    // company/fullName/phone/email are frozen once step 2 renders , plan is the only live input.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, step, awaitingEmailConfirm, isAuthed, guestCheckout, selectedPlan, checkoutAttempt, trialLive]);
+  }, [open, step, awaitingEmailConfirm, isAuthed, guestCheckout, selectedPlan, billingInterval, checkoutAttempt, trialLive]);
 
   // Card accepted inside the iframe → trial subscription is live. The session
   // is created with redirect_on_completion "never", so no page reload happens:
@@ -372,9 +381,9 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
   const goToDashboard = () => {
     onOpenChange(false);
     if (guestCheckout && !user) {
-      // Guest trial on an existing account — they need to sign in for access.
+      // Guest trial on an existing account , they need to sign in for access.
       toast.info("Sign in to access your trial", {
-        description: "Your trial is active on this email — sign in with your UPLY password.",
+        description: "Your trial is active on this email , sign in with your UPLY password.",
       });
       navigate(`/auth?redirect=${encodeURIComponent("/dashboard?trial=started")}`);
       return;
@@ -404,7 +413,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <PartyPopper className="h-5 w-5 text-primary" />
-                You're in — your {TRIAL_DAYS}-day trial is live
+                You're in , your {TRIAL_DAYS}-day trial is live
               </DialogTitle>
               <DialogDescription>
                 Your card is on file and UPLY {plan.name} is unlocked. One last thing before you dive in.
@@ -412,7 +421,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
             </DialogHeader>
 
             <div className="space-y-4 py-1">
-              {/* Free human setup call — the onboarding offer */}
+              {/* Free human setup call , the onboarding offer */}
               <div className="rounded-md border border-primary/40 bg-primary/5 p-4">
                 <div className="flex items-start gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-primary/15">
@@ -422,7 +431,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                     <p className="text-sm font-bold text-foreground">Book your free setup call</p>
                     <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                       We'll build your website funnel, SEO blog post, and community &amp; course
-                      setup with you — a real human rep, free with your trial.
+                      setup with you , a real human rep, free with your trial.
                     </p>
                   </div>
                 </div>
@@ -440,7 +449,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                 onClick={goToDashboard}
                 className="w-full text-center text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
               >
-                Skip for now — go to my dashboard
+                Skip for now , go to my dashboard
               </button>
             </div>
           </>
@@ -454,7 +463,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                   id="trial-company"
                   aria-label="Company name"
                   className="rounded-sm h-11"
-                  placeholder="Company name"
+                  placeholder="Company name (optional)"
                   value={company}
                   onChange={(e) => setCompany(e.target.value)}
                 />
@@ -485,7 +494,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
               </div>
               {!isAuthed && existingAccount && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="trial-password">Welcome back — enter your password</Label>
+                  <Label htmlFor="trial-password">Welcome back , enter your password</Label>
                   <Input
                     id="trial-password"
                     type="password"
@@ -504,7 +513,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                   type="tel"
                   aria-label="Phone number"
                   className="rounded-sm h-11"
-                  placeholder="Phone number"
+                  placeholder="Phone number (optional)"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                 />
@@ -522,7 +531,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                 {creatingAccount ? "Creating your account…" : "Go to step 2"}
               </Button>
               <p className="text-center text-xs text-muted-foreground">
-                We'll send trial updates and offers by email and text.
+                New pricing is pending activation. This preview does not create an account or charge a card.
               </p>
             </div>
           </>
@@ -544,7 +553,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                 onValueChange={(v) => setSelectedPlan(v as PlatformPlanKey)}
                 className="gap-0 divide-y divide-border border border-border rounded-md"
               >
-                {PLATFORM_PLANS.map((p) => (
+                {PLATFORM_PLANS.filter(p => p.key !== "free").map((p) => (
                   <label
                     key={p.key}
                     htmlFor={`trial-plan-${p.key}`}
@@ -563,7 +572,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                         )}
                       </span>
                       <span className="block text-xs text-muted-foreground">
-                        {TRIAL_DAYS}-day free trial — then ${p.price}/month
+                        {TRIAL_DAYS}-day free trial, then ${billingInterval === "annual" ? p.annualPrice : p.price}/{billedUnit}
                       </span>
                     </span>
                   </label>
@@ -576,7 +585,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                   UPLY {plan.name} · due today
                 </span>
                 <span className="font-bold text-foreground">
-                  $0.00 <span className="font-normal text-muted-foreground">— then ${plan.price}/mo</span>
+                  $0.00 <span className="font-normal text-muted-foreground">, then ${billedPrice}/{billedUnit}</span>
                 </span>
               </div>
 
@@ -599,7 +608,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                 </Label>
               </div>
 
-              {/* Payment — Stripe embedded checkout (PCI-safe iframe) */}
+              {/* Payment , Stripe embedded checkout (PCI-safe iframe) */}
               {awaitingEmailConfirm ? (
                 <div className="flex items-start gap-3 rounded-sm border border-border bg-muted/50 p-3.5">
                   <MailCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
@@ -607,7 +616,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                     <p className="font-bold text-foreground">Check your email to confirm your account</p>
                     <p className="mt-1">
                       We sent a confirmation link to <span className="font-semibold text-foreground">{email.trim()}</span>.
-                      Click it and payment resumes automatically — your {TRIAL_DAYS} free days are saved.
+                      Click it and payment resumes automatically , your {TRIAL_DAYS} free days are saved.
                     </p>
                   </div>
                 </div>
@@ -641,7 +650,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                   </div>
                   {!agreed && (
                     <p className="text-center text-xs font-medium text-muted-foreground">
-                      Card details are required to start your trial — tick the box above to enable payment.
+                      Card details are required to start your trial , tick the box above to enable payment.
                     </p>
                   )}
                 </div>
@@ -663,7 +672,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                   </p>
                   <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
                     <ShieldCheck className="h-3.5 w-3.5" />
-                    Secured by Stripe — after {TRIAL_DAYS} days, ${plan.price}/mo is billed to the card on file.
+                    Secured by Stripe , after {TRIAL_DAYS} days, ${billedPrice}/{billedUnit} is billed to the card on file.
                   </p>
                 </div>
               )}

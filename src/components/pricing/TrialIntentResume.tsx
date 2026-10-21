@@ -25,13 +25,14 @@ export default function TrialIntentResume() {
     }
     if (!raw) return;
 
-    let intent: { plan?: string; company?: string; full_name?: string; phone?: string } = {};
+    let intent: { plan?: string; company?: string; full_name?: string; phone?: string; billing_interval?: string } = {};
     try {
       intent = JSON.parse(raw);
     } catch {
       localStorage.removeItem(TRIAL_INTENT_STORAGE_KEY);
       return;
     }
+    if (["free", "pro", "studio"].includes(intent.plan ?? "")) return; // New pricing preview is not activated.
     if (!intent.plan) {
       localStorage.removeItem(TRIAL_INTENT_STORAGE_KEY);
       return;
@@ -48,6 +49,7 @@ export default function TrialIntentResume() {
         const { data, error } = await supabase.functions.invoke("create-platform-checkout", {
           body: {
             plan: intent.plan,
+            billing_interval: intent.billing_interval ?? "monthly",
             trial: true,
             company: intent.company,
             full_name: intent.full_name,
@@ -61,7 +63,7 @@ export default function TrialIntentResume() {
       } catch {
         toast.dismiss("trial-resume");
         toast.error("Couldn't resume your free trial", {
-          description: "Head to Pricing to start it — your 14 free days are still waiting.",
+          description: "Head to Pricing to start it , your 14 free days are still waiting.",
         });
         // Leave the intent stored so a later visit (or /pricing) can pick it up.
       }
