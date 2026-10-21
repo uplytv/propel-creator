@@ -1,3 +1,9 @@
+# Creator pricing update
+- [ ] Replace creator pricing with Free, Pro and Studio plus annual billing and sourced calculator.
+- [ ] Centralize creator fees behind a default-off flag, preserving refunds and existing subscribers.
+- [ ] Update pricing copy, checkout placeholders and display-only legacy mapping.
+- [ ] Run focused tests, inspect preview build results and verify desktop/mobile pricing without Stripe calls.
+
 # Edge-function security hardening
 - [ ] Apply OAuth nonce/atomic wallet SQL in docs/security-hardening-pending.sql: blocked by unavailable database connection; code is ready and OAUTH_STATE_SECRET is saved.
 - [x] Reject unsigned Mux events and finalize only paid tickets using integer-cent RPC calls in code.
