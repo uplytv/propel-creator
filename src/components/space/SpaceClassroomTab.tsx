@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, Ar
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UPLYMuxPlayer } from "@/components/MuxPlayer";
+import { useSignedPlaybackToken } from "@/hooks/useSignedPlaybackToken";
 import { useAuth } from "@/context/AuthContext";
 import { useClassroomModules, useClassroomLessons, useLessonCompletions, useCompleteLesson, useCreateModule, useCreateLesson, useReorderModules, useReorderLessons, useDeleteModule, useDeleteLesson, useUpdateModule, useUpdateLesson, useLessonMediaSources, useSelfHealLessonMedia, resolveLessonMedia, extractYouTubeId, extractVimeoId, type LessonMedia } from "@/hooks/useClassroom";
 import { useCreatorTiers, requiredTierForRank, effectiveLessonMinRank, type CreatorTier } from "@/hooks/useTierGating";
@@ -109,6 +110,18 @@ function HlsVideo({ src, title, onVideoEl }: { src: string; title?: string; onVi
   );
 }
 
+/* Paid lesson uploads use Mux signed playback: mint a per-viewer token
+   (entitlement checked server-side) before mounting the player. Public-policy
+   videos get { signed: false } and play the plain URL as before. */
+function SignedLessonMuxPlayer({ lessonId, playbackId, title, onVideoEl }: { lessonId: string; playbackId: string; title?: string; onVideoEl?: (el: HTMLVideoElement | null) => void }) {
+  const { token, ready, forbidden, refresh } = useSignedPlaybackToken(lessonId, "lesson");
+  if (!ready) return <div className="w-full aspect-video bg-black" />;
+  if (forbidden) {
+    return <div className="w-full aspect-video bg-black flex items-center justify-center text-sm text-white/70">You need access to this lesson to watch the video.</div>;
+  }
+  return <UPLYMuxPlayer playbackId={playbackId} title={title} onVideoRef={onVideoEl} playbackToken={token ?? undefined} onPlaybackForbidden={refresh} />;
+}
+
 /* ── Lesson Video Player ──
    Renders from a pre-resolved `media` object (see resolveLessonMedia). Never
    falls through to a blank <video src="upload:…">: every state — ready,
@@ -142,7 +155,7 @@ function LessonPlayer({ lesson, media, isOwner, onReupload, onVideoEl }: { lesso
       );
     }
     if (media.kind === "mux" && media.playbackId) {
-      return <UPLYMuxPlayer playbackId={media.playbackId} title={lesson.title} onVideoRef={onVideoEl} />;
+      return <SignedLessonMuxPlayer lessonId={lesson.id} playbackId={media.playbackId} title={lesson.title} onVideoEl={onVideoEl} />;
     }
     if (media.kind === "direct" && media.directUrl) {
       return media.isHls
@@ -1379,7 +1392,8 @@ function LessonEditorForm({
   const uploadToMux = async (file: File): Promise<string | null> => {
     if (!user) return null;
     const { uploadToMuxWithRetry } = await import("@/lib/muxUpload");
-    return uploadToMuxWithRetry({ userId: user.id, title: title || "Lesson video", description: "", file, onProgress: setUploadProgress });
+    // Paid lessons get Mux signed playback (token required to watch).
+    return uploadToMuxWithRetry({ userId: user.id, title: title || "Lesson video", description: "", file, onProgress: setUploadProgress, access: isFree ? "public" : "paid" });
   };
 
   const buildVideoPatch = async (): Promise<any> => {

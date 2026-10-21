@@ -27,7 +27,7 @@ const corsHeaders = {
 }
 
 const TOKEN_TTL_SECONDS = 6 * 60 * 60 // 6h — client refreshes on 403 after >5h
-const VALID_REF_TYPES = ['stream', 'recording', 'asset'] as const
+const VALID_REF_TYPES = ['stream', 'recording', 'asset', 'lesson'] as const
 type RefType = (typeof VALID_REF_TYPES)[number]
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -130,17 +130,38 @@ serve(async (req) => {
     if (!UUID_RE.test(refId)) return json(400, { error: 'ref_id must be a UUID' })
     if (!VALID_REF_TYPES.includes(refType)) return json(400, { error: 'Invalid ref_type' })
 
-    // ── Resolve playback id via the ONLY entitlement path ───────────────────
-    const { data: playback, error: rpcError } = await userClient.rpc('get_stream_playback', {
-      p_ref_id: refId,
-      p_ref_type: refType,
-    })
-    if (rpcError) {
-      logError('get_stream_playback_failed', { message: rpcError.message })
-      return json(500, { error: 'Playback resolution failed' })
+    // ── Resolve playback id via the entitlement RPCs ────────────────────────
+    //   stream / recording : get_stream_playback (PPV)
+    //   asset              : get_stream_playback (PPV inheritance) AND
+    //                        get_signed_asset_playback (paid uploads)
+    //   lesson             : get_signed_asset_playback (classroom access)
+    let playback: any = null
+    if (refType !== 'lesson') {
+      const { data, error: rpcError } = await userClient.rpc('get_stream_playback', {
+        p_ref_id: refId,
+        p_ref_type: refType,
+      })
+      if (rpcError) {
+        logError('get_stream_playback_failed', { message: rpcError.message })
+        return json(500, { error: 'Playback resolution failed' })
+      }
+      playback = data
+      if (!playback?.found) return json(404, { error: 'Not found' })
+      if (!playback.allowed) return json(403, { error: 'Not entitled', is_ppv: !!playback.is_ppv })
     }
-    if (!playback?.found) return json(404, { error: 'Not found' })
-    if (!playback.allowed) return json(403, { error: 'Not entitled', is_ppv: !!playback.is_ppv })
+    if (refType === 'asset' || refType === 'lesson') {
+      const { data: assetPb, error: assetErr } = await userClient.rpc('get_signed_asset_playback', {
+        p_ref_id: refId,
+        p_ref_type: refType,
+      })
+      if (assetErr) {
+        logError('get_signed_asset_playback_failed', { message: assetErr.message })
+        return json(500, { error: 'Playback resolution failed' })
+      }
+      if (!assetPb?.found) return json(404, { error: 'Not found' })
+      if (!assetPb.allowed) return json(403, { error: 'Not entitled' })
+      playback = { ...(playback ?? {}), found: true, allowed: true, playback_id: playback?.playback_id ?? assetPb.playback_id }
+    }
     const playbackId = playback.playback_id as string | null
     if (!playbackId) return json(404, { error: 'No playback available yet' })
 
