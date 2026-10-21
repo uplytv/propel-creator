@@ -1,9 +1,10 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://uply.tv",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
@@ -12,7 +13,7 @@ const MONTHLY_PRICE_ID = "price_1TasQ74C2GQMnrEDEFZjxofZ";
 // Optional: set STRIPE_FOUNDERS_ANNUAL_PRICE_ID secret to enable annual plan
 const ANNUAL_PRICE_ID = Deno.env.get("STRIPE_FOUNDERS_ANNUAL_PRICE_ID") || "";
 
-serve(async (req) => {
+serve(withCors(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
@@ -84,4 +85,4 @@ serve(async (req) => {
       status: 500,
     });
   }
-});
+}));

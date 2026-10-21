@@ -14,6 +14,7 @@
 // checked against email_send_log before enqueueing.
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { withCors } from "../_shared/security.ts";
 
 const MAX_USERS_PER_RUN = 200 // cap batch; remaining users catch up next day
 const MAX_NOTIFICATION_ROWS = 10000
@@ -135,7 +136,7 @@ function buildDigestHtml(opts: {
 </html>`
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
   if (!supabaseUrl || !supabaseServiceKey) {
@@ -341,4 +342,4 @@ Deno.serve(async (req) => {
       headers: { 'Content-Type': 'application/json' },
     })
   }
-})
+}))

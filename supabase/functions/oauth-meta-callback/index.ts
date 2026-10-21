@@ -10,6 +10,7 @@
 //   META_APP_ID, META_APP_SECRET, META_REDIRECT_URI, AD_TOKEN_ENCRYPTION_KEY
 import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.95.0/cors";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
+import { withCors } from "../_shared/security.ts";
 
 // AES-GCM encryption helpers (32-byte key from secret)
 async function importKey(): Promise<CryptoKey> {
@@ -74,7 +75,7 @@ p{color:rgba(255,255,255,.65);font-size:14px;line-height:1.5}</style></head>
 </body></html>`;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -215,4 +216,4 @@ Deno.serve(async (req) => {
       headers: { "Content-Type": "text/html; charset=utf-8" },
     });
   }
-});
+}));

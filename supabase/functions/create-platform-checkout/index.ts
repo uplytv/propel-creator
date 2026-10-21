@@ -3,9 +3,10 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkEdgeRateLimit, requestIp } from "../_shared/rateLimit.ts";
 import { createSessionWithTax } from "../_shared/stripeTax.ts";
+import { withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://uply.tv",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
@@ -13,7 +14,7 @@ const logStep = (step: string, details?: any) => {
   console.log(`[PLATFORM-CHECKOUT] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
 };
 
-serve(async (req) => {
+serve(withCors(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -232,4 +233,4 @@ serve(async (req) => {
       status: 500,
     });
   }
-});
+}));

@@ -1,8 +1,9 @@
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': "https://uply.tv",
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4'
+import { withCors } from "../_shared/security.ts";
 
 function wrapLinksForTracking(html: string, broadcastId: string, email: string, trackBaseUrl: string): string {
   // Wrap <a href="..."> links with click tracking redirect
@@ -17,7 +18,7 @@ function wrapLinksForTracking(html: string, broadcastId: string, email: string, 
   )
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -218,4 +219,4 @@ Deno.serve(async (req) => {
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
-})
+}))

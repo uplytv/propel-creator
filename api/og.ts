@@ -3,10 +3,9 @@ import { findArtistBySlug, type ArtistRosterEntry } from "../src/data/artistRost
 import { getComparison } from "../src/data/comparisons";
 
 const SITE_ORIGIN = "https://uply.tv";
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || "https://dbjlhmbgskvhuzqvqfrl.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY =
-  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiamxobWJnc2t2aHV6cXZxZnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1OTM1NzUsImV4cCI6MjA4ODE2OTU3NX0.hmFhgwZNpA3a8-ewpuupIChPbY1ykvx8XOvD7qyr66Q";
+// Env only (security batch 1): no hardcoded key fallback.
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || "";
+const SUPABASE_PUBLISHABLE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || "";
 
 // Site-wide defaults — every unknown path previews as UPLY.
 const DEFAULT_TITLE = "UPLY — The Creator Operating System";

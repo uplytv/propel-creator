@@ -1,7 +1,13 @@
-const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type" };
+const corsHeaders = { "Access-Control-Allow-Origin": "https://uply.tv", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type" };
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { isInternalCaller, requireUser, withCors } from "../_shared/security.ts";
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
+  // SECURITY: signed-in users (or internal callers) only.
+  if (req.method !== 'OPTIONS' && !isInternalCaller(req)) {
+    const auth = await requireUser(req);
+    if ('response' in auth) return auth.response;
+  }
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
@@ -64,4 +70,4 @@ Deno.serve(async (req) => {
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
-});
+}));

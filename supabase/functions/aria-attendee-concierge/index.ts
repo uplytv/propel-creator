@@ -3,10 +3,22 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, json, err } from "../_shared/eventsCors.ts";
 import { callClaude } from "../_shared/anthropic.ts";
 import { checkEdgeRateLimit, requestIp } from "../_shared/rateLimit.ts";
+import { jsonResponse, requireUser, serviceClient, strictRateLimit, withCors } from "../_shared/security.ts";
 
 // ARIA Attendee Concierge: answers buyer questions (set times, parking, re-entry,
 // age limits) from the event's own data; escalates to the creator when unsure.
-serve(async (req) => {
+serve(withCors(async (req) => {
+  // SECURITY: public event-page widget. Signed-in users: 20 / 10 min; anonymous
+  // visitors: 5 / 10 min per IP. Rate limit fails CLOSED (AI spend).
+  if (req.method !== 'OPTIONS') {
+    const hasBearerUser = !!req.headers.get('Authorization') && !(req.headers.get('Authorization') ?? '').endsWith(Deno.env.get('SUPABASE_ANON_KEY') ?? '__none__');
+    const auth = hasBearerUser ? await requireUser(req) : null;
+    const authedId = auth && 'user' in auth ? auth.user.id : null;
+    const ident = authedId ? `user:${authedId}` : `ip:${requestIp(req)}`;
+    if (!(await strictRateLimit(serviceClient(), ident, 'aria-attendee-concierge', authedId ? 20 : 5, 10 * 60_000))) {
+      return jsonResponse(req, { error: 'Too many requests. Please wait a few minutes and try again.' }, 429);
+    }
+  }
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
   try {
@@ -38,4 +50,4 @@ serve(async (req) => {
   } catch (e) {
     return err((e as Error).message ?? "Failed", 500);
   }
-});
+}));

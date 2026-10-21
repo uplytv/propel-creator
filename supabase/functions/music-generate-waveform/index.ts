@@ -3,9 +3,10 @@
 // Otherwise generate deterministic pseudo peaks from the track id so
 // WaveformBar always has something to render until real analysis runs.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://uply.tv",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -46,7 +47,7 @@ function deterministicPeaks(trackId: string, count = 256): number[] {
   return out;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -144,4 +145,4 @@ Deno.serve(async (req) => {
       },
     );
   }
-});
+}));

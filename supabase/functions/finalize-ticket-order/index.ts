@@ -3,6 +3,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, json, err, logError } from "../_shared/eventsCors.ts";
 import { moneyEventRow, logMoneyEventSafe } from "../_shared/stripeWebhookLogic.ts";
+import { isInternalCaller, requireUser, withCors } from "../_shared/security.ts";
 
 // Finalizes a tier-based ticket order (order_type='primary_ticket'). The Stripe
 // webhook only handles the legacy 'event_ticket' path, so the tier flow needs
@@ -10,7 +11,7 @@ import { moneyEventRow, logMoneyEventSafe } from "../_shared/stripeWebhookLogic.
 // the Stripe session is paid, creates one ticket per quantity (QR auto-gen),
 // marks completed, and emails each ticket. Safe to call from the success page
 // AND a reconciliation cron — only a genuinely paid order ever produces tickets.
-serve(async (req) => {
+serve(withCors(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -27,6 +28,13 @@ serve(async (req) => {
 
     const { data: order } = await supabase.from("orders").select("*").eq("id", order_id).maybeSingle();
     if (!order) return err("Order not found", 404);
+    // SECURITY: only the buyer (JWT) or an internal caller (cron secret /
+    // service role, e.g. the reconciliation cron) may finalize an order.
+    if (!isInternalCaller(req)) {
+      const auth = await requireUser(req);
+      if ("response" in auth) return auth.response;
+      if (order.buyer_id !== auth.user.id) return err("Forbidden", 403);
+    }
     if (order.order_type !== "primary_ticket" && order.order_type !== "resale_ticket") {
       return err("Not a ticket order");
     }
@@ -263,4 +271,4 @@ serve(async (req) => {
     await logError(supabase, "finalize-ticket-order", e, body, null);
     return err((e as Error).message ?? "Failed", 500);
   }
-});
+}));
