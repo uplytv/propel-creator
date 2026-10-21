@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, json } from "../_shared/eventsCors.ts";
+import { requireInternal, withCors } from "../_shared/security.ts";
 
 const SERVICES = [
   { name: "stripe", url: "https://api.stripe.com/v1/charges?limit=1", env: "STRIPE_SECRET_KEY", auth: "bearer" },
@@ -8,7 +9,12 @@ const SERVICES = [
   { name: "resend", url: "https://api.resend.com/domains", env: "RESEND_API_KEY", auth: "bearer" },
 ];
 
-serve(async (req) => {
+serve(withCors(async (req) => {
+  // SECURITY: cron / internal only (x-cron-secret or service-role bearer).
+  if (req.method !== 'OPTIONS') {
+    const denied = requireInternal(req);
+    if (denied) return denied;
+  }
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -63,4 +69,4 @@ serve(async (req) => {
 
   await supabase.from("health_checks").insert(results);
   return json({ ok: true, results });
-});
+}));

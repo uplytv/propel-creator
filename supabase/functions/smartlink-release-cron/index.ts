@@ -2,9 +2,10 @@
 // Finds smart_links where is_presave=true, presave_converted=false, release_date <= now()
 // For each, refreshes Spotify tokens for all pending presaves and fires save-track API call.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { requireInternal, withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://uply.tv",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
@@ -71,7 +72,12 @@ async function refreshSpotifyToken(refreshToken: string): Promise<string | null>
   return data.access_token as string;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
+  // SECURITY: cron / internal only (x-cron-secret or service-role bearer).
+  if (req.method !== 'OPTIONS') {
+    const denied = requireInternal(req);
+    if (denied) return denied;
+  }
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   const supabase = createClient(
@@ -153,4 +159,4 @@ Deno.serve(async (req) => {
     JSON.stringify({ links_processed: links?.length || 0, total_converted: totalConverted }),
     { headers: { ...corsHeaders, "Content-Type": "application/json" } }
   );
-});
+}));

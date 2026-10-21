@@ -2,10 +2,11 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, json, err, logError } from "../_shared/eventsCors.ts";
+import { withCors } from "../_shared/security.ts";
 
 // IMPORTANT: On iOS Capacitor, the client should set provider='storekit' and pass storekit_transaction_id.
 // Apple Guideline 3.1.1 — digital tips must use IAP. We accept a verified StoreKit receipt instead of charging Stripe.
-serve(async (req) => {
+serve(withCors(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -145,4 +146,4 @@ serve(async (req) => {
     await logError(supabase, "tip-user", e, null, userId);
     return err((e as Error).message ?? "Failed", 500);
   }
-});
+}));

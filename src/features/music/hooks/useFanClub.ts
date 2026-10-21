@@ -48,11 +48,10 @@ export function useFanClubExclusives(artistId?: string) {
     queryKey: ["fan-club-exclusives", artistId],
     queryFn: async () => {
       if (!artistId) return [] as FanClubExclusive[];
-      const { data } = await supabase
-        .from("music_fan_club_exclusives")
-        .select("*")
-        .eq("artist_id", artistId)
-        .order("published_at", { ascending: false });
+      // Server-side gate: body/media_url come back null unless the viewer is
+      // entitled (security batch 1). Rows still list as locked teasers.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data } = await (supabase.rpc as any)("get_fan_club_exclusives", { _artist_id: artistId });
       return (data as FanClubExclusive[]) ?? [];
     },
     enabled: !!artistId,

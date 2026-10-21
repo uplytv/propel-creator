@@ -1,12 +1,13 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireUser, withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': "https://uply.tv",
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+serve(withCors(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -37,7 +38,13 @@ serve(async (req) => {
     })
   }
 
-  const { userId, title, description, category, isPublic, orientation, ppv, ppvPrice } = body || {}
+  const auth = await requireUser(req)
+  if ('response' in auth) return auth.response
+  if (body?.userId && body.userId !== auth.user.id) {
+    return new Response(JSON.stringify({ error: 'Forbidden', traceId }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  }
+  const userId = auth.user.id
+  const { title, description, category, isPublic, orientation, ppv, ppvPrice } = body || {}
   const streamOrientation = orientation === 'portrait' ? 'portrait' : 'landscape'
   // Additive PPV param from GoLive's pay-per-view toggle. Older clients that
   // don't send it get exactly the previous behavior (public policy).
@@ -69,16 +76,19 @@ serve(async (req) => {
   // sign-playback-token edge fn) when the signing secrets exist, so a leaked
   // HLS URL is useless without a token. Recordings inherit the policy via
   // new_asset_settings. Non-PPV streams keep the exact public policy this
-  // function has always used. If the signing secrets are not configured yet,
-  // PPV streams fall back to the current behavior (public policy, playback id
-  // vault-gated by get_stream_playback) — going live is never blocked.
+  // function has always used. If the signing secrets are not configured, PPV
+  // stream creation is refused (fail closed, security batch 1).
   const signingConfigured =
     !!Deno.env.get('MUX_SIGNING_KEY_ID') && !!Deno.env.get('MUX_SIGNING_PRIVATE_KEY')
   const useSignedPolicy = isPpvRequested && signingConfigured
   if (isPpvRequested && !signingConfigured) {
-    log('ppv_signed_playback_unavailable', 'ok', {
-      reason: 'mux_signing_secrets_not_set',
-      fallback: 'public_policy_vault_gated',
+    // SECURITY (batch 1): PPV now FAILS CLOSED. A public playback policy means a
+    // leaked HLS link plays for non-buyers, so refuse to create a PPV stream
+    // until MUX_SIGNING_KEY_ID / MUX_SIGNING_PRIVATE_KEY are configured.
+    log('ppv_refused_signing_not_configured', 'error')
+    return new Response(JSON.stringify({ error: 'Pay-per-view is temporarily unavailable (signed playback not configured). Go live without PPV or contact support.', traceId }), {
+      status: 503,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
   if (useSignedPolicy) log('ppv_signed_policy_selected', 'ok')
@@ -214,4 +224,4 @@ serve(async (req) => {
     }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   )
-})
+}))

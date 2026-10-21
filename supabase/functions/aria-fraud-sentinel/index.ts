@@ -3,10 +3,11 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, json, err } from "../_shared/eventsCors.ts";
 import { callClaude, MODEL_PREMIUM } from "../_shared/anthropic.ts";
 import { checkEdgeRateLimit } from "../_shared/rateLimit.ts";
+import { withCors } from "../_shared/security.ts";
 
 // ARIA Fraud Sentinel: flags anomalous purchase patterns (bulk buys, same buyer)
 // and scan anomalies (same ticket at two gates, impossible re-entry timing).
-serve(async (req) => {
+serve(withCors(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
   try {
@@ -59,4 +60,4 @@ serve(async (req) => {
   } catch (e) {
     return err((e as Error).message ?? "Failed", 500);
   }
-});
+}));

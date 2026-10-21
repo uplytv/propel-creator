@@ -2,21 +2,22 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, json, err } from "../_shared/eventsCors.ts";
 import { callClaude } from "../_shared/anthropic.ts";
-import { checkEdgeRateLimit, requestIp } from "../_shared/rateLimit.ts";
+import { requireUser, strictRateLimit, withCors } from "../_shared/security.ts";
 
 // ARIA Content Repurposing: turn one long-form piece (video/podcast/post) into a
 // full multi-platform package — Shorts, social posts, an email, an X thread, and
 // title ideas. Reuses the shared Anthropic caller.
-serve(async (req) => {
+serve(withCors(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
+    // SECURITY: authenticated callers only; rate limit fails CLOSED (costs money).
+    const auth = await requireUser(req);
+    if ("response" in auth) return auth.response;
     const { title = "", source = "", content_type = "video" } = await req.json();
     if (!title && !source) return err("Provide a title and/or transcript/notes to repurpose");
 
-    // Unauthenticated (verify_jwt=false) endpoint with a large Anthropic budget —
-    // rate limit per IP (10 packages / hour), fail-open on infra errors.
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
-    if (!(await checkEdgeRateLimit(supabase, `ip:${requestIp(req)}`, "aria-content-repurpose", { maxCalls: 10, windowMs: 60 * 60_000 }))) {
+    if (!(await strictRateLimit(supabase, `user:${auth.user.id}`, "aria-content-repurpose", 10, 60 * 60_000))) {
       return err("Too many requests in a short time. Please wait a while and try again.", 429);
     }
 
@@ -40,4 +41,4 @@ serve(async (req) => {
   } catch (e) {
     return err((e as Error).message ?? "Failed", 500);
   }
-});
+}));

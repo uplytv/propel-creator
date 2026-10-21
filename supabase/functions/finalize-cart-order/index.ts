@@ -3,6 +3,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, json, err, logError } from "../_shared/eventsCors.ts";
 import { moneyEventRow, logMoneyEventSafe } from "../_shared/stripeWebhookLogic.ts";
+import { withCors } from "../_shared/security.ts";
 
 // Finalizes a multi-item cart checkout (create-cart-checkout). The Stripe
 // webhook deliberately does not handle purchase_type='cart' (multi-creator
@@ -13,7 +14,7 @@ import { moneyEventRow, logMoneyEventSafe } from "../_shared/stripeWebhookLogic.
 // item writes the SAME records the single-product webhook path writes:
 // product_purchases, access_grants, sales/revenue increment, notifications,
 // and a 95% wallet credit (transactions row + wallet balance) per creator.
-serve(async (req) => {
+serve(withCors(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -242,4 +243,4 @@ serve(async (req) => {
     await logError(supabase, "finalize-cart-order", e, body, userId);
     return err((e as Error).message ?? "Failed", 500);
   }
-});
+}));

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { withCors } from "../_shared/security.ts";
 
 // Cancellation retention flow for UPLY platform subscriptions.
 // action "accept_offer": one-time 30 free days instead of canceling (trial_end push).
@@ -8,7 +9,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 // Never deletes/voids anything, never refunds, never touches webhooks.
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://uply.tv",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
@@ -32,7 +33,7 @@ const jsonResponse = (body: unknown, status = 200) =>
 const periodEnd = (sub: any): number | null =>
   sub?.current_period_end ?? sub?.items?.data?.[0]?.current_period_end ?? null;
 
-serve(async (req) => {
+serve(withCors(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -149,4 +150,4 @@ serve(async (req) => {
   } catch (error) {
     return jsonResponse({ error: error.message }, 500);
   }
-});
+}));

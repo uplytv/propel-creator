@@ -1,8 +1,9 @@
 // Sites AI generator — uses Lovable AI Gateway, debits creator credits at 2× cost.
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { withCors } from "../_shared/security.ts";
 
 const cors = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://uply.tv",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
@@ -13,7 +14,7 @@ const MARKUP = 2;
 const USD_PER_CREDIT = 0.05; // 100 credits = $5 pack
 const MIN_CREDITS = 2;
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
 
   try {
@@ -112,4 +113,4 @@ Deno.serve(async (req) => {
       status: 500, headers: { ...cors, "Content-Type": "application/json" },
     });
   }
-});
+}));
