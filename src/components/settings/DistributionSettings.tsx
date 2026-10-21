@@ -6,6 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { CREATOR_PLATFORM_OAUTH_COLUMNS } from "@/lib/safeColumns";
 
 const PLATFORMS = [
   {
@@ -74,7 +75,7 @@ export default function DistributionSettings() {
   useEffect(() => {
     if (!user) return;
     Promise.all([
-      supabase.from("creator_platform_oauth" as any).select("*").eq("creator_id", user.id),
+      supabase.from("creator_platform_oauth" as any).select(CREATOR_PLATFORM_OAUTH_COLUMNS).eq("creator_id", user.id),
       supabase.from("aria_distribution_settings").select("*").eq("creator_id", user.id).maybeSingle(),
     ]).then(([{ data: conns }, { data: setts }]) => {
       setConnections((conns as any) || []);

@@ -182,12 +182,12 @@ export default function AdIntegrations() {
                       extraInfo={[
                         { icon: Users, label: "Custom Audiences", value: "Available" },
                         { icon: Globe, label: "Installed On", value: "All creator pages" },
-                        { icon: Activity, label: "Server-side CAPI", value: metaIntegration.access_token ? "Configured" : "Not set" },
+                        { icon: Activity, label: "Server-side CAPI", value: metaIntegration.has_access_token ? "Configured" : "Not set" },
                       ]}
                       onDisconnect={() => handleDisconnect("meta")}
                     />
                     <CapiCredentialsForm
-                      currentToken={metaIntegration.access_token || ""}
+                      hasToken={!!metaIntegration.has_access_token}
                       currentTestCode={metaIntegration.test_event_code || ""}
                       onSave={async (token, testCode) => {
                         try {
@@ -397,18 +397,19 @@ function ConnectedDetails({
 }
 
 function CapiCredentialsForm({
-  currentToken,
+  hasToken,
   currentTestCode,
   onSave,
 }: {
-  currentToken: string;
+  hasToken: boolean;
   currentTestCode: string;
   onSave: (token: string, testCode: string) => Promise<void>;
 }) {
-  const [token, setToken] = useState(currentToken);
+  // The saved token is write-only (never sent to the browser); enter a new one to replace it.
+  const [token, setToken] = useState("");
   const [testCode, setTestCode] = useState(currentTestCode);
   const [saving, setSaving] = useState(false);
-  const [open, setOpen] = useState(!currentToken);
+  const [open, setOpen] = useState(!hasToken);
 
   if (!open) {
     return (
@@ -416,7 +417,7 @@ function CapiCredentialsForm({
         onClick={() => setOpen(true)}
         className="mt-4 w-full text-xs text-primary hover:underline text-left"
       >
-        {currentToken ? "Edit Conversions API credentials →" : "+ Add Conversions API credentials"}
+        {hasToken ? "Replace Conversions API credentials →" : "+ Add Conversions API credentials"}
       </button>
     );
   }

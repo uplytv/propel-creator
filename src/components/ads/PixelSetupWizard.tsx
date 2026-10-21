@@ -97,12 +97,13 @@ export default function PixelSetupWizard({ platform, open, onOpenChange, onSaved
     (async () => {
       const { data } = await supabase
         .from("ad_integrations")
-        .select("pixel_id, access_token, test_event_code")
+        .select("pixel_id, has_access_token, test_event_code")
         .eq("user_id", user.id)
         .eq("platform", platform)
         .maybeSingle();
       setPixelId(data?.pixel_id || "");
-      setAccessToken(data?.access_token || "");
+      // Saved token is write-only; leave blank to keep it.
+      setAccessToken("");
       setTestCode(data?.test_event_code || "");
     })();
   }, [open, platform, user]);
@@ -120,7 +121,7 @@ export default function PixelSetupWizard({ platform, open, onOpenChange, onSaved
             user_id: user.id,
             platform,
             pixel_id: pixelId.trim(),
-            access_token: accessToken.trim() || null,
+            ...(accessToken.trim() ? { access_token: accessToken.trim() } : {}),
             test_event_code: testCode.trim() || null,
             is_active: false,
           },

@@ -275,6 +275,7 @@ export type Database = {
       }
       ad_integrations: {
         Row: {
+          has_access_token: boolean | null
           access_token: string | null
           created_at: string
           id: string
