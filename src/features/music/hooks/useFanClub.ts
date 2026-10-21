@@ -95,25 +95,28 @@ export function useHasFanClubAccess(artistId?: string, minTierId?: string | null
   });
 }
 
+// Paid fan clubs go through Stripe Checkout (create-fan-club-checkout). The
+// subscription row is written by stripe-webhook, never by the client.
+async function startFanClubCheckout(body: Record<string, unknown>) {
+  const { data, error } = await supabase.functions.invoke("create-fan-club-checkout", {
+    body: { ...body, return_path: window.location.pathname },
+  });
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+  if (data?.url) {
+    window.location.assign(data.url);
+    return { redirected: true as const };
+  }
+  return { redirected: false as const, ...data };
+}
+
 export function useSubscribeToTier() {
   const qc = useQueryClient();
   const { user } = useAuth();
   return useMutation({
-    mutationFn: async ({ tierId, artistId }: { tierId: string; artistId: string }) => {
+    mutationFn: async ({ tierId }: { tierId: string; artistId: string }) => {
       if (!user) throw new Error("Sign in required");
-      const { data, error } = await supabase
-        .from("music_fan_club_subscriptions")
-        .upsert({
-          fan_id: user.id,
-          artist_id: artistId,
-          tier_id: tierId,
-          status: "active",
-          current_period_end: new Date(Date.now() + 30 * 86400_000).toISOString(),
-        }, { onConflict: "fan_id,tier_id" })
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
+      return startFanClubCheckout({ tier_id: tierId });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["my-fan-club-sub"] });

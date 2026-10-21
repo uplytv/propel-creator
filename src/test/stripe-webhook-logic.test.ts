@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   classifyPurchaseType,
+  fanClubStatusFromStripe,
   shouldCreateFulfillment,
   computeRefundWalletAdjustment,
   extractRefundIdentifier,
@@ -692,5 +693,19 @@ describe("planDisputeActions (charge.dispute.created)", () => {
     expect(plan.productPurchaseIdsToMarkDisputed).toEqual(["pp_1"]);
     expect(plan.creatorIdsToNotify).toEqual([]); // no creator id → no creator notification
     expect(plan.identified).toBe(true);
+  });
+});
+
+describe("fan club routing + status", () => {
+  it("routes fan club checkouts", () => {
+    expect(classifyPurchaseType({ purchase_type: "fan_club_tier" })).toBe("fan_club");
+    expect(classifyPurchaseType({ purchase_type: "fan_club" })).toBe("fan_club");
+  });
+  it("only grants access for paid statuses", () => {
+    expect(fanClubStatusFromStripe("active")).toBe("active");
+    expect(fanClubStatusFromStripe("trialing")).toBe("active");
+    expect(fanClubStatusFromStripe("past_due")).toBe("expired");
+    expect(fanClubStatusFromStripe("incomplete")).toBe("expired");
+    expect(fanClubStatusFromStripe("canceled")).toBe("canceled");
   });
 });
