@@ -1,3 +1,4 @@
+import { creatorPriceVariable } from "../_shared/creatorPrices.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -62,7 +63,7 @@ serve(async (req) => {
       );
     }
 
-    const { price_id, embedded, plan, trial, company, full_name, phone, email: guestEmailRaw } = await req.json();
+    const { price_id, embedded, plan, trial, company, full_name, phone, billing_interval = "monthly", email: guestEmailRaw } = await req.json();
 
     // New platform plans (inline price_data, 14-day free trial).
     // Keep amounts in sync with src/components/pricing/plans.ts.
@@ -72,7 +73,19 @@ serve(async (req) => {
       agency_pro: { name: "UPLY Agency Pro", unit_amount: 49700 },
     };
 
-    const planPricing = plan ? PLATFORM_PLAN_PRICING[plan] : undefined;
+    const priceEnv = creatorPriceVariable(plan, billing_interval);
+    const configuredPrice = priceEnv ? Deno.env.get(priceEnv) : undefined;
+    if ((plan === "pro" || plan === "studio") && !priceEnv) throw new Error("Invalid billing interval");
+    if (priceEnv && (!configuredPrice || !/^price_[A-Za-z0-9]+$/.test(configuredPrice))) {
+      return new Response(JSON.stringify({ error: `New creator pricing is not configured: ${priceEnv}` }), {
+        status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (plan === "free") return new Response(JSON.stringify({ url: "https://uply.tv/auth?mode=signup" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+    const newPlanPricing = configuredPrice ? { name: `UPLY ${plan}`, unit_amount: 0 } : undefined;
+    const planPricing = newPlanPricing ?? (plan ? PLATFORM_PLAN_PRICING[plan] : undefined);
     if (plan && !planPricing) throw new Error(`Unknown plan: ${plan}`);
     if (!planPricing && !price_id) throw new Error("plan or price_id required");
     logStep("Plan resolved", { plan: plan || null, price_id: price_id || null, trial: !!trial });
@@ -117,7 +130,7 @@ serve(async (req) => {
     logStep("Origin", { origin });
 
     // Legacy path uses a fixed Stripe price ID; new plans use inline price_data.
-    const lineItems = planPricing
+    const lineItems = configuredPrice ? [{ price: configuredPrice, quantity: 1 }] : planPricing
       ? [{
           price_data: {
             currency: "usd",
@@ -138,6 +151,7 @@ serve(async (req) => {
     if (user) metadata.user_id = user.id;
     else metadata.guest_email = checkoutEmail;
     if (plan) metadata.platform_plan = plan;
+    if (configuredPrice) { metadata.creator_pricing_version = "2026-10"; metadata.billing_interval = billing_interval; }
     if (company) metadata.company = String(company).slice(0, 500);
     if (full_name) metadata.full_name = String(full_name).slice(0, 500);
     if (phone) metadata.phone = String(phone).slice(0, 500);

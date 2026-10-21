@@ -15,7 +15,7 @@ const PLATFORM_PRODUCTS: Record<string, string> = {
 
 // New platform plans are created with inline price_data (ad-hoc product IDs),
 // so they're recognized via subscription metadata set by create-platform-checkout.
-const PLATFORM_PLAN_KEYS = new Set(["starter", "unlimited", "agency_pro"]);
+const PLATFORM_PLAN_KEYS = new Set(["starter", "unlimited", "agency_pro", "pro", "studio"]);
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
