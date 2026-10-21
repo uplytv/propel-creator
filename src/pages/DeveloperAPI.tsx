@@ -6,6 +6,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { API_KEY_COLUMNS } from "@/lib/safeColumns";
 
 const EVENTS = ["stream.started", "stream.ended", "purchase.completed", "subscription.created", "subscription.cancelled", "tip.received", "member.joined"];
 
@@ -39,7 +40,7 @@ export default function DeveloperAPI() {
   useEffect(() => { if (user) { loadKeys(); loadWebhooks(); } }, [user]);
 
   const loadKeys = async () => {
-    const { data } = await supabase.from("api_keys" as any).select("*").eq("user_id", user!.id).order("created_at", { ascending: false });
+    const { data } = await supabase.from("api_keys" as any).select(API_KEY_COLUMNS).eq("user_id", user!.id).order("created_at", { ascending: false });
     setKeys(data || []);
   };
 

@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { useLiveShop } from "@/hooks/useLiveShop";
+import { CREATOR_SHOPIFY_STORE_COLUMNS } from "@/lib/safeColumns";
 
 const CATEGORIES = ["Clothing", "Electronics", "Collectibles", "Sports Cards", "Sneakers", "Jewelry", "Art", "Books", "Toys", "Beauty", "Home", "Other"];
 const CONDITIONS = ["new", "like_new", "good", "fair"];
@@ -49,7 +50,7 @@ export default function LiveShopSetup({ streamId, products, onProductsChange, is
   useEffect(() => {
     if (!user) return;
     supabase.from("creator_shopify_stores")
-      .select("*")
+      .select(CREATOR_SHOPIFY_STORE_COLUMNS)
       .eq("creator_id", user.id)
       .eq("is_active", true)
       .maybeSingle()

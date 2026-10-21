@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { initMetaPixel, initGoogleTag, resetMetaPixel, resetGoogleTag } from "@/lib/adTracking";
 import { Sentry } from "@/lib/sentry";
+import { AD_INTEGRATION_COLUMNS } from "@/lib/safeColumns";
 
 type Platform = "meta" | "google";
 
@@ -12,7 +13,8 @@ interface AdIntegration {
   platform: Platform;
   pixel_id: string;
   is_active: boolean;
-  access_token?: string | null;
+  /** Server-computed; the token itself is never readable by the client. */
+  has_access_token?: boolean | null;
   test_event_code?: string | null;
 }
 
@@ -25,7 +27,7 @@ export function useAdIntegrations() {
     if (!user) return;
     const { data, error } = await supabase
       .from("ad_integrations")
-      .select("*")
+      .select(AD_INTEGRATION_COLUMNS)
       .eq("user_id", user.id);
     if (error) {
       Sentry.captureException(error, { tags: { context: "ad_integrations" } });
