@@ -12,10 +12,27 @@ serve(async (req) => {
   }
 
   try {
-    const { title, description, userId } = await req.json()
+    const { title, description, userId: bodyUserId, access } = await req.json()
 
-    if (!userId) {
-      throw new Error('userId is required')
+    // Caller must be signed in; the asset always belongs to the caller.
+    const authHeader = req.headers.get('Authorization') ?? ''
+    const token = authHeader.replace(/^Bearer\s+/i, '')
+    const authClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
+    const { data: authData } = token ? await authClient.auth.getUser(token) : { data: { user: null } }
+    if (!authData?.user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+    const userId = authData.user.id
+    if (bodyUserId && bodyUserId !== userId) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
+    // Paid uploads (paid lessons, paid products) use Mux SIGNED playback: the
+    // playback id alone won't play; sign-playback-token mints a per-viewer JWT
+    // after checking entitlement. Refuse rather than silently go public.
+    const isPaid = access === 'paid'
+    if (isPaid && (!Deno.env.get('MUX_SIGNING_KEY_ID') || !Deno.env.get('MUX_SIGNING_PRIVATE_KEY'))) {
+      return new Response(JSON.stringify({ error: 'Paid video uploads are not configured yet (signing keys missing)' }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     const muxTokenId = Deno.env.get('MUX_TOKEN_ID')
@@ -36,7 +53,7 @@ serve(async (req) => {
       body: JSON.stringify({
         cors_origin: '*',
         new_asset_settings: {
-          playback_policy: ['public'],
+          playback_policy: [isPaid ? 'signed' : 'public'],
           max_resolution_tier: '2160p',        // Allow 4K uploads like YouTube
           mp4_support: 'capped-1080p',         // Generate downloadable MP4 (offline + VOD download)
           per_title_encode: true,              // Per-content encoding optimization (same as YouTube)
@@ -68,7 +85,8 @@ serve(async (req) => {
       upload_id: uploadId,
       title: title || 'Untitled Video',
       description: description || null,
-      status: 'preparing'
+      status: 'preparing',
+      playback_policy: isPaid ? 'signed' : 'public',
     }).select()
 
     if (insertError) {
@@ -81,6 +99,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       uploadUrl: muxData.data.url,
       uploadId: uploadId,
+      playbackPolicy: isPaid ? 'signed' : 'public',
       suggestedChunkSize: 10240,  // 10MB chunks for faster uploads on good connections
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
