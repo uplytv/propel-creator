@@ -54,4 +54,4 @@ export async function withRetry<T>(fn: () => Promise<T>, label = "op"): Promise<
   throw lastErr;
 }
 
-export const PLATFORM_FEE_PCT = 0.05; // 5% UPLY fee
+export { LEGACY_PLATFORM_FEE_RATE as PLATFORM_FEE_PCT } from "./platformFees.ts";

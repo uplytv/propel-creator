@@ -25,13 +25,13 @@ export function buildOgImageUrl(params: OgImageParams): string {
   return u.toString();
 }
 
-/** Canonical landing-page OG image — kept in one place so index.html and
+/** Canonical landing-page OG image , kept in one place so index.html and
  *  Landing.tsx never drift apart. Update the copy here and both update. */
 export const LANDING_OG = {
   title: "The Creator Operating System",
-  subtitle: "Stream, teach, sell, and build community. Keep 95% of everything.",
+  subtitle: "Stream, teach, sell, and build community. Free, Pro and Studio creator plans.",
   eyebrow: "UPLY",
-  cta: "Join the waitlist",
+  cta: "Compare creator plans",
 } satisfies OgImageParams;
 
 export const LANDING_OG_IMAGE_URL = buildOgImageUrl(LANDING_OG);

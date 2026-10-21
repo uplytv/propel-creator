@@ -28,17 +28,17 @@ export default function InviteCodes() {
   const copyCode = async (code: string) => {
     await navigator.clipboard.writeText(getInviteUrl(code));
     setCopied(code);
-    toast.success("Beta invite link copied — share it wisely 🎯");
+    toast.success("Beta invite link copied , share it wisely 🎯");
     setTimeout(() => setCopied(null), 2500);
   };
 
   const shareTwitter = (code: string) => {
-    const text = `I just got beta access to UPLY — the creator platform that pays 95%.\n\nUsing one of my invites to let you skip the waitlist:\n${getInviteUrl(code)}\n\n@uplyTV`;
+    const text = `I just got beta access to UPLY , the creator platform with Free, Pro and Studio plans.\n\nUsing one of my invites to let you skip the waitlist:\n${getInviteUrl(code)}\n\n@uplyTV`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank");
   };
 
   const shareSMS = (code: string) => {
-    const text = `Hey — I'm on UPLY beta. It pays creators 95% and it's invite-only. Using one of my invites to get you in ahead of the waitlist: ${getInviteUrl(code)}`;
+    const text = `Hey , I'm on UPLY beta. It offers community, courses and events and it's invite-only. Using one of my invites to get you in ahead of the waitlist: ${getInviteUrl(code)}`;
     window.open(`sms:?body=${encodeURIComponent(text)}`, "_self");
   };
 
@@ -87,7 +87,7 @@ export default function InviteCodes() {
                 Your invites bypass the waitlist completely
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Thousands of creators are waiting. Anyone you invite gets in immediately — no queue.{" "}
+                Thousands of creators are waiting. Anyone you invite gets in immediately , no queue.{" "}
                 Use them for creators you actually want to build with.
               </p>
             </div>

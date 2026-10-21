@@ -37,7 +37,7 @@ export default function NetworkPreview() {
   const features = [
     { icon: "🔴", title: "Live Programming", desc: "Creators publish weekly schedules. Members build viewing habits. Appointment television owned by creators." },
     { icon: "📡", title: "Your Own Channel", desc: "UPLY Fitness. UPLY Finance. UPLY Gaming. Get discovered by people who love your niche. Your channel. Your audience. Your income." },
-    { icon: "🏆", title: "Network Events", desc: "UPLY Games at 5M — $10K cash plus Rolex. UPLY Awards at 10M — supercar of your choice. The prizes that make headlines." },
+    { icon: "🏆", title: "Network Events", desc: "UPLY Games at 5M , $10K cash plus Rolex. UPLY Awards at 10M , supercar of your choice. The prizes that make headlines." },
   ];
 
   return (
@@ -46,7 +46,7 @@ export default function NetworkPreview() {
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
           <h2 className="text-[28px] font-extrabold text-foreground font-heading mb-2">UPLY is a Network</h2>
           <p className="text-[15px] text-muted-foreground max-w-[400px] mx-auto leading-relaxed">
-            Every creator is a channel. Every stream is programming. You keep 95% of everything.
+            Every creator is a channel. Every stream is programming. Free: 3% UPLY fee. Pro/Studio: 0%. Stripe processing extra.
           </p>
         </motion.div>
 

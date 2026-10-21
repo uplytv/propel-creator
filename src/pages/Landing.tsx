@@ -22,7 +22,7 @@ const JSON_LD = {
   name: "UPLY",
   url: "https://uply.tv",
   description:
-    "Stream, teach, sell, and build community. Keep 95% of everything. The first creator platform on Roku TV.",
+    "Stream, teach, sell, and build community. Free $0/mo, Pro $99/mo, Studio $249/mo. Stripe processing extra. The first creator platform on Roku TV.",
   applicationCategory: "SocialNetworkingApplication",
   operatingSystem: "Web",
   creator: { "@type": "Organization", name: "UPLY" },
@@ -80,8 +80,8 @@ export default function Landing() {
   return (
     <div className="relative min-h-screen bg-background text-foreground antialiased scroll-smooth">
       <SEOHead
-        title="UPLY — The Creator Operating System"
-        description="Stream, teach, sell, and build community. Keep 95% of everything. The first creator platform on Roku TV."
+        title="UPLY , The Creator Operating System"
+        description="Stream, teach, sell, and build community. Free $0/mo, Pro $99/mo, Studio $249/mo. Stripe processing extra. The first creator platform on Roku TV."
         canonicalUrl="https://uply.tv/"
         image={LANDING_OG_IMAGE_URL}
         type="website"
@@ -97,7 +97,7 @@ export default function Landing() {
       />
 
       {/* Ambient, fixed backdrop for depth and cohesion across the long scroll.
-          Lightweight CSS-only gradients — no images, no layout impact. */}
+          Lightweight CSS-only gradients , no images, no layout impact. */}
       <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div className="absolute -top-1/4 left-1/2 h-[60vw] w-[60vw] max-h-[800px] max-w-[800px] -translate-x-1/2 rounded-full bg-primary/10 blur-[140px]" />
         <div className="absolute bottom-0 -left-1/4 h-[45vw] w-[45vw] max-h-[600px] max-w-[600px] rounded-full bg-[#B025FF]/[0.07] blur-[140px]" />
@@ -129,7 +129,7 @@ export default function Landing() {
         </main>
 
         <HomepageFooter />
-        <FoundersStickyCTA />
+
       </div>
     </div>
   );

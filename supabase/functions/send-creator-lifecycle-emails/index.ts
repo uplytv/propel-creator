@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { getCreatorPlatformFeeRate } from "../_shared/platformFees.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -189,9 +190,10 @@ Deno.serve(async (req) => {
         if (profile.first_payment_email_sent_at) break;
         const memberN = member_name || "Someone";
         const amt = amount || 0;
-        const fee = platform_fee || Math.round(amt * 0.05 * 100) / 100;
+        const rate = await getCreatorPlatformFeeRate(supabase, user_id);
+        const fee = platform_fee ?? Math.round(amt * rate * 100) / 100;
         const earnings = amt - fee;
-        const pct = amt > 0 ? Math.round((earnings / amt) * 100) : 95;
+        const pct = amt > 0 ? Math.round((earnings / amt) * 100) : Math.round((1 - rate) * 100);
         const platformPct = 100 - pct;
         const refCode = profile.referral_code || "";
 

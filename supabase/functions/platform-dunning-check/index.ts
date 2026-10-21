@@ -1,5 +1,5 @@
 // platform-dunning-check — scheduled (daily via pg_cron) checker for failed
-// platform-plan payments ($97/$297/$497 creator subscriptions).
+// platform-plan payments (current and legacy creator subscriptions).
 //
 // Deliberately NOT part of the Stripe webhook (that handler is frozen).
 // Finds past_due/unpaid platform subscriptions, resolves the creator, and
@@ -24,14 +24,15 @@ const PLATFORM_PRODUCTS: Record<string, string> = {
   "prod_UAMdsCQEOof66s": "scale",
 };
 // … and new plans recognized via subscription metadata stamped at checkout.
-const PLATFORM_PLAN_KEYS = new Set(["starter", "unlimited", "agency_pro"]);
+const PLATFORM_PLAN_KEYS = new Set(["starter", "unlimited", "agency_pro", "pro", "studio"]);
 
 const PLAN_LABELS: Record<string, string> = {
-  starter: "UPLY Starter ($97/mo)",
-  unlimited: "UPLY Unlimited ($297/mo)",
-  agency_pro: "UPLY Agency Pro ($497/mo)",
+  starter: "UPLY legacy Starter",
+  unlimited: "UPLY legacy Unlimited",
+  agency_pro: "UPLY legacy Agency Pro",
   pro: "UPLY Pro",
-  scale: "UPLY Scale",
+  scale: "UPLY legacy Scale",
+  studio: "UPLY Studio",
 };
 
 // Touch cadence: touch 1 immediately on first detection, touch 2 at +3 days,

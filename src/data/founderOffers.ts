@@ -1,5 +1,5 @@
 /**
- * UPLY Founder Services — paid "we'll do it for you" offerings.
+ * UPLY Founder Services , paid "we'll do it for you" offerings.
  * Direct platform charges (no Stripe Connect / no creator split).
  *
  * To edit the middle "Assisted" tier price, change `priceCents` and
@@ -21,7 +21,7 @@ export interface FounderOffer {
   priceLabel?: string;
   /** Suffix shown after price (e.g. "one-time"). */
   priceSuffix: string;
-  /** Stripe Price ID — only set for paid, live tiers. */
+  /** Stripe Price ID , only set for paid, live tiers. */
   stripePriceId?: string;
   /** Bulleted feature list. */
   features: string[];
@@ -39,7 +39,7 @@ export const FOUNDER_OFFERS: FounderOffer[] = [
   {
     key: "diy",
     name: "Build it yourself",
-    tagline: "Use UPLY's course builder — included with your account.",
+    tagline: "Use UPLY's course builder , included with your account.",
     priceCents: 0,
     priceLabel: "Included",
     priceSuffix: "with your account",
@@ -47,7 +47,7 @@ export const FOUNDER_OFFERS: FounderOffer[] = [
       "Full course builder access",
       "Unlimited modules & lessons",
       "Mux video hosting included",
-      "Keep 95% of every sale",
+      "Free: 3% UPLY fee; Pro/Studio: 0%. Stripe processing extra.",
     ],
     ctaLabel: "Start building",
     ctaHref: "/dashboard",

@@ -18,19 +18,17 @@ export default function HomepageEducators() {
           Educators & Course Creators
         </div>
         <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-4">
-          Kajabi charges $199/mo. Skool charges $99. <span className="text-primary">We charge less and pay you more.</span>
+          Community and courses on Free. <span className="text-primary">Pro adds ARIA AI for $99/month.</span>
         </h2>
         <p className="text-base sm:text-lg text-foreground/70 leading-relaxed">
-          Your knowledge is the product. The platform should be infrastructure — not a partner taking 12–15% of every sale you make.
+          Your knowledge is the product. The platform should be infrastructure , not a partner taking 12–15% of every sale you make.
         </p>
       </div>
 
       <div className="rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 to-transparent p-6 sm:p-8 mb-10 max-w-3xl">
         <div className="text-xs uppercase tracking-widest text-primary font-bold mb-2">The Math</div>
         <p className="font-display text-xl sm:text-2xl text-foreground leading-snug">
-          $10,000/month on Kajabi = <span className="line-through text-foreground/50">$1,500 gone</span>.
-          <br className="hidden sm:block" />
-          On UPLY = $500 gone. <span className="text-primary font-bold">You keep $9,500. Every month.</span>
+          Free $0/month + 3% UPLY fee. Pro $99/month and Studio $249/month + 0% UPLY fee. Stripe processing extra.
         </p>
       </div>
 

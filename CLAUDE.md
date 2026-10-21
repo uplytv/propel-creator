@@ -50,7 +50,7 @@ There is no traditional .env consumed by the frontend in the Lovable setup; chec
 
 4. UPLY architecture (stack map)
 
-LayerTechNotesFrontendVite + React + TS + Tailwind + shadcn/uiDeployed via VercelAuth / DB / StorageSupabase (Postgres + RLS)RLS is the security model — every table change needs RLS reviewPaymentsStripe ConnectCreator payouts, 95% creator / 5% platform splitSubscriptionsStripeMember → creator subscription gatingLive videoMuxRTMP ingest, HLS playback; integration is COMPLETE and stableEmailResendSends from notify.uply.tvAI (ARIA)Anthropic API5 specialized Claude agents, called from Edge FunctionsRealtime chatSupabase RealtimeStream chat
+LayerTechNotesFrontendVite + React + TS + Tailwind + shadcn/uiDeployed via VercelAuth / DB / StorageSupabase (Postgres + RLS)RLS is the security model — every table change needs RLS reviewPaymentsStripe ConnectCreator payouts, guarded plan-based rates (Free 3%, Pro/Studio 0%; legacy while disabled)SubscriptionsStripeMember → creator subscription gatingLive videoMuxRTMP ingest, HLS playback; integration is COMPLETE and stableEmailResendSends from notify.uply.tvAI (ARIA)Anthropic API5 specialized Claude agents, called from Edge FunctionsRealtime chatSupabase RealtimeStream chat
 
 Critical money path (do not break): creator signs up → connects Stripe → member subscribes/pays → funds split → creator payout.
 
@@ -79,7 +79,7 @@ If a task is ambiguous between "frontend tweak" and "touches money/auth/streamin
 7. Project context (business)
 
 
-UPLY = operating system for creators, 95% payout. Solo founder. Bootstrap to $50K MRR before raising.
+UPLY = operating system for creators. Free $0/month, Pro $99/month or $990/year, Studio $249/month or $2,490/year. Stripe processing extra. New rates pending activation. Solo founder. Bootstrap to $50K MRR before raising.
 Launch-critical path is desktop launch with first 10 beta creators; stability > new features.
 Post-launch roadmap includes Clips & Shorts (Mux Clipping API + Claude transcript analysis + /shorts feed) — do not pre-build unless asked.
 

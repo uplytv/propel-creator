@@ -23,12 +23,12 @@ export default function Terms() {
         </Link>
 
         <div className="mb-8 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
-          Draft template — review with legal counsel before launch.
+          Draft template , review with legal counsel before launch.
         </div>
 
         <article className="prose prose-invert max-w-none prose-headings:font-semibold">
           <h1>Terms of Service</h1>
-          <p className="text-foreground/60">Last updated: June 11, 2026</p>
+          <p className="text-foreground/60">Last updated: October 21, 2026</p>
 
           <p>
             These Terms govern your use of UPLY (uply.tv) and related services
@@ -44,8 +44,9 @@ export default function Terms() {
 
           <h2>2. Creator monetization &amp; payouts</h2>
           <p>
-            Creators receive <strong>95%</strong> of net revenue from their
-            sales and subscriptions; UPLY retains a 5% platform fee. Payments
+            Proposed creator plans are Free ($0/month, 3% UPLY fee), Pro ($99/month or $990/year, 0% UPLY fee),
+            and Studio ($249/month or $2,490/year, 0% UPLY fee). Stripe processing is extra.
+            These rates are pending activation; existing subscription billing and sale fees remain unchanged. Payments
             and payouts are processed by Stripe and subject to Stripe's terms.
             You are responsible for any taxes on your earnings.
           </p>

@@ -19,7 +19,7 @@ import { useProfile, useUpdateProfile, useUploadAvatar } from "@/hooks/useProfil
 import { supabase } from "@/integrations/supabase/client";
 import { SubscriptionsTab } from "@/components/settings/SubscriptionsTab";
 import CancelSubscriptionModal from "@/components/pricing/CancelSubscriptionModal";
-import { PLATFORM_PLANS } from "@/components/pricing/plans";
+import { PLATFORM_PLANS, planDisplayName } from "@/components/pricing/plans";
 import YouTubeImport from "@/components/classroom/YouTubeImport";
 import { useMyTickets } from "@/hooks/useEvents";
 import SocialProfileSection from "@/components/settings/SocialProfileSection";
@@ -145,12 +145,7 @@ export default function Settings() {
     },
   });
 
-  const PLAN_LABELS: Record<string, string> = {
-    ...Object.fromEntries(PLATFORM_PLANS.map((p) => [p.key, `${p.name} · $${p.price}/mo`])),
-    pro: "Pro",
-    scale: "Scale",
-  };
-  const platformPlanLabel = platformSub?.plan ? PLAN_LABELS[platformSub.plan] || platformSub.plan : "";
+  const platformPlanLabel = planDisplayName(platformSub?.plan);
 
   const handleOpenBillingPortal = async () => {
     setPortalLoading(true);
@@ -812,7 +807,7 @@ export default function Settings() {
       <CancelSubscriptionModal
         open={cancelModalOpen}
         onOpenChange={setCancelModalOpen}
-        planName={PLATFORM_PLANS.find((p) => p.key === platformSub?.plan)?.name || platformSub?.plan}
+        planName={planDisplayName(platformSub?.plan)}
         onChanged={() => refetchPlatformSub()}
       />
     </AppLayout>

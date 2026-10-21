@@ -1,3 +1,4 @@
+import { getCreatorPlatformFeeRate } from "../_shared/platformFees.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -129,7 +130,7 @@ serve(async (req) => {
 
     if (stripeAccount?.stripe_account_id && stripeAccount?.charges_enabled) {
       const price = await stripe.prices.retrieve(stripePriceId);
-      const feeAmount = Math.round((price.unit_amount || 0) * 0.05);
+      const feeAmount = Math.round((price.unit_amount || 0) * await getCreatorPlatformFeeRate(supabase, effectiveCreatorId));
       sessionConfig.payment_intent_data = {
         application_fee_amount: feeAmount,
         transfer_data: { destination: stripeAccount.stripe_account_id },

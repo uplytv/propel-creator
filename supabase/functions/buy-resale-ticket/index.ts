@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
+import { getCreatorPlatformFeeRate } from "../_shared/platformFees.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, json, err, logError, PLATFORM_FEE_PCT } from "../_shared/eventsCors.ts";
 
@@ -49,7 +50,7 @@ serve(async (req) => {
     }
 
     const subtotal = listing.asking_price_cents;
-    const fees = Math.round(subtotal * PLATFORM_FEE_PCT);
+    const fees = Math.round(subtotal * await getCreatorPlatformFeeRate(supabase, event.creator_id));
     const total = subtotal + fees;
 
     const { data: order } = await supabase

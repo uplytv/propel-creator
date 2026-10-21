@@ -1,3 +1,4 @@
+import { getCreatorPlatformFeeRate } from "../_shared/platformFees.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -143,7 +144,7 @@ serve(async (req) => {
     if (hasConnect) {
       sessionConfig.subscription_data = {
         ...(sessionConfig.subscription_data || {}),
-        application_fee_percent: 5,
+        application_fee_percent: 100 * await getCreatorPlatformFeeRate(supabase, creator_id),
         transfer_data: { destination: stripeAccount!.stripe_account_id },
       };
       logStep("Using Stripe Connect flow", { destination: stripeAccount!.stripe_account_id });

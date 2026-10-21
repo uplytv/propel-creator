@@ -364,7 +364,7 @@ const App = () => (
               <PushNotificationPermission />
               <AppWithSplash>
               <UploadRecovery />
-              <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <BrowserRouter>
                 <ScrollToTop />
                 <ErrorBoundary>
                 <Suspense fallback={<PageLoader />}>

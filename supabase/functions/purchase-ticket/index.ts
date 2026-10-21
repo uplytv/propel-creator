@@ -1,3 +1,4 @@
+import { getCreatorPlatformFeeRate } from "../_shared/platformFees.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -54,10 +55,9 @@ serve(async (req) => {
     if (!reserved) return err("Sold out", 409);
 
     // Per-event configurable platform fee (falls back to the 5% default).
-    const feePct =
-      typeof event.platform_fee_pct === "number" && event.platform_fee_pct >= 0
-        ? event.platform_fee_pct
-        : PLATFORM_FEE_PCT;
+    const legacyFeePct = typeof event.platform_fee_pct === "number" && event.platform_fee_pct >= 0
+      ? event.platform_fee_pct : PLATFORM_FEE_PCT;
+    const feePct = await getCreatorPlatformFeeRate(supabase, event.creator_id, legacyFeePct);
     const subtotal = tier.price_cents * quantity;
     const fees = Math.round(subtotal * feePct);
     const total = subtotal + fees;

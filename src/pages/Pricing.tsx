@@ -1,3 +1,6 @@
+import BillingToggle from "@/components/pricing/BillingToggle";
+import FeeCalculator from "@/components/pricing/FeeCalculator";
+import PricingOffers from "@/components/pricing/PricingOffers";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Check, ArrowLeft, X } from "lucide-react";
@@ -9,14 +12,15 @@ import { useQuery } from "@tanstack/react-query";
 import PlanCard from "@/components/pricing/PlanCard";
 import TrialSignupModal from "@/components/pricing/TrialSignupModal";
 import CancelSubscriptionModal from "@/components/pricing/CancelSubscriptionModal";
-import { PLATFORM_PLANS, type PlatformPlanKey } from "@/components/pricing/plans";
+import { PLATFORM_PLANS, type PlatformPlanKey, type BillingInterval, CREATOR_FEE_COPY, FEE_ROLLOUT_NOTE, planDisplayName } from "@/components/pricing/plans";
 
 export default function Pricing() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
+  const [interval, setInterval] = useState<BillingInterval>("monthly");
   const [cancelOpen, setCancelOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<PlatformPlanKey>("unlimited");
+  const [selectedPlan, setSelectedPlan] = useState<PlatformPlanKey>("pro");
 
   const { data: currentPlan = "free", refetch } = useQuery({
     queryKey: ["platform-subscription", user?.id],
@@ -43,6 +47,7 @@ export default function Pricing() {
 
   const handleStartTrial = (planKey: PlatformPlanKey) => {
     setSelectedPlan(planKey);
+    if (planKey === "free") { navigate(user ? "/dashboard" : "/auth?mode=signup"); return; }
     setModalOpen(true);
   };
 
@@ -56,10 +61,12 @@ export default function Pricing() {
         <div className="text-center mb-10">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground">Choose Your Plan</h1>
           <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-            Every plan starts with a 14-day free trial. Full platform, 95% payouts, cancel anytime.
+            Start free. Pro $99/month. Studio $249/month. Annual billing gives 2 months free.
           </p>
         </div>
 
+        <BillingToggle value={interval} onChange={setInterval} />
+        <PricingOffers />
         <div className="grid md:grid-cols-3 gap-5">
           {PLATFORM_PLANS.map((plan, idx) => (
             <motion.div
@@ -70,6 +77,7 @@ export default function Pricing() {
             >
               <PlanCard
                 plan={plan}
+                interval={interval}
                 isCurrent={currentPlan === plan.key}
                 onStartTrial={(p) => handleStartTrial(p.key)}
               />
@@ -78,14 +86,14 @@ export default function Pricing() {
         </div>
 
         <p className="text-xs text-center text-muted-foreground mt-8">
-          All plans include unlimited community members, live streaming, and course creation. Cancel anytime.
+          {CREATOR_FEE_COPY}<br />{FEE_ROLLOUT_NOTE}
         </p>
 
         {/* Manage current plan (paid/trialing holders only) */}
         {currentPlan !== "free" && (
           <div className="mt-6 flex items-center justify-center gap-2">
             <span className="text-xs text-muted-foreground">
-              You're on the {PLATFORM_PLANS.find((p) => p.key === currentPlan)?.name || currentPlan} plan.
+              You're on the {planDisplayName(currentPlan)} plan.
             </span>
             <button
               onClick={() => setCancelOpen(true)}
@@ -96,62 +104,14 @@ export default function Pricing() {
           </div>
         )}
 
-        {/* Competitor Comparison */}
-        <div className="mt-16">
-          <h2 className="text-2xl font-bold text-foreground text-center mb-2">Why creators choose UPLY</h2>
-          <p className="text-sm text-muted-foreground text-center mb-8 max-w-md mx-auto">
-            One platform replaces 6 subscriptions. Here's what you get that others don't.
-          </p>
-
-          <div className="rounded-md border border-border overflow-hidden">
-            <div className="grid grid-cols-5 bg-card border-b border-border">
-              <div className="col-span-1 p-3" />
-              <div className="p-3 text-center"><span className="text-xs font-bold text-primary">UPLY</span></div>
-              <div className="p-3 text-center"><span className="text-xs text-muted-foreground">YouTube</span></div>
-              <div className="p-3 text-center"><span className="text-xs text-muted-foreground">Patreon</span></div>
-              <div className="p-3 text-center"><span className="text-xs text-muted-foreground">Kajabi</span></div>
-            </div>
-            {[
-              { feature: "Live streaming + tips", uply: true, yt: true, pat: false, kaj: false },
-              { feature: "Courses & classroom", uply: true, yt: false, pat: false, kaj: true },
-              { feature: "Events & ticketing", uply: true, yt: false, pat: false, kaj: false },
-              { feature: "Live shopping", uply: true, yt: false, pat: false, kaj: false },
-              { feature: "Paid DMs", uply: true, yt: false, pat: false, kaj: false },
-              { feature: "Community + leaderboards", uply: true, yt: false, pat: true, kaj: true },
-              { feature: "AI growth assistant", uply: true, yt: false, pat: false, kaj: false },
-              { feature: "Affiliate system", uply: true, yt: false, pat: false, kaj: true },
-              { feature: "Jobs marketplace", uply: true, yt: false, pat: false, kaj: false },
-              { feature: "Starting price", uply: "$97/mo · 14 days free", yt: "Free", pat: "$8/mo", kaj: "$149/mo" },
-              { feature: "Creator payout", uply: "95%", yt: "~55%", pat: "88–92%", kaj: "varies" },
-            ].map((row, i) => (
-              <div key={row.feature} className={`grid grid-cols-5 ${i % 2 === 0 ? "bg-card/50" : ""} border-b border-border/50 last:border-0`}>
-                <div className="col-span-1 p-3 flex items-center">
-                  <span className="text-xs text-muted-foreground">{row.feature}</span>
-                </div>
-                {[row.uply, row.yt, row.pat, row.kaj].map((val, j) => (
-                  <div key={j} className="p-3 flex items-center justify-center">
-                    {typeof val === "string" ? (
-                      <span className={`text-xs font-medium ${j === 0 ? "text-primary" : "text-muted-foreground"}`}>{val}</span>
-                    ) : val ? (
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center ${j === 0 ? "bg-primary/20" : "bg-muted"}`}>
-                        <Check className={`w-3 h-3 ${j === 0 ? "text-primary" : "text-muted-foreground"}`} />
-                      </div>
-                    ) : (
-                      <X className="w-3.5 h-3.5 text-muted-foreground/30" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
+        <FeeCalculator interval={interval} />
       </div>
 
-      <TrialSignupModal open={modalOpen} onOpenChange={setModalOpen} defaultPlan={selectedPlan} />
+      <TrialSignupModal open={modalOpen} onOpenChange={setModalOpen} defaultPlan={selectedPlan} billingInterval={interval} />
       <CancelSubscriptionModal
         open={cancelOpen}
         onOpenChange={setCancelOpen}
-        planName={PLATFORM_PLANS.find((p) => p.key === currentPlan)?.name || currentPlan}
+        planName={planDisplayName(currentPlan)}
         onChanged={() => refetch()}
       />
     </AppLayout>
