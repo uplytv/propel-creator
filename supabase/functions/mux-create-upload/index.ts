@@ -15,14 +15,19 @@ serve(withCors(async (req) => {
   try {
     const auth = await requireUser(req)
     if ('response' in auth) return auth.response
-    const { title, description, userId: bodyUserId } = await req.json()
+    const { title, description, userId: bodyUserId, access } = await req.json()
     if (bodyUserId && bodyUserId !== auth.user.id) {
       return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
     const userId = auth.user.id
 
-    if (!userId) {
-      throw new Error('userId is required')
+
+    // Paid uploads (paid lessons, paid products) use Mux SIGNED playback: the
+    // playback id alone won't play; sign-playback-token mints a per-viewer JWT
+    // after checking entitlement. Refuse rather than silently go public.
+    const isPaid = access === 'paid'
+    if (isPaid && (!Deno.env.get('MUX_SIGNING_KEY_ID') || !Deno.env.get('MUX_SIGNING_PRIVATE_KEY'))) {
+      return new Response(JSON.stringify({ error: 'Paid video uploads are not configured yet (signing keys missing)' }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     const muxTokenId = Deno.env.get('MUX_TOKEN_ID')
@@ -43,7 +48,7 @@ serve(withCors(async (req) => {
       body: JSON.stringify({
         cors_origin: '*',
         new_asset_settings: {
-          playback_policy: ['public'],
+          playback_policy: [isPaid ? 'signed' : 'public'],
           max_resolution_tier: '2160p',        // Allow 4K uploads like YouTube
           mp4_support: 'capped-1080p',         // Generate downloadable MP4 (offline + VOD download)
           per_title_encode: true,              // Per-content encoding optimization (same as YouTube)
@@ -75,7 +80,8 @@ serve(withCors(async (req) => {
       upload_id: uploadId,
       title: title || 'Untitled Video',
       description: description || null,
-      status: 'preparing'
+      status: 'preparing',
+      playback_policy: isPaid ? 'signed' : 'public',
     }).select()
 
     if (insertError) {
@@ -88,6 +94,7 @@ serve(withCors(async (req) => {
     return new Response(JSON.stringify({
       uploadUrl: muxData.data.url,
       uploadId: uploadId,
+      playbackPolicy: isPaid ? 'signed' : 'public',
       suggestedChunkSize: 10240,  // 10MB chunks for faster uploads on good connections
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }

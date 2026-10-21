@@ -7,6 +7,8 @@ interface UploadOptions {
   title: string;
   description?: string;
   isPublic?: boolean;
+  /** 'paid' = Mux signed playback (viewers need a token from sign-playback-token). */
+  access?: "public" | "paid";
   file: Blob;
   onProgress?: (percent: number) => void;
   maxRetries?: number;
@@ -23,6 +25,7 @@ async function createMuxUpload(opts: {
   title: string;
   description?: string;
   isPublic?: boolean;
+  access?: "public" | "paid";
 }): Promise<UploadResult> {
   const { data, error } = await supabase.functions.invoke("mux-create-upload", {
     body: {
@@ -30,6 +33,7 @@ async function createMuxUpload(opts: {
       title: opts.title,
       description: opts.description || "",
       isPublic: opts.isPublic,
+      access: opts.access ?? "public",
     },
   });
   if (error || !data?.uploadUrl)
@@ -58,6 +62,7 @@ export async function uploadToMuxWithRetry(opts: UploadOptions): Promise<string>
         title: opts.title,
         description: opts.description,
         isPublic: opts.isPublic,
+        access: opts.access,
       });
 
       // Use UpChunk for chunked, resumable upload
