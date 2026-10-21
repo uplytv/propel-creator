@@ -1,3 +1,4 @@
+import { getCreatorPlatformFeeRate } from "../_shared/platformFees.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -94,7 +95,7 @@ serve(async (req) => {
       for (const item of items) {
         const qty = item.quantity ?? 1;
         const lineAmount = Math.round((item.unit_price ?? 0) * qty * 100) / 100;
-        const fee = Math.round(lineAmount * 0.05 * 100) / 100; // 5% platform fee, same as single-product path
+        const fee = Math.round(lineAmount * await getCreatorPlatformFeeRate(supabase, item.creator_id) * 100) / 100; // Shared creator platform fee
         const creatorId = item.creator_id;
 
         // 1) Purchase record (same shape the webhook writes for purchase_type product)

@@ -1,3 +1,4 @@
+import { getCreatorPlatformFeeRate } from "../_shared/platformFees.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -107,7 +108,7 @@ serve(async (req) => {
       throw new Error("This organizer can't accept payments yet. Please contact them.");
     }
 
-    const fee = Math.round(event.ticket_price * qty * 0.05 * 100); // 5% platform fee in cents
+    const fee = Math.round(event.ticket_price * qty * await getCreatorPlatformFeeRate(supabase, event.creator_id) * 100); // Platform fee in cents
 
     const sessionConfig: any = {
       mode: "payment",

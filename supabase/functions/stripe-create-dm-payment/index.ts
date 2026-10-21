@@ -1,3 +1,4 @@
+import { getCreatorPlatformFeeRate } from "../_shared/platformFees.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -41,7 +42,7 @@ serve(async (req) => {
     const hasConnect = stripeAccount?.stripe_account_id && stripeAccount?.charges_enabled;
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
-    const platformFee = Math.round(amount * 5); // 5% in cents
+    const platformFee = Math.round(amount * 100 * await getCreatorPlatformFeeRate(supabase, creator_id));
     const amountCents = Math.round(amount * 100);
     const origin = req.headers.get("origin") || "https://uply.tv";
 

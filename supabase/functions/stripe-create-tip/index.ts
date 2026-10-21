@@ -1,3 +1,4 @@
+import { getCreatorPlatformFeeRate } from "../_shared/platformFees.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -39,7 +40,7 @@ serve(async (req) => {
         : null;
 
     const amountCents = Math.round(amount * 100);
-    const feeCents = Math.round(amountCents * 0.05);
+    const feeCents = Math.round(amountCents * await getCreatorPlatformFeeRate(supabase, creator_id));
 
     // Get creator's Stripe account
     const { data: stripeAccount } = await supabase

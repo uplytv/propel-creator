@@ -1,3 +1,4 @@
+import { getCreatorPlatformFeeRate } from "../_shared/platformFees.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -72,7 +73,8 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const amount = Math.round(product.price * 100); // cents
-    const platformFee = Math.round(amount * 0.05); // 5%
+    const feeRate = await getCreatorPlatformFeeRate(supabase, product.creator_id);
+    const platformFee = Math.round(amount * feeRate);
 
     const origin = req.headers.get("origin") || "https://uply.tv";
 
@@ -161,8 +163,8 @@ serve(async (req) => {
       buyer_id: userId,
       creator_id: product.creator_id,
       amount: product.price,
-      platform_fee: parseFloat((product.price * 0.05).toFixed(2)),
-      creator_earnings: parseFloat((product.price * 0.95).toFixed(2)),
+      platform_fee: parseFloat((product.price * feeRate).toFixed(2)),
+      creator_earnings: parseFloat((product.price * (1 - feeRate)).toFixed(2)),
       status: "pending",
       stripe_payment_intent_id: session.id,
       variant_selected: variant_selected || null,

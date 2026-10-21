@@ -1,3 +1,4 @@
+import { getCreatorPlatformFeeRate, planBasedFeesEnabled } from "../_shared/platformFees.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import {
@@ -237,6 +238,19 @@ Deno.serve(async (req) => {
   const logEntry = { id: logEntryId } as { id: string | null };
 
   try {
+    if (planBasedFeesEnabled() && event.type.startsWith("customer.subscription.")) {
+      const newSub = event.data.object as Stripe.Subscription;
+      const newPlan = newSub.metadata?.platform_plan;
+      const billingUser = newSub.metadata?.user_id;
+      if ((newPlan === "pro" || newPlan === "studio") && billingUser && newSub.metadata?.creator_pricing_version === "2026-10") {
+        const { error: billingError } = await supabase.rpc("sync_creator_billing_plan", {
+          p_user_id: billingUser, p_plan: newPlan,
+          p_status: event.type === "customer.subscription.deleted" ? "canceled" : newSub.status,
+          p_subscription_id: newSub.id, p_event_created: event.created,
+        });
+        if (billingError) throw billingError;
+      }
+    }
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
@@ -249,7 +263,7 @@ Deno.serve(async (req) => {
           // Locked-track one-time unlock. Mirrors the product/course branch.
           const { buyer_id, track_id, creator_id } = metadata;
           const amount = (session.amount_total || 0) / 100;
-          const fee = Math.round(amount * 0.05 * 100) / 100;
+          const fee = Math.round(amount * await getCreatorPlatformFeeRate(supabase, creator_id) * 100) / 100;
           const pi = session.payment_intent as string;
 
           if (buyer_id && track_id) {
@@ -293,7 +307,7 @@ Deno.serve(async (req) => {
         } else if (branch === "tip") {
           const { sender_id, creator_id, stream_id, message, amount } = metadata;
           const tipAmount = parseFloat(amount || "0");
-          const fee = Math.round(tipAmount * 0.05 * 100) / 100;
+          const fee = Math.round(tipAmount * await getCreatorPlatformFeeRate(supabase, creator_id) * 100) / 100;
 
           await supabase.from("tip_transactions").insert({
             sender_id,
@@ -309,7 +323,7 @@ Deno.serve(async (req) => {
         } else if (branch === "product_course") {
           const { buyer_id, product_id, creator_id } = metadata;
           const amount = (session.amount_total || 0) / 100;
-          const fee = Math.round(amount * 0.05 * 100) / 100;
+          const fee = Math.round(amount * await getCreatorPlatformFeeRate(supabase, creator_id) * 100) / 100;
 
           // ON CONFLICT DO NOTHING for duplicate safety
           await supabase.from("product_purchases").upsert({
@@ -388,7 +402,7 @@ Deno.serve(async (req) => {
             .map((s: string) => s.trim())
             .filter(Boolean);
           const amount = (session.amount_total || 0) / 100;
-          const fee = Math.round(amount * 0.05 * 100) / 100;
+          const fee = Math.round(amount * await getCreatorPlatformFeeRate(supabase, creator_id) * 100) / 100;
           let firstToken: string | null = null;
 
           // Atomic reserve to guarantee no oversell under concurrent webhooks
@@ -545,7 +559,7 @@ Deno.serve(async (req) => {
             }
 
             const amount = (session.amount_total || 0) / 100;
-            const fee = Math.round(amount * 0.05 * 100) / 100;
+            const fee = Math.round(amount * await getCreatorPlatformFeeRate(supabase, creator_id) * 100) / 100;
 
             await updateWallet(supabase, creator_id, amount, fee, "Subscription payment", session.payment_intent as string);
 
@@ -690,9 +704,9 @@ Deno.serve(async (req) => {
             }
           }
 
-          // Credit creator wallet (95% of sale amount)
+          // Credit creator wallet after the shared platform fee
           const lpAmount = (session.amount_total || 0) / 100;
-          const lpFee = Math.round(lpAmount * 0.05 * 100) / 100;
+          const lpFee = Math.round(lpAmount * await getCreatorPlatformFeeRate(supabase, creator_id) * 100) / 100;
           await updateWallet(supabase, creator_id, lpAmount, lpFee, "Live product sale", session.payment_intent as string);
 
           // Notify creator of sale
@@ -834,7 +848,6 @@ Deno.serve(async (req) => {
         const invoice = event.data.object as Stripe.Invoice;
         if (invoice.billing_reason === "subscription_cycle") {
           const amount = (invoice.amount_paid || 0) / 100;
-          const fee = Math.round(amount * 0.05 * 100) / 100;
           const { data: memberSub } = await supabase
             .from("member_subscriptions")
             .select("creator_id, member_id")
@@ -842,6 +855,7 @@ Deno.serve(async (req) => {
             .maybeSingle();
           
           if (memberSub?.creator_id) {
+            const fee = Math.round(amount * await getCreatorPlatformFeeRate(supabase, memberSub.creator_id) * 100) / 100;
             // Update period end
             const sub = await stripe.subscriptions.retrieve(invoice.subscription as string);
             await supabase.from("member_subscriptions").update({

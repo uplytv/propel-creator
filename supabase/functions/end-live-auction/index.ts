@@ -1,3 +1,4 @@
+import { getCreatorPlatformFeeRate } from "../_shared/platformFees.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
@@ -46,8 +47,9 @@ serve(async (req) => {
     if (auction.current_winner_id && auction.current_bid > 0) {
       // Insert completed purchase for the winner
       const amount = auction.current_bid;
-      const platformFee = parseFloat((amount * 0.05).toFixed(2));
-      const creatorEarnings = parseFloat((amount * 0.95).toFixed(2));
+      const feeRate = await getCreatorPlatformFeeRate(supabase, auction.creator_id);
+      const platformFee = parseFloat((amount * feeRate).toFixed(2));
+      const creatorEarnings = parseFloat((amount * (1 - feeRate)).toFixed(2));
 
       await supabase.from("live_purchases").insert({
         live_product_id: auction.live_product_id,
