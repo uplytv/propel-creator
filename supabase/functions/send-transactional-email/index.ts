@@ -17,7 +17,7 @@ const SENDER_DOMAIN = "notify.notify.uply.tv"
 const FROM_DOMAIN = "notify.notify.uply.tv"
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': \"https://uply.tv\",
+  'Access-Control-Allow-Origin': 'https://uply.tv',
   'Access-Control-Allow-Headers':
     'authorization, x-client-info, apikey, content-type',
 }

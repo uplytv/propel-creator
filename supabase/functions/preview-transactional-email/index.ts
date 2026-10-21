@@ -4,7 +4,7 @@ import { TEMPLATES } from '../_shared/transactional-email-templates/registry.ts'
 import { withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': \"https://uply.tv\",
+  'Access-Control-Allow-Origin': 'https://uply.tv',
   'Access-Control-Allow-Headers': 'authorization, content-type',
 }
 
