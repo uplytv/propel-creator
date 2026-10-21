@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useFollows } from "@/hooks/useFollows";
 import { useAuth } from "@/context/AuthContext";
+import { MUX_LIVE_STREAM_COLUMNS } from "@/lib/safeColumns";
 
 interface LiveStream {
   id: string;
@@ -63,7 +64,7 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
   const fetchLiveStreams = async () => {
     const { data: streams, error } = await supabase
       .from('mux_live_streams')
-      .select('*')
+      .select(MUX_LIVE_STREAM_COLUMNS)
       .eq('status', 'active')
       .eq('is_public', true);
 

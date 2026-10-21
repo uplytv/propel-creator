@@ -496,7 +496,7 @@ export function useAdminTechnical(range: DateRange) {
       ] = await Promise.all([
         safeData(supabase.from("stripe_webhook_log").select("id, event_type, status, error_message, created_at, attempts").order("created_at", { ascending: false }).limit(200)),
         safeData(supabase.from("creator_stripe_accounts").select("id, charges_enabled, details_submitted, payouts_enabled")),
-        safeCount(supabase.from("mux_live_streams").select("*", { count: "exact", head: true }).eq("status", "active")),
+        safeCount(supabase.from("mux_live_streams").select("id", { count: "exact", head: true }).eq("status", "active")),
         safeCount(supabase.from("stream_recordings").select("*", { count: "exact", head: true }).eq("is_published", false)),
         safeCount(supabase.from("mux_assets").select("*", { count: "exact", head: true })),
         safeData(supabase.from("email_send_log").select("id, status, template_name, recipient_email, error_message, created_at").order("created_at", { ascending: false }).limit(100)),

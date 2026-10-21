@@ -38,6 +38,7 @@ import FollowButton from "@/components/FollowButton";
 import { useFollows } from "@/hooks/useFollows";
 import ClipCreator from "@/components/clips/ClipCreator";
 import SharePanel from "@/components/share/SharePanel";
+import { MUX_LIVE_STREAM_COLUMNS } from "@/lib/safeColumns";
 import SEOHead from "@/components/SEOHead";
 import RecentRecordingsRow from "@/components/live/RecentRecordingsRow";
 import LiveEventBanner from "@/components/live/LiveEventBanner";
@@ -379,7 +380,7 @@ export default function Stream() {
 
           let streamQuery = supabase
             .from('mux_live_streams')
-            .select('*')
+            .select(MUX_LIVE_STREAM_COLUMNS)
             .eq('slug', routeSlug)
             .order('created_at', { ascending: false })
             .limit(1);
@@ -608,7 +609,7 @@ export default function Stream() {
           // Finally try mux_live_streams
           const { data: muxStream } = await supabase
             .from('mux_live_streams')
-            .select('*')
+            .select(MUX_LIVE_STREAM_COLUMNS)
             .eq('id', id)
             .single();
 
@@ -727,7 +728,7 @@ export default function Stream() {
         // Then try mux_live_streams
         const { data: muxStream } = await supabase
           .from('mux_live_streams')
-          .select('*')
+          .select(MUX_LIVE_STREAM_COLUMNS)
           .eq('id', id)
           .maybeSingle();
 

@@ -2,12 +2,18 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, json, logError } from "../_shared/eventsCors.ts";
+import { requireInternal, withCors } from "../_shared/security.ts";
 
 // Cron job: release ticket inventory held by abandoned checkouts so on-sales
 // don't show phantom "sold out". RACE-SAFE: only releases a hold once Stripe
 // confirms the session is NOT paid (expired/open-past-expiry). Paid sessions
 // are left for the webhook to finalize. Schedule every ~5-10 min.
-serve(async (req) => {
+serve(withCors(async (req) => {
+  // SECURITY: cron / internal only (x-cron-secret or service-role bearer).
+  if (req.method !== 'OPTIONS') {
+    const denied = requireInternal(req);
+    if (denied) return denied;
+  }
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const supabase = createClient(
@@ -86,4 +92,4 @@ serve(async (req) => {
     await logError(supabase, "release-expired-ticket-holds", e, null, null);
     return json({ ok: false, error: (e as Error).message }, 500);
   }
-});
+}));

@@ -1,5 +1,6 @@
 import { sendLovableEmail } from 'npm:@lovable.dev/email-js'
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { withCors } from "../_shared/security.ts";
 
 const MAX_RETRIES = 5
 const DEFAULT_BATCH_SIZE = 10
@@ -78,7 +79,7 @@ async function moveToDlq(
   }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
   const apiKey = Deno.env.get('LOVABLE_API_KEY')
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
@@ -357,4 +358,4 @@ Deno.serve(async (req) => {
     JSON.stringify({ processed: totalProcessed }),
     { headers: { 'Content-Type': 'application/json' } }
   )
-})
+}))

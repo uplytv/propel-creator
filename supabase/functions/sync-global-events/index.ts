@@ -1,8 +1,9 @@
 // Sync global events from Ticketmaster + Eventbrite + SeatGeek into events_global
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { isInternalCaller, requireUser, withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://uply.tv",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
@@ -152,7 +153,12 @@ async function fetchSeatGeek(clientId: string) {
   });
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
+  // SECURITY: signed-in users (or internal callers) only.
+  if (req.method !== 'OPTIONS' && !isInternalCaller(req)) {
+    const auth = await requireUser(req);
+    if ('response' in auth) return auth.response;
+  }
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   const supabase = createClient(
@@ -199,4 +205,4 @@ Deno.serve(async (req) => {
   return new Response(JSON.stringify(result), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
-});
+}));

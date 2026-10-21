@@ -8,9 +8,10 @@
 // Auth: Requires the calling user; RLS enforces ownership on the read.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://uply.tv",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
@@ -26,7 +27,7 @@ interface DohResponse {
   Answer?: DohAnswer[];
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -140,7 +141,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     return json({ error: (err as Error).message }, 500);
   }
-});
+}));
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {

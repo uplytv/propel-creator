@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { MUX_LIVE_STREAM_COLUMNS } from "@/lib/safeColumns";
 
 export interface StreamData {
   id: string;
@@ -82,7 +83,7 @@ export function useStreamData(id: string | undefined) {
             setLoading(false);
             return;
           }
-          const { data: muxStream } = await supabase.from('mux_live_streams').select('*').eq('id', id).single();
+          const { data: muxStream } = await supabase.from('mux_live_streams').select(MUX_LIVE_STREAM_COLUMNS).eq('id', id).single();
           if (muxStream) {
             setDbStream(muxStream as any); setIsRealStream(true);
             await fetchProfile(muxStream.user_id);
@@ -102,7 +103,7 @@ export function useStreamData(id: string | undefined) {
           await fetchProfile(asset.user_id);
         }
       } else {
-        const { data: muxStream } = await supabase.from('mux_live_streams').select('*').eq('id', id).single();
+        const { data: muxStream } = await supabase.from('mux_live_streams').select(MUX_LIVE_STREAM_COLUMNS).eq('id', id).single();
         if (muxStream) {
           setDbStream(muxStream as any); setIsRealStream(true);
           await fetchProfile(muxStream.user_id);

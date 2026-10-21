@@ -1,18 +1,25 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireUser, withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': "https://uply.tv",
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+serve(withCors(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const { title, description, userId } = await req.json()
+    const auth = await requireUser(req)
+    if ('response' in auth) return auth.response
+    const { title, description, userId: bodyUserId } = await req.json()
+    if (bodyUserId && bodyUserId !== auth.user.id) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+    const userId = auth.user.id
 
     if (!userId) {
       throw new Error('userId is required')
@@ -92,4 +99,4 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
   }
-})
+}))

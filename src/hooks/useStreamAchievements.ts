@@ -41,7 +41,7 @@ export function useStreamAchievements() {
       // Get stream count
       const { count: streamCount } = await supabase
         .from("mux_live_streams")
-        .select("*", { count: "exact", head: true })
+        .select("id", { count: "exact", head: true })
         .eq("user_id", user.id);
 
       // Get peak viewers (max from sessions)

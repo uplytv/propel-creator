@@ -2,9 +2,10 @@
 import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
 import Stripe from 'https://esm.sh/stripe@18.5.0';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': "https://uply.tv",
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
@@ -29,7 +30,7 @@ async function verifyToken(token: string, secret: string): Promise<Record<string
   } catch { return null; }
 }
 
-serve(async (req) => {
+serve(withCors(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   const url = new URL(req.url);
@@ -103,4 +104,4 @@ serve(async (req) => {
     status: 302,
     headers: { ...corsHeaders, Location: session.url! },
   });
-});
+}));

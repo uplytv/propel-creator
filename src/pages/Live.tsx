@@ -10,6 +10,7 @@ import StreamCardNew from "@/components/live/StreamCardNew";
 
 import { useFollows } from "@/hooks/useFollows";
 import { CATEGORY_BUCKETS, countByBucket } from "@/lib/streamCategories";
+import { MUX_LIVE_STREAM_COLUMNS } from "@/lib/safeColumns";
 
 // ─── Types ──────────────────────────────────────────────────────
 interface LiveStream {
@@ -84,7 +85,7 @@ export default function Live() {
   const fetchLiveStreams = async () => {
     const { data: streams } = await supabase
       .from('mux_live_streams')
-      .select('*')
+      .select(MUX_LIVE_STREAM_COLUMNS)
       .eq('status', 'active')
       .eq('is_public', true);
 

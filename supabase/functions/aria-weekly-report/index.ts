@@ -1,12 +1,18 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { claudeChat } from "../_shared/claudeChat.ts";
+import { requireInternal, withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': "https://uply.tv",
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
+  // SECURITY: cron / internal only (x-cron-secret or service-role bearer).
+  if (req.method !== 'OPTIONS') {
+    const denied = requireInternal(req);
+    if (denied) return denied;
+  }
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -243,4 +249,4 @@ Rules:
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
-});
+}));

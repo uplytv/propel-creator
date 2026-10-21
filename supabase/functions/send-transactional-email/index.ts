@@ -2,6 +2,7 @@ import * as React from 'npm:react@18.3.1'
 import { renderAsync } from 'npm:@react-email/components@0.0.22'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { TEMPLATES } from '../_shared/transactional-email-templates/registry.ts'
+import { withCors } from "../_shared/security.ts";
 
 // Configuration baked in at scaffold time — do NOT change these manually.
 // To update, re-run the email domain setup flow.
@@ -16,7 +17,7 @@ const SENDER_DOMAIN = "notify.notify.uply.tv"
 const FROM_DOMAIN = "notify.notify.uply.tv"
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://uply.tv',
   'Access-Control-Allow-Headers':
     'authorization, x-client-info, apikey, content-type',
 }
@@ -34,7 +35,7 @@ function generateToken(): string {
 // gateway validates the caller's JWT (anon or service_role) before the request
 // reaches this code. No in-function auth check is needed.
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -376,4 +377,4 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     }
   )
-})
+}));

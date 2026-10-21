@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Code, Key, Plus, Copy, Check, Eye, EyeOff, Trash2, Webhook, BookOpen, Zap, Shield, RefreshCw } from "lucide-react";
+import { Code, Key, Plus, Copy, Check, Trash2, Webhook, BookOpen, Zap, Shield, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { API_KEY_COLUMNS } from "@/lib/safeColumns";
 
 const EVENTS = ["stream.started", "stream.ended", "purchase.completed", "subscription.created", "subscription.cancelled", "tip.received", "member.joined"];
 
@@ -30,7 +31,7 @@ export default function DeveloperAPI() {
   const [newKeyName, setNewKeyName] = useState("");
   const [creating, setCreating] = useState(false);
   const [newKey, setNewKey] = useState<string | null>(null);
-  const [shown, setShown] = useState<Set<string>>(new Set());
+  const [newWebhookSecret, setNewWebhookSecret] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [webhookUrl, setWebhookUrl] = useState("");
   const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
@@ -39,12 +40,12 @@ export default function DeveloperAPI() {
   useEffect(() => { if (user) { loadKeys(); loadWebhooks(); } }, [user]);
 
   const loadKeys = async () => {
-    const { data } = await supabase.from("api_keys" as any).select("*").eq("user_id", user!.id).order("created_at", { ascending: false });
+    const { data } = await supabase.from("api_keys" as any).select(API_KEY_COLUMNS).eq("user_id", user!.id).order("created_at", { ascending: false });
     setKeys(data || []);
   };
 
   const loadWebhooks = async () => {
-    const { data } = await supabase.from("api_webhooks" as any).select("*").eq("user_id", user!.id).order("created_at", { ascending: false });
+    const { data } = await supabase.from("api_webhooks" as any).select("id, url, events, is_active, created_at").eq("user_id", user!.id).order("created_at", { ascending: false });
     setWebhooks(data || []);
   };
 
@@ -52,15 +53,10 @@ export default function DeveloperAPI() {
     if (!newKeyName.trim()) return;
     setCreating(true);
     try {
-      const rawKey = `sk_live_${crypto.randomUUID().replace(/-/g, "")}`;
-      const prefix = rawKey.substring(0, 16);
-      const encoder = new TextEncoder();
-      const data = encoder.encode(rawKey);
-      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-
-      await supabase.from("api_keys" as any).insert({ user_id: user!.id, name: newKeyName.trim(), key_hash: hashHex, key_prefix: prefix });
+      // Generated + hashed server-side; the plaintext key is returned once.
+      const { data, error } = await supabase.functions.invoke("developer-credentials", { body: { action: "create_key", name: newKeyName.trim() } });
+      if (error || !data?.key) throw error ?? new Error("Failed");
+      const rawKey: string = data.key;
       setNewKey(rawKey);
       setNewKeyName("");
       await loadKeys();
@@ -85,12 +81,14 @@ export default function DeveloperAPI() {
     if (!webhookUrl.trim() || !selectedEvents.size) return;
     setAddingWebhook(true);
     try {
-      const secret = `whsec_${crypto.randomUUID().replace(/-/g, "")}`;
-      await supabase.from("api_webhooks" as any).insert({ user_id: user!.id, url: webhookUrl.trim(), events: Array.from(selectedEvents), secret });
+      // Secret is generated server-side, stored encrypted (Vault) and shown only once.
+      const { data, error } = await supabase.functions.invoke("developer-credentials", { body: { action: "create_webhook", url: webhookUrl.trim(), events: Array.from(selectedEvents) } });
+      if (error || !data?.secret) throw error ?? new Error("Failed");
+      setNewWebhookSecret(data.secret);
       setWebhookUrl("");
       setSelectedEvents(new Set());
       await loadWebhooks();
-      toast.success("Webhook registered!");
+      toast.success("Webhook registered! Copy the signing secret now — it won't be shown again.");
     } catch { toast.error("Failed to add webhook"); }
     setAddingWebhook(false);
   };
@@ -221,6 +219,19 @@ export default function DeveloperAPI() {
               </Button>
             </div>
 
+            {newWebhookSecret && (
+              <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
+                <p className="text-xs font-semibold text-primary mb-2">⚠️ Copy your webhook signing secret now. It won't be shown again.</p>
+                <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2 font-mono text-xs text-foreground break-all">
+                  {newWebhookSecret}
+                  <button onClick={() => copy(newWebhookSecret, "newsecret")} className="shrink-0 p-1.5 rounded hover:bg-secondary" aria-label="Copy webhook secret">
+                    {copied === "newsecret" ? <Check className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5 text-muted-foreground" />}
+                  </button>
+                </div>
+                <button onClick={() => setNewWebhookSecret(null)} className="text-xs text-muted-foreground hover:text-foreground mt-2">I've saved it, dismiss</button>
+              </div>
+            )}
+
             <div className="space-y-2">
               {webhooks.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">No webhooks yet.</p>}
               {webhooks.map((w: any, i: number) => (
@@ -231,11 +242,7 @@ export default function DeveloperAPI() {
                     <button onClick={async () => { await supabase.from("api_webhooks" as any).delete().eq("id", w.id); loadWebhooks(); }} className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive ml-2"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                   <p className="text-[10px]">{w.events.map((ev: string) => <span key={ev} className="inline-block px-1.5 py-0.5 bg-secondary rounded text-muted-foreground mr-1 mb-0.5">{ev}</span>)}</p>
-                  <div className="flex items-center gap-2 text-[10px]">
-                    <p className="text-muted-foreground font-mono">Secret: {shown.has(w.id) ? w.secret : "whsec_••••••••"}</p>
-                    <button onClick={() => setShown(prev => { const n = new Set(prev); n.has(w.id) ? n.delete(w.id) : n.add(w.id); return n; })} className="p-0.5">{shown.has(w.id) ? <EyeOff className="w-3 h-3 text-muted-foreground" /> : <Eye className="w-3 h-3 text-muted-foreground" />}</button>
-                    <button onClick={() => copy(w.secret, w.id)} className="p-0.5">{copied === w.id ? <Check className="w-3 h-3 text-primary" /> : <Copy className="w-3 h-3 text-muted-foreground" />}</button>
-                  </div>
+                  <p className="text-[10px] text-muted-foreground font-mono">Secret: whsec_•••••••• (shown once at creation)</p>
                 </motion.div>
               ))}
             </div>

@@ -1,8 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { claudeChat } from "../_shared/claudeChat.ts";
+import { withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://uply.tv",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
@@ -27,7 +28,7 @@ If ambiguous, pick the closest READ. summary should be a one-line plain English
 recap. Return ONLY the JSON object, no prose, no markdown fences.
 `;
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
@@ -113,7 +114,7 @@ Deno.serve(async (req) => {
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }
-});
+}));
 
 function json(b: unknown, status = 200) {
   return new Response(JSON.stringify(b), {

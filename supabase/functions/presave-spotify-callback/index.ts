@@ -2,9 +2,10 @@
 // Does NOT call /me/tracks at signup; fulfillment happens via presave-release-day cron.
 // If campaign is already 'released', performs save immediately.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://uply.tv",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
@@ -17,7 +18,7 @@ function parseSpotifyTrackId(uri: string | null): string | null {
   return m ? m[1] : null;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
@@ -120,4 +121,4 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-});
+}));

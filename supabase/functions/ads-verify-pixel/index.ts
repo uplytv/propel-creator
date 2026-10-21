@@ -1,9 +1,10 @@
 // Verifies a creator's pixel/conversion-API setup by sending a TEST event
 // to the platform. Returns { ready: boolean, message: string, details?: any }.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://uply.tv",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
@@ -12,7 +13,7 @@ interface Body {
   platform: "meta" | "tiktok" | "google" | "snapchat";
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
@@ -128,7 +129,7 @@ Deno.serve(async (req) => {
   } catch (e) {
     return json({ ready: false, message: e instanceof Error ? e.message : "Unknown error" }, 500);
   }
-});
+}));
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {

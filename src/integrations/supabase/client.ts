@@ -3,10 +3,13 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { brokeredPreviewStorage } from './previewAuthStorage';
 
-// Fallbacks ensure the production build (which doesn't have .env) still works.
-// These are PUBLISHABLE values — safe to ship to the client. RLS is the security boundary.
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://dbjlhmbgskvhuzqvqfrl.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiamxobWJnc2t2aHV6cXZxZnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1OTM1NzUsImV4cCI6MjA4ODE2OTU3NX0.hmFhgwZNpA3a8-ewpuupIChPbY1ykvx8XOvD7qyr66Q";
+// Env only (security batch 1): no hardcoded fallbacks. Set VITE_SUPABASE_URL and
+// VITE_SUPABASE_PUBLISHABLE_KEY in .env (local) and in the hosting provider (Vercel).
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+  throw new Error("Missing VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY environment variables");
+}
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";

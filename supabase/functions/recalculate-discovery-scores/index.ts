@@ -11,16 +11,22 @@
 //   momentum = 1.0 → 1.5 → 2.0 → 3.0    (10+ in 30min / top1% / shares 2x in 30min)
 //   quality = 1.0 → 1.5                 (thumb + desc + tags + verified)
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { requireInternal, withCors } from "../_shared/security.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://uply.tv",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
+  // SECURITY: cron / internal only (x-cron-secret or service-role bearer).
+  if (req.method !== 'OPTIONS') {
+    const denied = requireInternal(req);
+    if (denied) return denied;
+  }
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
@@ -163,4 +169,4 @@ Deno.serve(async (req) => {
   return new Response(JSON.stringify({ updated, total: rows?.length ?? 0 }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
-});
+}));

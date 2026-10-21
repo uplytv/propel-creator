@@ -1,7 +1,8 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': "https://uply.tv",
   'Access-Control-Allow-Headers':
     'authorization, x-client-info, apikey, content-type',
 }
@@ -13,7 +14,7 @@ function jsonResponse(data: Record<string, unknown>, status = 200): Response {
   })
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -127,4 +128,4 @@ Deno.serve(async (req) => {
   console.log('Email unsubscribed', { email: tokenRecord.email })
 
   return jsonResponse({ success: true })
-})
+}))
