@@ -19,7 +19,7 @@ const PLATFORM_PRODUCTS: Record<string, string> = {
 };
 
 // New platform plans are recognized via subscription metadata stamped at checkout.
-const PLATFORM_PLAN_KEYS = new Set(["starter", "unlimited", "agency_pro"]);
+const PLATFORM_PLAN_KEYS = new Set(["starter", "unlimited", "agency_pro", "pro", "studio"]);
 
 const jsonResponse = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {

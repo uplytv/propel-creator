@@ -6,13 +6,13 @@ import SEOHead from "@/components/SEOHead";
 
 const STEPS = [
   { icon: Radio, title: "Go live or schedule", body: "Start a stream or attach a pay-per-view pass to any event. RTMP from OBS, or go live from your phone." },
-  { icon: Ticket, title: "Set your price", body: "Choose free or pay-per-view. Name your price — early-bird tiers, VIP, or a single flat pass." },
-  { icon: DollarSign, title: "Get paid instantly", body: "Fans pay to unlock the stream. You keep 95%. Payouts go straight to your connected account." },
+  { icon: Ticket, title: "Set your price", body: "Choose free or pay-per-view. Name your price , early-bird tiers, VIP, or a single flat pass." },
+  { icon: DollarSign, title: "Get paid instantly", body: "Fans pay to unlock the stream. Pro and Studio have 0% UPLY fees. Stripe processing extra." },
 ];
 
 const AUDIENCE = [
   { icon: Radio, title: "Concerts & DJ sets", body: "Sell a global front-row seat to fans who can't be in the room." },
-  { icon: Users, title: "Workshops & masterclasses", body: "Charge for live teaching, coaching, and Q&A — no Zoom links, no leaks." },
+  { icon: Users, title: "Workshops & masterclasses", body: "Charge for live teaching, coaching, and Q&A , no Zoom links, no leaks." },
   { icon: Globe, title: "Events & festivals", body: "Add a PPV livestream to any event so anyone, anywhere can buy in." },
   { icon: BarChart3, title: "Creators & shows", body: "Premiere drops, fights, podcasts, and specials behind a paywall you control." },
 ];
@@ -31,7 +31,7 @@ export default function PPVLanding() {
     <div className="relative min-h-screen bg-background text-foreground antialiased">
       <SEOHead
         title="Pay-Per-View Live Streaming · UPLY"
-        description="Sell tickets to your live stream. Set any price, keep 95%, and let fans watch from anywhere. Pay-per-view live streaming for creators, events, and shows on UPLY."
+        description="Sell tickets to your live stream. Set any price, choose your creator plan, and let fans watch from anywhere. Pay-per-view live streaming for creators, events, and shows on UPLY."
         canonicalUrl="https://uply.tv/ppv"
       />
       <HomepageNav />
@@ -46,11 +46,11 @@ export default function PPVLanding() {
           <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight leading-[1.05]">
             Sell tickets to your{" "}
             <span className="bg-gradient-to-r from-[hsl(220_100%_62%)] to-[hsl(280_85%_60%)] bg-clip-text text-transparent">live stream.</span>
-            <br className="hidden sm:block" /> Keep 95%.
+            <br className="hidden sm:block" /> 0% UPLY fee on Pro.
           </h1>
           <p className="text-base sm:text-lg text-foreground/75 max-w-2xl">
-            Charge fans to watch you live — concerts, workshops, events, premieres. Set any price,
-            stream in HD to any screen, and keep <span className="text-gold font-semibold">95%</span> of every ticket.
+            Charge fans to watch you live , concerts, workshops, events, premieres. Set any price,
+            stream in HD to any screen, with <span className="text-gold font-semibold">0% UPLY fee on Pro and Studio</span>. Stripe processing extra.
           </p>
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
             <Link to="/auth" className="btn-primary-glow w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md px-6 h-12 text-sm font-bold tracking-wide">
@@ -61,7 +61,7 @@ export default function PPVLanding() {
             </Link>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-foreground/60 pt-2">
-            <span className="inline-flex items-center gap-1.5"><DollarSign className="w-3.5 h-3.5 text-gold" /> 95% payout</span>
+            <span className="inline-flex items-center gap-1.5"><DollarSign className="w-3.5 h-3.5 text-gold" /> 0% UPLY fee on Pro</span>
             <span className="inline-flex items-center gap-1.5"><Globe className="w-3.5 h-3.5 text-gold" /> Watch anywhere</span>
             <span className="inline-flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 text-gold" /> Secure paywall</span>
             <span className="inline-flex items-center gap-1.5"><Radio className="w-3.5 h-3.5 text-gold" /> HD + Roku TV</span>
@@ -116,10 +116,10 @@ export default function PPVLanding() {
         <div className="relative z-10 max-w-3xl mx-auto text-center">
           <p className="eyebrow-gold mb-2">The math</p>
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
-            You keep <span className="text-gold">95%.</span>
+            <span className="text-gold">0% UPLY fees on Pro and Studio.</span>
           </h2>
           <p className="text-base text-foreground/75 mt-4 max-w-xl mx-auto">
-            Twitch takes up to 50%. Most PPV platforms take 20–30%. UPLY takes 5% — and pays you out the moment fans buy in.
+            Free has a 3% UPLY fee. Pro and Studio have 0%. New rates are pending activation. Stripe processing and payout charges are not included.
           </p>
           <div className="mt-8 inline-flex flex-col sm:flex-row items-stretch gap-3">
             <div className="rounded-xl border border-border bg-card px-6 py-4 text-left">
@@ -127,8 +127,8 @@ export default function PPVLanding() {
               <p className="text-2xl font-extrabold text-foreground">$15,000</p>
             </div>
             <div className="rounded-xl border border-primary/40 bg-primary/5 px-6 py-4 text-left">
-              <p className="text-xs text-gold">You keep (95%)</p>
-              <p className="text-2xl font-extrabold text-gold">$14,250</p>
+              <p className="text-xs text-gold">Pro sale revenue before processing and subscription</p>
+              <p className="text-2xl font-extrabold text-gold">$15,000</p>
             </div>
           </div>
         </div>
@@ -138,7 +138,7 @@ export default function PPVLanding() {
       <section className="relative px-4 py-20 border-t border-border text-center">
         <div className="max-w-2xl mx-auto flex flex-col items-center gap-5">
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">Your next stream should pay you.</h2>
-          <p className="text-foreground/70">Set it up in minutes. Free to start — you only share when you earn.</p>
+          <p className="text-foreground/70">Set it up in minutes. Free to start , you only share when you earn.</p>
           <Link to="/auth" className="btn-primary-glow inline-flex items-center justify-center gap-1.5 rounded-md px-8 h-12 text-sm font-bold tracking-wide">
             Get Up. Get UPLY <ArrowRight className="w-4 h-4" />
           </Link>

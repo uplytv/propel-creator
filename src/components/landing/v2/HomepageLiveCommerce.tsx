@@ -5,7 +5,7 @@ const FEATURES = [
   { emoji: "⚡", label: "Flash Sales", desc: "Drop a product live with a 60-second countdown overlay." },
   { emoji: "🛒", label: "Live Commerce Overlay", desc: "Viewers buy without leaving the stream." },
   { emoji: "📦", label: "Digital Products", desc: "Sell PDFs, templates, downloads with instant delivery." },
-  { emoji: "💳", label: "Stripe Connect", desc: "Real payouts to your bank. 95% of every sale." },
+  { emoji: "💳", label: "Stripe Connect", desc: "Free: 3% UPLY fee. Pro/Studio: 0%. Stripe processing extra." },
   { emoji: "🎯", label: "Membership Gating", desc: "Exclusive drops for paying members only." },
 ];
 
@@ -13,7 +13,7 @@ const TAKES = [
   { name: "TikTok Shop", rate: "8%" },
   { name: "Amazon Live", rate: "Cut" },
   { name: "Whatnot", rate: "8%" },
-  { name: "UPLY", rate: "5%", highlight: true },
+  { name: "UPLY", rate: "0% paid", highlight: true },
 ];
 
 export default function HomepageLiveCommerce() {
@@ -28,7 +28,7 @@ export default function HomepageLiveCommerce() {
           <span className="text-primary">Your margin shouldn't fund the platform.</span>
         </h2>
         <p className="text-base sm:text-lg text-foreground/70 leading-relaxed">
-          TikTok Shop takes 8%. Amazon Live takes a cut. Whatnot takes 8%. Your audience is loyal — they don't need a marketplace algorithm to find you. They need a checkout button while you're live.
+          TikTok Shop takes 8%. Amazon Live takes a cut. Whatnot takes 8%. Your audience is loyal , they don't need a marketplace algorithm to find you. They need a checkout button while you're live.
         </p>
       </div>
 

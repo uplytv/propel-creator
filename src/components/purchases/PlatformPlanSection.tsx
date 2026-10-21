@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { CreditCard, ExternalLink, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
-import { PLATFORM_PLANS } from "@/components/pricing/plans";
+import { PLATFORM_PLANS, planDisplayName } from "@/components/pricing/plans";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import EmptyState from "@/components/ui/EmptyState";
@@ -69,14 +69,14 @@ export default function PlatformPlanSection() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-semibold text-foreground truncate">
-                {plan?.name || sub!.plan}
+                {planDisplayName(sub?.plan)}
               </h3>
               <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider border border-primary/40 text-primary flex-shrink-0">
                 {sub!.is_trial ? "Trial" : "Active"}
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {plan ? `$${plan.price}/mo` : "Platform plan"}
+              {"See your billing portal for the actual amount and interval"}
               {sub!.subscription_end
                 ? ` · ${sub!.is_trial ? "Trial ends" : "Renews"} ${format(
                     new Date(sub!.subscription_end),

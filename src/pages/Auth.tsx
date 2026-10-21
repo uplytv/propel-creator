@@ -63,7 +63,7 @@ export default function Auth() {
       if (asMember || p?.account_type === "member") {
         // Record the persona only for pristine profiles (fresh signups).
         // A creator who signs in through a member CTA link must never be
-        // downgraded — onboarding_complete/is_approved mark the creator path.
+        // downgraded , onboarding_complete/is_approved mark the creator path.
         if (asMember && p?.account_type !== "member" && !p?.onboarding_complete && !p?.is_approved) {
           await (supabase as any)
             .from("profiles")
@@ -154,7 +154,7 @@ export default function Auth() {
         }
       }
       trackEvent("signup_completed", { method: "email", has_referral: !!(refCode || creatorRefCode), as_member: asMember });
-      // Auto-confirm is enabled — if session exists, redirect immediately
+      // Auto-confirm is enabled , if session exists, redirect immediately
       if (signUpData?.session) {
         toast.success("Account created!", { description: "Welcome to UPLY!" });
         if (asMember) {
@@ -261,11 +261,11 @@ export default function Auth() {
     }
 
     if (result.redirected) {
-      // Browser will redirect to Google — just return and let it happen
+      // Browser will redirect to Google , just return and let it happen
       return;
     }
 
-    // Tokens were returned and session is already set — user is authenticated
+    // Tokens were returned and session is already set , user is authenticated
     // The onAuthStateChange listener above will handle navigation
     setLoading(false);
   };
@@ -340,7 +340,7 @@ export default function Auth() {
               {tab === "signup"
                 ? asMember
                   ? "Join communities, take free courses, and support creators. No card required."
-                  : "Keep 95% of what you earn. No card required."
+                  : "Free includes community, courses and events. No card required."
                 : asMember
                   ? "Sign in to your account"
                   : "Sign in to your creator dashboard"}

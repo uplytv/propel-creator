@@ -11,7 +11,7 @@ const comparisonRows = [
   { feature: "AI growth assistant", uply: true, youtube: false, patreon: false, skool: false },
   { feature: "Affiliate system", uply: true, youtube: false, patreon: false, skool: false },
   { feature: "Direct payouts (Stripe)", uply: true, youtube: false, patreon: true, skool: true },
-  { feature: "5% platform fee only", uply: true, youtube: false, patreon: false, skool: false },
+  { feature: "0% UPLY fee on Pro/Studio", uply: true, youtube: false, patreon: false, skool: false },
 ];
 
 export default function ComparisonTable() {

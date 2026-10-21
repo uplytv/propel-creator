@@ -17,29 +17,29 @@ export default function HomepageFinalCTA() {
           <span className="text-primary">You weren't early to TikTok Shop.</span>
         </h2>
         <p className="text-base sm:text-lg md:text-xl text-foreground/70 max-w-3xl mx-auto leading-relaxed mb-8">
-          Every platform that made creators rich — the ones who got there first won the biggest.
+          Start with community, courses and events on Free.
           UPLY is the AI-powered operating system for creators. The infrastructure. One platform
           that builds, runs, and grows the whole business with you.
         </p>
         <p className="text-foreground/60 mb-8">
-          Beta is live. Founding creators are building now.
+          Pro $99/month · Studio $249/month · 0% UPLY fee on paid plans. Stripe processing extra.
         </p>
 
         <Button
           size="lg"
-          onClick={() => setTrialOpen(true)}
+          onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}
           className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_60px_hsl(var(--primary)/0.5)] font-bold text-base px-8 py-6 h-auto"
         >
-          Claim Your Founding Creator Spot <ArrowRight className="w-5 h-5 ml-2" />
+          Compare creator plans <ArrowRight className="w-5 h-5 ml-2" />
         </Button>
 
-        <p className="mt-4 text-xs text-foreground/55">14 days free · No obligation · Cancel at any time</p>
+        <p className="mt-4 text-xs text-foreground/55">Free $0/month · Annual paid plans get 2 months free</p>
         <p className="mt-6 text-sm text-primary font-semibold">
-          100,000 creators and this offer closes. Forever.
+          Founding 100: price locked for life
         </p>
       </div>
 
-      <TrialSignupModal open={trialOpen} onOpenChange={setTrialOpen} defaultPlan="starter" />
+      <TrialSignupModal open={trialOpen} onOpenChange={setTrialOpen} defaultPlan="pro" />
     </section>
   );
 }

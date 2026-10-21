@@ -7,8 +7,8 @@ import TrialSignupModal from "@/components/pricing/TrialSignupModal";
 
 const ROTATING = [
   "If you're a musician, ToneDen is dead. We replaced it.",
-  "If you stream, Twitch is taking half your money. We take 5%.",
-  "If you teach, Kajabi charges $199/mo. We charge less and pay you more.",
+  "If you stream, Twitch is taking half your money. Free has a 3% UPLY fee. Pro and Studio have 0%.",
+  "If you teach, start with community and courses on UPLY Free.",
   "If you sell, your products deserve a platform that keeps your margin.",
   "If you promote events, your fans are already here.",
 ];
@@ -16,7 +16,7 @@ const FINAL = "The AI-Powered Operating System for Creators.";
 
 export default function HomepageHero() {
   const [idx, setIdx] = useState(0);
-  const [settled, setSettled] = useState(true); // static headline — AI-OS positioning
+  const [settled, setSettled] = useState(true); // static headline , AI-OS positioning
   const [cycles, setCycles] = useState(0);
   const [betaCode, setBetaCode] = useState("");
   const [showBeta, setShowBeta] = useState(false);
@@ -76,16 +76,16 @@ export default function HomepageHero() {
         </div>
 
         <p className="type-body-lg text-foreground/75 max-w-xl">
-          Stream, sell courses, and run events from one dashboard — while your AI team
-          handles the content, emails, and growth.
+          Community, courses and events on Free. Ticketing, PPV, ARIA AI and custom domain
+          on Pro for $99/month, with 0% UPLY fees. Stripe processing extra.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto">
           <button
-            onClick={() => setTrialOpen(true)}
+            onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}
             className="btn-primary-glow w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md px-8 h-12 text-sm font-bold tracking-wide"
           >
-            Start your 14-day free trial <ArrowRight className="w-4 h-4" />
+            Compare creator plans <ArrowRight className="w-4 h-4" />
           </button>
           <Link
             to="/discover"
@@ -95,27 +95,27 @@ export default function HomepageHero() {
           </Link>
         </div>
 
-        {/* Risk reversal — the conversion line */}
+        {/* Risk reversal , the conversion line */}
         <p className="text-xs text-foreground/55 -mt-3">
-          14 days free · No obligation · Cancel at any time
+          Free $0/month · Pro $99/month · Studio $249/month
         </p>
 
-        {/* Feature strip — plain text, informative without buttons */}
+        {/* Feature strip , plain text, informative without buttons */}
         <p className="text-xs sm:text-sm text-foreground/60 font-medium tracking-wide max-w-2xl leading-relaxed">
           AI growth team · Live streaming · Courses &amp; community · Music · Events &amp; tickets · Live shopping · Roku TV
         </p>
 
-        {/* First-100 founding offer — scarcity chip */}
+        {/* First-100 founding offer , scarcity chip */}
         <div className="inline-flex items-start sm:items-center gap-2 rounded-sm border border-gold-hairline bg-[hsl(var(--gold)/0.08)] px-4 py-2.5 max-w-xl text-left">
           <span className="rounded-sm bg-gold px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide shrink-0">
-            First 100
+            Founding 100
           </span>
           <p className="text-xs sm:text-sm font-semibold text-foreground/85">
-            We build your website funnel, SEO blog post, and community &amp; courses — free, done for you.
+            Price locked for life. UPLY Build included with annual Studio billing.
           </p>
         </div>
 
-        {/* Beta code — folded behind one small link */}
+        {/* Beta code , folded behind one small link */}
         {!showBeta ? (
           <button
             onClick={() => setShowBeta(true)}
@@ -141,7 +141,7 @@ export default function HomepageHero() {
         )}
       </div>
 
-      <TrialSignupModal open={trialOpen} onOpenChange={setTrialOpen} defaultPlan="starter" />
+      <TrialSignupModal open={trialOpen} onOpenChange={setTrialOpen} defaultPlan="pro" />
     </section>
   );
 }

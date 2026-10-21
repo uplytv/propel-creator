@@ -17,7 +17,7 @@ type Plan = "monthly" | "annual";
 const FAQ = [
   {
     q: "What exactly do I get?",
-    a: "Instant access to the UPLY creator operating system — streaming, products, memberships, courses, events, live commerce, ads, analytics — before public launch. Plus permanent UPLY Origin status, the founders badge on your profile, and automatic entry into the UPLY Games competition.",
+    a: "Instant access to the UPLY creator operating system , streaming, products, memberships, courses, events, live commerce, ads, analytics , before public launch. Plus permanent UPLY Origin status, the founders badge on your profile, and automatic entry into the UPLY Games competition.",
   },
   {
     q: "What is the UPLY Games competition?",
@@ -25,15 +25,15 @@ const FAQ = [
   },
   {
     q: "Can I cancel?",
-    a: "Yes — cancel any time. You keep founders status until the end of your billing period. No questions, no retention calls.",
+    a: "Yes , cancel any time. You keep founders status until the end of your billing period. No questions, no retention calls.",
   },
   {
     q: "Why $99 a month?",
     a: "It funds early infrastructure costs and keeps the seat count limited to creators who are serious. Everyone else waits for public launch.",
   },
   {
-    q: "Do you still take 5%?",
-    a: "Even better — Founders keep 95% of all earnings, no transaction fees on tips, no monthly platform fee beyond your access subscription.",
+    q: "What are the creator sale fees?",
+    a: "New creator pricing: Free 3% UPLY fee, Pro and Studio 0%. Stripe processing extra. Existing Founders Access billing is unchanged until activation.",
   },
 ];
 
@@ -49,7 +49,7 @@ export default function Founders() {
     (supabase.rpc as any)("get_founders_stats").then(({ data }: any) => {
       if (data) setStats({ claimed: Number(data.claimed) || 0, cap: Number(data.cap) || 100 });
     });
-    if (searchParams.get("cancelled")) toast.info("Checkout cancelled — no charge.");
+    if (searchParams.get("cancelled")) toast.info("Checkout cancelled , no charge.");
   }, [searchParams]);
 
   const startCheckout = async () => {
@@ -84,7 +84,7 @@ export default function Founders() {
   return (
     <div className="min-h-[100dvh] bg-background text-foreground">
       <SEOHead
-        title="UPLY Founders Access — Skip the Waitlist"
+        title="UPLY Founders Access , Skip the Waitlist"
         description="$99/mo for instant access to the UPLY creator operating system before public launch. Includes UPLY Origin status and entry to the UPLY Games competition. Limited to 100 founders."
         canonicalUrl="https://uply.tv/founders"
       />
@@ -107,14 +107,14 @@ export default function Founders() {
           className="pt-10 pb-8 text-center"
         >
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-bold uppercase tracking-wider mb-5">
-            <Zap className="w-3.5 h-3.5" /> Founders Access — Limited to {stats.cap}
+            <Zap className="w-3.5 h-3.5" /> Founders Access , Limited to {stats.cap}
           </div>
           <h1 className="font-display text-4xl sm:text-6xl font-extrabold tracking-tight mb-4">
             Skip the waitlist.<br />
             <span className="text-primary">Build before launch.</span>
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto">
-            For creators who want the UPLY operating system today — and an automatic entry into the
+            For creators who want the UPLY operating system today , and an automatic entry into the
             <span className="text-foreground font-semibold"> UPLY Games</span> competition.
           </p>
         </motion.section>
@@ -167,10 +167,10 @@ export default function Founders() {
               </a>
               <ul className="space-y-2 mt-7 mb-1 max-w-md mx-auto text-left">
                 {[
-                  { icon: Rocket, label: "Instant beta access — skip the waitlist entirely" },
+                  { icon: Rocket, label: "Instant beta access , skip the waitlist entirely" },
                   { icon: Crown, label: "Permanent UPLY Origin badge on your profile" },
                   { icon: Trophy, label: "Automatic entry into the UPLY Games competition" },
-                  { icon: Shield, label: "95% payout on all earnings — always" },
+                  { icon: Shield, label: "Creator plan fee schedule; Stripe processing extra" },
                 ].map(({ icon: Icon, label }) => (
                   <li key={label} className="flex items-start gap-3 text-sm">
                     <span className="shrink-0 mt-0.5 w-5 h-5 rounded-full bg-primary/15 flex items-center justify-center">
@@ -225,11 +225,11 @@ export default function Founders() {
 
               <ul className="space-y-3 mb-6 max-w-md mx-auto">
                 {[
-                  { icon: Rocket, label: "Instant beta access — skip the waitlist entirely" },
+                  { icon: Rocket, label: "Instant beta access , skip the waitlist entirely" },
                   { icon: Crown, label: "Permanent UPLY Origin badge on your profile" },
                   { icon: Trophy, label: "Automatic entry into the UPLY Games competition" },
-                  { icon: Shield, label: "95% payout on all earnings — always" },
-                  { icon: Check, label: "Cancel anytime — keep access through period end" },
+                  { icon: Shield, label: "Creator plan fee schedule; Stripe processing extra" },
+                  { icon: Check, label: "Cancel anytime , keep access through period end" },
                 ].map(({ icon: Icon, label }) => (
                   <li key={label} className="flex items-start gap-3 text-sm">
                     <span className="shrink-0 mt-0.5 w-5 h-5 rounded-full bg-primary/15 flex items-center justify-center">
@@ -277,7 +277,7 @@ export default function Founders() {
         </section>
       </main>
 
-      {/* Sticky bottom CTA — hidden on iOS native per App Store policy */}
+      {/* Sticky bottom CTA , hidden on iOS native per App Store policy */}
       {!IOS_BLOCKED && (
         <div
           className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background/95 backdrop-blur-md px-4 py-3"

@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { DollarSign, Globe, Lock, ArrowRight } from "lucide-react";
 
 const FEATURES = [
-  { icon: DollarSign, t: "Keep 95%", b: "Instant payouts on every pass." },
+  { icon: DollarSign, t: "0% UPLY fee on Pro", b: "Stripe processing extra. New rates pending activation." },
   { icon: Globe, t: "Watch anywhere", b: "HD to phone, web, and Roku TV." },
   { icon: Lock, t: "Secure paywall", b: "Only paying fans get in." },
 ];
@@ -25,8 +25,8 @@ export default function HomepagePPV() {
                 <span className="bg-gradient-to-r from-[hsl(220_100%_62%)] to-[hsl(280_85%_60%)] bg-clip-text text-transparent">live.</span>
               </h2>
               <p className="text-foreground/75 mt-3 max-w-md">
-                Sell pay-per-view passes to concerts, workshops, and events. Any price, any screen —
-                and you keep <span className="text-gold font-semibold">95%</span>.
+                Sell pay-per-view passes to concerts, workshops, and events. Any price, any screen.
+                <span className="text-gold font-semibold">Included in Pro and Studio with 0% UPLY fees.</span> Stripe processing extra.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 mt-6">
                 <Link to="/ppv" className="btn-primary-glow inline-flex items-center justify-center gap-1.5 rounded-md px-6 h-11 text-sm font-bold">
