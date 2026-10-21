@@ -71,3 +71,22 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+
+## Creator pricing preview (October 2026)
+
+Free: $0/month and 3% UPLY sale fee. Pro: $99/month or $990/year and 0% UPLY fee.
+Studio: $249/month or $2,490/year and 0% UPLY fee. Stripe processing is extra.
+Annual billing gives two months free. UPLY Build is included only with annual Studio.
+
+No site or functions deployed, Stripe prices created, or production data modified for this update.
+PLAN_BASED_FEES_ENABLED defaults false. Do not enable it before applying the pending additive SQL
+in docs/creator-pricing-migration-pending.sql and validating verified new-plan synchronization.
+Price placeholders are in .env.example. VITE_CREATOR_PRICING_CHECKOUT_ENABLED defaults false
+so preview signup cannot accidentally reach legacy-priced checkout.
+
+Legacy billing identifiers are not rewritten. Existing subscribers keep their billing; display-only
+labels describe plan equivalents without granting new zero-fee eligibility.
+Official competitor inputs and sources: src/components/pricing/competitorPricing.ts.
+Skool and Whop bundle processing into their payment rates, so the calculator does not invent
+processing-excluded totals for them.

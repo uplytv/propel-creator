@@ -24,7 +24,7 @@ runs NONE of the backend work until the publish manifest is executed** — that 
 |---|---|---|
 | P0 | C-1 affiliate cash-out (anonymous → Stripe transfer) | **Fixed** (`686b9972`) — needs fn deploy |
 | P0 | Cart charged buyers, fulfilled nothing | **Fixed** (`99f815b1`) — finalize-cart-order pattern |
-| P0 | No dunning on $97–$497 platform plans | **Fixed** (`f958c3d1` + `2f70f619`) — 3-touch + portal links |
+| P0 | No dunning on legacy platform plans | **Fixed** (`f958c3d1` + `2f70f619`) — 3-touch + portal links |
 | P0 | Refunds: full-PI on multi-ticket; cancelled events refunded resellers | **Fixed** (`09d3de47`) |
 | P0 | No `charge.dispute.created` handling | **Fixed** (`f9e77fa7`, [WEBHOOK], test-first) |
 | P0 | Refunds never clawed back creator wallets | **Fixed** (`f9e77fa7`, idempotent per refund) |
