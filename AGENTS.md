@@ -5,3 +5,7 @@
 - Resale wallet credits use a service-role-only RPC locking the order and wallet and inserting the ledger atomically; cents are converted only at legacy decimal storage boundaries to preserve balances.
 - AI endpoints opt into fail-closed shared rate limiting where required; other endpoints retain their existing fail-open behavior for compatibility.
 - URL imports isolate DNS, redirect and bounded-fetch validation in the function's own `urlGuard.ts`.
+- Creator sale rates use `_shared/platformFees.ts`; the server-only flag defaults off and disabled paths do no plan lookup, preserving historical fees and rounding.
+- New creator checkout uses configured Stripe price IDs only; legacy identifiers remain unchanged and are mapped only for presentation.
+- Verified new creator subscription events synchronize a service-role-only billing cache with event ordering; missing schema blocks enabled fee calculations instead of granting unverified zero fees.
+- Competitor cost inputs and official citations live in one pricing config; bundled processing is marked non-comparable instead of inventing platform-only rates.
