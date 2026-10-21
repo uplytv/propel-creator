@@ -1,22 +1,23 @@
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { PlatformPlan } from "./plans";
+import type { PlatformPlan, BillingInterval } from "./plans";
 
 interface PlanCardProps {
   plan: PlatformPlan;
   onStartTrial: (plan: PlatformPlan) => void;
   /** Optional override for the CTA state (e.g. current plan). */
   isCurrent?: boolean;
+  interval?: BillingInterval;
 }
 
 /**
  * Shared platform-plan card used by /pricing and the homepage pricing section.
  * Square corners everywhere per UPLY design tokens.
  */
-export default function PlanCard({ plan, onStartTrial, isCurrent = false }: PlanCardProps) {
+export default function PlanCard({ plan, onStartTrial, isCurrent = false, interval = "monthly" }: PlanCardProps) {
   return (
     <div
-      className={`relative rounded-md border bg-card p-6 sm:p-7 flex flex-col ${
+      className={`relative rounded-md border bg-card p-6 sm:p-7 flex flex-col h-full ${
         plan.popular ? "border-primary shadow-lg" : "border-border"
       }`}
     >
@@ -34,8 +35,8 @@ export default function PlanCard({ plan, onStartTrial, isCurrent = false }: Plan
       </div>
 
       <div className="mb-1">
-        <span className="text-4xl font-bold text-foreground">${plan.price}</span>
-        <span className="ml-1 text-sm text-muted-foreground">/Month</span>
+        <span className="text-4xl font-bold text-foreground">${(interval === "annual" ? plan.annualPrice : plan.price).toLocaleString("en-US")}</span>
+        <span className="ml-1 text-sm text-muted-foreground">/{interval === "annual" ? "Year" : "Month"}</span>
       </div>
 
       <p className="mb-5 text-sm text-muted-foreground">{plan.audience}</p>
@@ -56,10 +57,10 @@ export default function PlanCard({ plan, onStartTrial, isCurrent = false }: Plan
         variant={plan.popular ? "default" : "outline"}
         className="w-full rounded-sm font-bold"
       >
-        {isCurrent ? "Current plan" : "Start free trial"}
+        {isCurrent ? "Current plan" : plan.key === "free" ? "Get started free" : `Choose ${plan.name}`}
       </Button>
       <p className="mt-3 text-center text-xs text-muted-foreground">
-        14 days free · cancel anytime
+        Stripe processing extra · {interval === "annual" && plan.key !== "free" ? "2 months free" : "No monthly fee on Free"}
       </p>
     </div>
   );
