@@ -1,18 +1,28 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { claudeChat } from "../_shared/claudeChat.ts";
+import { requireUser, serviceClient, strictRateLimit, withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://uply.tv",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-serve(async (req) => {
+serve(withCors(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // SECURITY: authenticated callers only; 10 calls / 10 min, fails CLOSED.
+    const auth = await requireUser(req);
+    if ("response" in auth) return auth.response;
+    if (!(await strictRateLimit(serviceClient(), `user:${auth.user.id}`, "generate-product-copy", 10, 10 * 60_000))) {
+      return new Response(JSON.stringify({ error: "Too many requests. Please wait a few minutes and try again." }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     if (!Deno.env.get("ANTHROPIC_API_KEY")) throw new Error("ANTHROPIC_API_KEY is not configured");
 
     const body = await req.json();
@@ -95,4 +105,4 @@ serve(async (req) => {
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
-});
+}));

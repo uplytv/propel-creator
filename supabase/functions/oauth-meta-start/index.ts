@@ -3,6 +3,7 @@
 // Requires Supabase secrets: META_APP_ID, META_REDIRECT_URI
 import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.95.0/cors";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
+import { withCors } from "../_shared/security.ts";
 
 const META_SCOPES = [
   "ads_management",
@@ -14,7 +15,7 @@ const META_SCOPES = [
   "instagram_manage_insights",
 ].join(",");
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -79,4 +80,4 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-});
+}));

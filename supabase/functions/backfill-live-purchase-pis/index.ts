@@ -6,9 +6,10 @@ import {
   moneyEventRow,
   logMoneyEventSafe,
 } from "../_shared/stripeWebhookLogic.ts";
+import { withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://uply.tv",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
@@ -35,7 +36,7 @@ const jsonResponse = (body: unknown, status = 200) =>
 //   'backfill_pi', amount null) via the never-throw log_money_event RPC.
 const BATCH_LIMIT = 50;
 
-serve(async (req) => {
+serve(withCors(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -129,4 +130,4 @@ serve(async (req) => {
     console.error("[BACKFILL-LIVE-PURCHASE-PIS] Error:", error?.message ?? error);
     return jsonResponse({ error: error?.message ?? "Failed" }, 500);
   }
-});
+}));

@@ -1,13 +1,22 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { claudeChat } from "../_shared/claudeChat.ts";
+import { jsonResponse, requireUser, serviceClient, strictRateLimit, withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://uply.tv",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-serve(async (req) => {
+serve(withCors(async (req) => {
+  // SECURITY: signed-in users only; AI spend is rate limited and fails closed.
+  if (req.method !== 'OPTIONS') {
+    const auth = await requireUser(req);
+    if ('response' in auth) return auth.response;
+    if (!(await strictRateLimit(serviceClient(), `user:${auth.user.id}`, 'match-talent', 20, 10 * 60_000))) {
+      return jsonResponse(req, { error: 'Too many requests. Please wait a few minutes and try again.' }, 429);
+    }
+  }
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
@@ -90,4 +99,4 @@ serve(async (req) => {
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
-});
+}));

@@ -3,16 +3,17 @@
 // Public endpoint (verify_jwt = false) so anonymous fans can complete the flow.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://uply.tv",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 const SPOTIFY_CLIENT_ID = "c79c4446c81e4e26a55fd421d8c34fde";
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
@@ -141,4 +142,4 @@ Deno.serve(async (req) => {
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
-});
+}));

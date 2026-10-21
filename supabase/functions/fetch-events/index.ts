@@ -2,15 +2,16 @@
 // Syncs upcoming music festivals from Ticketmaster Discovery API into events_external.
 // Uses the affiliate-friendly public URL on each event so UPLY can layer attribution later.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://uply.tv",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 const TM_BASE = "https://app.ticketmaster.com/discovery/v2/events.json";
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
@@ -87,4 +88,4 @@ Deno.serve(async (req) => {
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
-});
+}));

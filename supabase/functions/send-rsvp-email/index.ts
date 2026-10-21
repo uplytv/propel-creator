@@ -1,24 +1,55 @@
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': "https://uply.tv",
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4'
+import { serviceClient, strictRateLimit, withCors } from '../_shared/security.ts'
+import { requestIp } from '../_shared/rateLimit.ts'
 
-Deno.serve(async (req) => {
+const esc = (v: unknown) => String(v ?? '').slice(0, 200).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!))
+
+Deno.serve(withCors(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
     const resendKey = Deno.env.get('RESEND_API_KEY')!
-    const { recipientEmail, recipientName, eventTitle, eventDate, creatorName, eventId } = await req.json()
+    const body = await req.json()
+    const recipientEmail = String(body?.recipientEmail ?? '').trim().toLowerCase()
+    const eventId = body?.eventId
 
-    if (!recipientEmail || !eventTitle) {
+    if (!recipientEmail || !eventId) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
+
+    // SECURITY: this public endpoint used to email any address with any content
+    // (spam relay). Now: rate limited (fails closed), only for a real RSVP row,
+    // and event title / creator come from the database, not the request.
+    const svc = serviceClient()
+    const ipOk = await strictRateLimit(svc, `ip:${requestIp(req)}`, 'send-rsvp-email', 5, 10 * 60_000)
+    const emailOk = ipOk && await strictRateLimit(svc, `email:${recipientEmail}`, 'send-rsvp-email', 3, 24 * 60 * 60_000)
+    if (!ipOk || !emailOk) {
+      return new Response(JSON.stringify({ error: 'Too many requests' }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+    const { data: rsvp } = await svc.from('event_rsvps').select('id').eq('event_id', eventId).eq('email', recipientEmail).maybeSingle()
+    if (!rsvp) {
+      return new Response(JSON.stringify({ error: 'RSVP not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+    const { data: ev } = await svc.from('events').select('title, creator_id').eq('id', eventId).maybeSingle()
+    if (!ev) {
+      return new Response(JSON.stringify({ error: 'Event not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+    const { data: creatorProfile } = ev.creator_id
+      ? await svc.from('profiles').select('display_name').eq('user_id', ev.creator_id).maybeSingle()
+      : { data: null }
+    const eventTitle = esc(ev.title)
+    const creatorName = esc(creatorProfile?.display_name || 'Creator').replace(/[<>@"]/g, '')
+    const recipientName = body?.recipientName ? esc(body.recipientName) : ''
+    const eventDate = esc(body?.eventDate || 'TBD')
 
     const joinLink = `https://uply.tv/event/rsvp/${eventId}`
     const greeting = recipientName ? `Hey ${recipientName},` : 'Hey there,'
@@ -77,4 +108,4 @@ Deno.serve(async (req) => {
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
-})
+}))

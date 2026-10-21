@@ -1,12 +1,13 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkEdgeRateLimit, requestIp } from "../_shared/rateLimit.ts";
+import { isInternalCaller, requireUser, withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://uply.tv",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -75,6 +76,38 @@ Deno.serve(async (req) => {
     // ── Conversion tracking (signup/purchase) — requires referred_user_id ──
     if (!referred_user_id) {
       return new Response(JSON.stringify({ error: "Missing referred_user_id" }), { status: 400, headers: corsHeaders });
+    }
+
+    // SECURITY (batch 1): conversions can no longer be forged by anonymous callers.
+    //  - purchase: server-to-server only (cron secret / service role).
+    //  - signup:   caller's JWT must match referred_user_id, OR (no session yet because
+    //              email confirmation is pending) the user must be a real account
+    //              created in the last 30 minutes. One signup conversion per user.
+    const deny = (status: number, error: string) =>
+      new Response(JSON.stringify({ error }), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (conversion_type === "purchase") {
+      if (!isInternalCaller(req)) return deny(403, "Forbidden");
+    } else if (conversion_type === "signup") {
+      const hasBearer = /^Bearer\s+/i.test(req.headers.get("Authorization") ?? "");
+      const authed = hasBearer ? await requireUser(req) : null;
+      if (authed && "user" in authed) {
+        if (authed.user.id !== referred_user_id) return deny(403, "Forbidden");
+      } else {
+        const { data: adminUser } = await serviceClient.auth.admin.getUserById(String(referred_user_id));
+        const createdAt = adminUser?.user?.created_at ? new Date(adminUser.user.created_at).getTime() : 0;
+        if (!createdAt || Date.now() - createdAt > 30 * 60_000) return deny(403, "Forbidden");
+      }
+      const { data: existing } = await serviceClient
+        .from("affiliate_conversions")
+        .select("id")
+        .eq("referred_user_id", referred_user_id)
+        .eq("conversion_type", "signup")
+        .limit(1);
+      if (existing && existing.length > 0) {
+        return new Response(JSON.stringify({ success: true, duplicate: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    } else {
+      return deny(400, "Unsupported conversion_type");
     }
 
     // Check platform affiliate links first
@@ -180,4 +213,4 @@ Deno.serve(async (req) => {
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: corsHeaders });
   }
-});
+}));

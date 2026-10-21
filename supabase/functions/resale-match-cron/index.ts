@@ -1,9 +1,15 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, json, logError } from "../_shared/eventsCors.ts";
+import { requireInternal, withCors } from "../_shared/security.ts";
 
 // Cron job: when a new listing appears at or below a watcher's max_bid, push notification.
-serve(async (req) => {
+serve(withCors(async (req) => {
+  // SECURITY: cron / internal only (x-cron-secret or service-role bearer).
+  if (req.method !== 'OPTIONS') {
+    const denied = requireInternal(req);
+    if (denied) return denied;
+  }
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -44,4 +50,4 @@ serve(async (req) => {
     await logError(supabase, "resale-match-cron", e, null, null);
     return json({ error: (e as Error).message }, 500);
   }
-});
+}));

@@ -1,7 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireUser, withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://uply.tv",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
@@ -96,13 +97,22 @@ async function addSimulcastTarget(
   return { id: json.data.id, status: json.data.status || "idle" };
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { live_stream_id, creator_id, platform: singlePlatform } = await req.json();
-    if (!live_stream_id || !creator_id) {
+    const { live_stream_id, creator_id: body_creator_id, platform: singlePlatform } = await req.json();
+    if (!live_stream_id) {
       return new Response(JSON.stringify({ error: "Missing live_stream_id or creator_id" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+
+    // SECURITY: caller must be the authenticated owner of this stream.
+    const caller = await requireUser(req);
+    if ("response" in caller) return caller.response;
+    const creator_id = caller.user.id;
+    if (body_creator_id && body_creator_id !== creator_id) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -110,6 +120,23 @@ Deno.serve(async (req) => {
     const muxTokenId = Deno.env.get("MUX_TOKEN_ID")!;
     const muxTokenSecret = Deno.env.get("MUX_TOKEN_SECRET")!;
     const supabase = createClient(supabaseUrl, serviceKey);
+
+    if (!/^[A-Za-z0-9_-]{1,128}$/.test(String(live_stream_id))) {
+      return new Response(JSON.stringify({ error: "Invalid live_stream_id" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const ownerFilter = /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(String(live_stream_id))
+      ? `id.eq.${live_stream_id},mux_stream_id.eq.${live_stream_id}`
+      : `mux_stream_id.eq.${live_stream_id}`;
+    const { data: ownedStream } = await supabase
+      .from("mux_live_streams")
+      .select("id, mux_stream_id, user_id")
+      .or(ownerFilter)
+      .eq("user_id", creator_id)
+      .maybeSingle();
+    if (!ownedStream?.mux_stream_id) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const muxLiveStreamId: string = ownedStream.mux_stream_id;
 
     // Rate limit
     const allowed = await checkRateLimit(supabase, creator_id, "start-simulcast");
@@ -144,7 +171,7 @@ Deno.serve(async (req) => {
       let simulcastId: string | null = null;
 
       try {
-        const result = await addSimulcastTarget(live_stream_id, dest.rtmp_url, streamKey, muxTokenId, muxTokenSecret);
+        const result = await addSimulcastTarget(muxLiveStreamId, dest.rtmp_url, streamKey, muxTokenId, muxTokenSecret);
         if (result) {
           simulcastId = result.id;
           success = true;
@@ -157,7 +184,7 @@ Deno.serve(async (req) => {
       if (!success) {
         await new Promise((r) => setTimeout(r, 15000));
         try {
-          const result = await addSimulcastTarget(live_stream_id, dest.rtmp_url, streamKey, muxTokenId, muxTokenSecret);
+          const result = await addSimulcastTarget(muxLiveStreamId, dest.rtmp_url, streamKey, muxTokenId, muxTokenSecret);
           if (result) {
             simulcastId = result.id;
             success = true;
@@ -206,4 +233,4 @@ Deno.serve(async (req) => {
   } catch (e: any) {
     return new Response(JSON.stringify({ error: sanitizeError(e.message) }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
-});
+}));

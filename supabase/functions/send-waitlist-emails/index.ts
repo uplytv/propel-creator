@@ -1,7 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { requireInternal, withCors } from "../_shared/security.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://uply.tv",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
@@ -423,7 +424,12 @@ async function handleEarlyAccessGranted(supabase: any, wl: any) {
 
 // ── main handler ─────────────────────────────────────────────────────────────
 
-Deno.serve(async (req) => {
+Deno.serve(withCors(async (req) => {
+  // SECURITY: cron / internal only (x-cron-secret or service-role bearer).
+  if (req.method !== 'OPTIONS') {
+    const denied = requireInternal(req);
+    if (denied) return denied;
+  }
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
@@ -468,4 +474,4 @@ Deno.serve(async (req) => {
     console.error("send-waitlist-emails error:", e);
     return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
   }
-});
+}));
