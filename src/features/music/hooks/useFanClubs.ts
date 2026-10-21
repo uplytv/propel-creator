@@ -98,29 +98,28 @@ export function useMyFanClubBadges(clubId?: string) {
   });
 }
 
+// Paid fan clubs go through Stripe Checkout (create-fan-club-checkout). The
+// subscription row is written by stripe-webhook, never by the client.
+async function startFanClubCheckout(body: Record<string, unknown>) {
+  const { data, error } = await supabase.functions.invoke("create-fan-club-checkout", {
+    body: { ...body, return_path: window.location.pathname },
+  });
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+  if (data?.url) {
+    window.location.assign(data.url);
+    return { redirected: true as const };
+  }
+  return { redirected: false as const, ...data };
+}
+
 export function useJoinFanClub() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { club_id: string; tier?: string; stripe_subscription_id?: string }) => {
+    mutationFn: async (input: { club_id: string }) => {
       const { data: auth } = await supabase.auth.getUser();
       if (!auth.user) throw new Error("Not authenticated");
-      const { data, error } = await supabase
-        .from("music_fan_club_memberships")
-        .upsert(
-          {
-            club_id: input.club_id,
-            user_id: auth.user.id,
-            status: "active",
-            tier: input.tier ?? "standard",
-            stripe_subscription_id: input.stripe_subscription_id ?? null,
-            joined_at: new Date().toISOString(),
-          },
-          { onConflict: "club_id,user_id" },
-        )
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
+      return startFanClubCheckout({ club_id: input.club_id });
     },
     onSuccess: (_d, v) => {
       qc.invalidateQueries({ queryKey: ["music-fan-club-membership", v.club_id] });
@@ -132,12 +131,9 @@ export function useJoinFanClub() {
 export function useCancelFanClubMembership() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (membershipId: string) => {
-      const { error } = await supabase
-        .from("music_fan_club_memberships")
-        .update({ status: "cancelled" })
-        .eq("id", membershipId);
-      if (error) throw error;
+    mutationFn: async (clubId: string) => {
+      // Cancels at period end in Stripe; the webhook updates the row.
+      await startFanClubCheckout({ action: "cancel", club_id: clubId });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["my-music-fan-club-memberships"] });

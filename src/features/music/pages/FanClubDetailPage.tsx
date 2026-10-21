@@ -31,8 +31,8 @@ export default function FanClubDetailPage() {
 
   const handleJoin = async () => {
     try {
-      await joinClub.mutateAsync({ club_id: club.id });
-      toast.success(`Welcome to ${club.name}!`);
+      const res = await joinClub.mutateAsync({ club_id: club.id });
+      if (!res.redirected) toast.success(`Welcome to ${club.name}!`);
     } catch (e: any) {
       toast.error(e.message ?? "Could not join");
     }
@@ -40,8 +40,12 @@ export default function FanClubDetailPage() {
 
   const handleCancel = async () => {
     if (!membership) return;
-    await cancel.mutateAsync(membership.id);
-    toast.success("Membership cancelled");
+    try {
+      await cancel.mutateAsync(club.id);
+      toast.success("Membership will end at the close of the current billing period");
+    } catch (e: any) {
+      toast.error(e.message ?? "Could not cancel");
+    }
   };
 
   return (

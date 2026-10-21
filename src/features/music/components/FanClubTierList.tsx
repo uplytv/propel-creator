@@ -20,8 +20,8 @@ export function FanClubTierList({ artistId }: { artistId: string }) {
 
   const handleSubscribe = async (tier: FanClubTier) => {
     try {
-      await subscribe.mutateAsync({ tierId: tier.id, artistId });
-      toast({ title: "Welcome to the fan club!", description: `You joined ${tier.name}` });
+      const res = await subscribe.mutateAsync({ tierId: tier.id, artistId });
+      if (!res.redirected) toast({ title: "Welcome to the fan club!", description: `You joined ${tier.name}` });
     } catch (e: any) {
       toast({ title: "Couldn't subscribe", description: e.message, variant: "destructive" });
     }
@@ -84,7 +84,7 @@ export function FanClubTierList({ artistId }: { artistId: string }) {
               disabled={isCurrent || subscribe.isPending}
               onClick={() => handleSubscribe(tier)}
             >
-              {isCurrent ? "Subscribed" : subscribe.isPending ? "Joining..." : "Join tier"}
+              {isCurrent ? "Subscribed" : subscribe.isPending ? "Redirecting..." : "Join tier"}
             </Button>
           </Card>
         );
