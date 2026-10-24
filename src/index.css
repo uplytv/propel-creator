@@ -284,6 +284,20 @@
     border-color: hsl(var(--gold));
     box-shadow: 0 12px 28px -16px hsl(var(--gold) / 0.5);
   }
+  .btn-primary-glow:focus-visible,
+  .btn-gold-outline:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 3px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .btn-primary-glow,
+    .btn-primary-glow:hover,
+    .btn-gold-outline,
+    .btn-gold-outline:hover {
+      transition: none;
+      transform: none;
+    }
+  }
 
   /* Horizontal-rail edge fade (Netflix-style soft mask on both sides). */
   .rail-edge-fade {

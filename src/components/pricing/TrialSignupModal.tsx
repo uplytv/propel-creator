@@ -24,6 +24,7 @@ import { getAffiliateCookie } from "@/lib/affiliateCookies";
 import {
   PLATFORM_PLANS,
   SETUP_CALL_URL,
+  TRIAL_CARD_PROMISE,
   TRIAL_DAYS,
   TRIAL_INTENT_STORAGE_KEY,
   TRIAL_PROFILE_STORAGE_KEY,
@@ -52,7 +53,7 @@ const stripePromise = getStripe();
 /** Shared wizard header: centered title + two-step tab indicator with active underline. */
 function WizardHeader({ active, days }: { active: 1 | 2; days: number }) {
   const steps = [
-    { n: 1 as const, title: "Step 1", sub: "Tell us about your business" },
+    { n: 1 as const, title: "Step 1", sub: "Your email" },
     { n: 2 as const, title: "Step 2", sub: "Trial details" },
   ];
   return (
@@ -62,7 +63,7 @@ function WizardHeader({ active, days }: { active: 1 | 2; days: number }) {
           Start your {days}-day free trial today!
         </DialogTitle>
         <DialogDescription className="sr-only">
-          Two quick steps: tell us about your business, then confirm your plan and add a card.
+          Two steps: your email, then a card on file. $0 due today.
         </DialogDescription>
       </DialogHeader>
       <div className="grid grid-cols-2 text-center">
@@ -89,10 +90,11 @@ export default function TrialSignupModal({
   const effectiveTrialDays = trialDays === 30 ? 30 : TRIAL_DAYS;
 
   const [step, setStep] = useState<1 | 2>(1);
-  const [company, setCompany] = useState("");
+  // Company and phone stay in the payload shape but are not collected on step 1.
+  const [company] = useState("");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phone] = useState("");
   // Explicit, separate SMS marketing consent. Never implied by entering a phone.
   const [smsConsent, setSmsConsent] = useState(false);
   const [password, setPassword] = useState("");
@@ -154,17 +156,15 @@ export default function TrialSignupModal({
   // appears inline if the email already has an account (sign-in required).
   const [existingAccount, setExistingAccount] = useState(false);
 
+  // Name is not asked up front. Checkout metadata still wants a label.
+  const derivedName = fullName.trim() || email.trim().split("@")[0] || "Creator";
+
   const validateStep1 = () => {
     const next: typeof errors = {};
-    // Company and phone are OPTIONAL — neither Stripe checkout nor Supabase
-    // auth requires them (create-platform-checkout stamps them onto metadata
-    // only when present). Blank values are simply never written.
-    if (!fullName.trim()) next.fullName = "Full name is required";
+    // Email only. Company, name, and phone are deferred until after the account
+    // exists — they are not required to start the trial.
     if (!email.trim()) next.email = "Email is required";
     else if (!EMAIL_RE.test(email.trim())) next.email = "Enter a valid email address";
-    // Only validate the phone's shape when the user chose to give one.
-    if (phone.trim() && phone.replace(/\D/g, "").length < 7)
-      next.phone = "Enter a valid phone number, or leave it blank";
     if (!isAuthed && existingAccount) {
       if (!password) next.password = "Enter your existing UPLY password";
     }
@@ -334,7 +334,7 @@ export default function TrialSignupModal({
         password: generatedPassword,
         options: {
           emailRedirectTo: window.location.origin,
-          data: { full_name: fullName.trim() },
+          data: { full_name: derivedName },
         },
       });
 
@@ -411,7 +411,7 @@ export default function TrialSignupModal({
           embedded: true,
           // Optional fields are omitted entirely when blank.
           ...(company.trim() ? { company: company.trim() } : {}),
-          full_name: fullName.trim(),
+          full_name: derivedName,
           ...(phone.trim() ? { phone: phone.trim(), sms_consent: smsConsent } : {}),
           email: email.trim(),
           // Additive: server clamps to {14, 30}.
@@ -543,34 +543,14 @@ export default function TrialSignupModal({
 
             <div className="space-y-3 py-1">
               <div className="space-y-1">
-                <Input
-                  id="trial-company"
-                  aria-label="Company name"
-                  className="rounded-sm h-11"
-                  placeholder="Company name (optional)"
-                  value={company}
-                  onChange={(e) => setCompany(e.target.value)}
-                />
-                {errors.company && <p className="text-xs text-destructive">{errors.company}</p>}
-              </div>
-              <div className="space-y-1">
-                <Input
-                  id="trial-name"
-                  aria-label="Full name"
-                  className="rounded-sm h-11"
-                  placeholder="Full name"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                />
-                {errors.fullName && <p className="text-xs text-destructive">{errors.fullName}</p>}
-              </div>
-              <div className="space-y-1">
+                <Label htmlFor="trial-email">Email</Label>
                 <Input
                   id="trial-email"
                   type="email"
+                  autoComplete="email"
                   aria-label="Email address"
                   className="rounded-sm h-11"
-                  placeholder="Email address"
+                  placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -591,31 +571,6 @@ export default function TrialSignupModal({
                   {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
                 </div>
               )}
-              <div className="space-y-1">
-                <Input
-                  id="trial-phone"
-                  type="tel"
-                  aria-label="Phone number"
-                  className="rounded-sm h-11"
-                  placeholder="Phone number (optional)"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
-                {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
-              </div>
-              {/* SMS is opt-in and only offered once a phone is actually given —
-                  a supplied number never enrolls anyone in texts by itself. */}
-              {phone.trim().length > 0 && (
-                <label className="flex items-start gap-2 text-xs text-muted-foreground">
-                  <Checkbox
-                    id="trial-sms-consent"
-                    checked={smsConsent}
-                    onCheckedChange={(v) => setSmsConsent(v === true)}
-                    className="mt-0.5"
-                  />
-                  <span>Text me about my trial and setup. Optional — message rates may apply.</span>
-                </label>
-              )}
             </div>
 
             <div className="space-y-2">
@@ -627,8 +582,8 @@ export default function TrialSignupModal({
                 {creatingAccount && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {creatingAccount ? "Creating your account…" : "Go to step 2"}
               </Button>
-              <p className="text-center text-xs text-muted-foreground">
-                We'll email you about your trial. Company and phone are optional.
+              <p className="text-center text-xs text-muted-foreground leading-relaxed">
+                {TRIAL_CARD_PROMISE}
               </p>
             </div>
           </>

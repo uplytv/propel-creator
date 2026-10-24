@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
-import { ThumbsUp, MessageCircle, Pin, PinOff, MoreHorizontal, Send, ArrowLeft, SlidersHorizontal, Megaphone, Flag, Trash2, Ban, ImagePlus, BarChart3, X, Search, Loader2, Heart, CornerDownRight, Check, Lock } from "lucide-react";
+import { ThumbsUp, MessageCircle, Pin, PinOff, MoreHorizontal, Send, ArrowLeft, Megaphone, Flag, Trash2, Ban, ImagePlus, BarChart3, X, Search, Loader2, Heart, CornerDownRight, Check, Lock } from "lucide-react";
 import ContentGate from "@/components/ContentGate";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/context/AuthContext";
@@ -274,11 +274,11 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
 
   return (
     <div className="px-4 pt-4">
-      {/* Blast Button + Category Filters */}
+      {/* Owner tools stay available, out of the way of the compose box. */}
       {isOwner && (
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-semibold text-foreground">Community</span>
-          <div className="flex items-center gap-2">
+        <details className="mb-2 px-1 py-1">
+          <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">Owner tools</summary>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <MinPostLevelSelect creatorId={creatorId} value={minPostLevel} />
             <Button
               size="sm"
@@ -299,7 +299,7 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
               Blast
             </Button>
           </div>
-        </div>
+        </details>
       )}
       {/* Post search — filters loaded posts instantly, then swaps in a
           server-side ilike search (title/body, scoped to this creator) */}
@@ -345,23 +345,23 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
             {cat.emoji} {cat.name}
           </button>
         ))}
-        <button aria-label="Filter posts" className="px-2 py-1.5 rounded-full border border-border">
-          <SlidersHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
-        </button>
       </div>
 
       {/* Post Composer Trigger — disabled with a level hint when the member
           is under the space's min_post_level (server-enforced by RLS) */}
       {user && (canPost ? (
-        <div
-          className="flex items-center gap-3 p-3 rounded-lg mb-4 cursor-pointer bg-card border border-border"
+        <button
+          type="button"
           onClick={() => setShowComposer(true)}
+          className="sticky top-12 z-30 flex w-full items-center gap-3 p-4 rounded-lg mb-4 cursor-pointer bg-card border border-primary/30 text-left shadow-sm hover:border-primary/50 transition-colors"
         >
-          <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 bg-muted text-foreground">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 bg-primary/10 text-primary">
             {user.email?.charAt(0).toUpperCase() || "U"}
           </div>
-          <span className="text-sm text-muted-foreground">Write something...</span>
-        </div>
+          <span className="text-sm font-medium text-muted-foreground">
+            {displayPosts.length === 0 && !searchActive ? "Write the first post" : "Write a post"}
+          </span>
+        </button>
       ) : (
         <div
           aria-disabled="true"
@@ -523,27 +523,37 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
           ))}
         </div>
       ) : displayPosts.length === 0 ? (
-        <div className="p-12 text-center rounded-lg bg-card">
-          <span className="text-4xl block mb-3">💬</span>
+        <div className="p-12 text-center rounded-lg bg-card border border-dashed border-border">
           <p className="font-semibold text-foreground mb-1">
-            {searchActive ? "No posts match your search" : "No posts yet"}
+            {searchActive ? "No posts match your search" : "Write the first post"}
           </p>
-          <p className="text-sm text-muted-foreground">
-            {searchActive ? "Try a different keyword." : "Be the first to share something!"}
+          <p className="text-sm text-muted-foreground mb-4">
+            {searchActive ? "Try a different keyword." : "A short update is enough. Members will see it here."}
           </p>
+          {!searchActive && user && canPost && (
+            <Button onClick={() => setShowComposer(true)}>Write the first post</Button>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
-          {displayPosts.map((post: any, i: number) => (
+          {displayPosts.map((post: any) => (
             <ContentGate key={post.id} creatorId={creatorId} type="post" onJoinClick={() => {}}>
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
+                role="button"
+                tabIndex={0}
+                aria-label={post.title ? `Open post: ${post.title}` : `Open post by ${post.author_name || "a member"}`}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.03 }}
-                className={`p-4 rounded-lg cursor-pointer bg-card border border-border ${
+                className={`p-4 rounded-lg cursor-pointer bg-card border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                   post.is_pinned ? "border-l-[3px] border-l-primary" : ""
                 }`}
                 onClick={() => setSelectedPost(post)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSelectedPost(post);
+                  }
+                }}
               >
                 {/* Pin label */}
                 <div className="flex items-start justify-between mb-2">
@@ -635,7 +645,7 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
 
                 {/* Content */}
                 {post.title && <p className="text-foreground font-semibold text-base mb-1">{post.title}</p>}
-                <p className="text-sm line-clamp-2 text-muted-foreground">{post.body}</p>
+                <p className="text-sm line-clamp-3 text-foreground/80 whitespace-pre-wrap">{post.body}</p>
 
                 {/* Image attachment */}
                 {post.image_url && (
@@ -658,8 +668,10 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
                 {/* Actions */}
                 <div className="flex items-center gap-4 mt-3">
                   <button
+                    type="button"
+                    aria-label={(likedSet as Set<string>).has(post.id) ? `Unlike post, ${post.like_count} likes` : `Like post, ${post.like_count} likes`}
                     onClick={(e) => { e.stopPropagation(); handleLike(post.id); }}
-                    className={`flex items-center gap-1 text-xs transition-colors ${
+                    className={`flex items-center gap-1 text-xs transition-colors min-h-[44px] ${
                       (likedSet as Set<string>).has(post.id) ? "text-primary" : "text-muted-foreground"
                     }`}
                   >

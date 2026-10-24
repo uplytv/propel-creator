@@ -1,14 +1,19 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { DollarSign, Globe, Lock, ArrowRight } from "lucide-react";
+import TrialSignupModal from "@/components/pricing/TrialSignupModal";
+import { TRIAL_CARD_PROMISE } from "@/components/pricing/plans";
 
 const FEATURES = [
-  { icon: DollarSign, t: "Keep 95%", b: "Instant payouts on every pass." },
+  { icon: DollarSign, t: "Keep 95%", b: "Flat 5% on the charge. Stripe fees are separate." },
   { icon: Globe, t: "Watch anywhere", b: "HD to phone, web, and Roku TV." },
-  { icon: Lock, t: "Secure paywall", b: "Only paying fans get in." },
+  { icon: Lock, t: "Paywall", b: "Only paying fans get in." },
 ];
 
 export default function HomepagePPV() {
+  const [trialOpen, setTrialOpen] = useState(false);
   return (
+    <>
     <section id="ppv" className="relative px-4 py-20 sm:py-28">
       <div className="max-w-5xl mx-auto">
         <div className="relative overflow-hidden rounded-2xl border border-gold-hairline bg-card/50 backdrop-blur-md p-8 sm:p-12">
@@ -18,24 +23,29 @@ export default function HomepagePPV() {
           <div className="relative z-10 grid gap-8 lg:grid-cols-2 lg:items-center">
             <div>
               <p className="eyebrow-gold inline-flex items-center gap-2 mb-3">
-                <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" /> New · Pay-Per-View Live
+                <span className="w-2 h-2 rounded-full bg-destructive motion-reduce:animate-none animate-pulse" /> Pay-per-view
               </p>
               <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight">
                 Charge fans to watch you{" "}
                 <span className="bg-gradient-to-r from-[hsl(220_100%_62%)] to-[hsl(280_85%_60%)] bg-clip-text text-transparent">live.</span>
               </h2>
-              <p className="text-foreground/75 mt-3 max-w-md">
-                Sell pay-per-view passes to concerts, workshops, and events. Any price, any screen —
-                and you keep <span className="text-gold font-semibold">95%</span>.
+              <p className="text-foreground/80 mt-3 max-w-md">
+                Sell a pass to a concert, workshop, or show. Pay-per-view is on Unlimited and Agency Pro.
+                You keep <span className="text-gold font-semibold">95%</span> of the charge.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 mt-6">
                 <Link to="/ppv" className="btn-primary-glow inline-flex items-center justify-center gap-1.5 rounded-md px-6 h-11 text-sm font-bold">
                   Explore PPV <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link to="/auth?mode=signup" className="btn-gold-outline inline-flex items-center justify-center gap-1.5 rounded-md px-6 h-11 text-sm font-bold">
-                  Start streaming
-                </Link>
+                <button
+                  type="button"
+                  onClick={() => setTrialOpen(true)}
+                  className="btn-gold-outline inline-flex items-center justify-center gap-1.5 rounded-md px-6 h-11 text-sm font-bold"
+                >
+                  Start selling
+                </button>
               </div>
+              <p className="mt-4 text-sm text-foreground/80 max-w-md">{TRIAL_CARD_PROMISE}</p>
             </div>
             <div className="grid grid-cols-1 gap-3">
               {FEATURES.map((f) => (
@@ -54,5 +64,7 @@ export default function HomepagePPV() {
         </div>
       </div>
     </section>
+    <TrialSignupModal open={trialOpen} onOpenChange={setTrialOpen} defaultPlan="starter" />
+    </>
   );
 }

@@ -11,9 +11,7 @@ import { ArrowRight, ArrowLeft, Camera, Check, X, Loader2, AlertTriangle, Rotate
 import { toast } from "sonner";
 import { getAffiliateCookie, clearAffiliateCookie, getReferralData, clearReferralData } from "@/lib/affiliateCookies";
 import { trackEvent } from "@/lib/posthog";
-import logoImg from "@/assets/logo.png";
 import MilestoneProgressPill from "@/components/onboarding/MilestoneProgressPill";
-import FounderOffersPricing from "@/components/founderoffers/FounderOffersPricing";
 import { useAutoRetryPreference } from "@/hooks/useAutoRetryPreference";
 import {
   SETTINGS_NAV_COOLDOWN_MS,
@@ -88,19 +86,6 @@ const CREATOR_STAGES = [
   },
 ];
 
-const CREATOR_GOALS = [
-  { key: "grow_audience", emoji: "📈", label: "Grow my audience" },
-  { key: "monetize", emoji: "💰", label: "Start monetizing" },
-  { key: "launch_product", emoji: "🚀", label: "Launch a product" },
-  { key: "build_community", emoji: "🤝", label: "Build a community" },
-];
-
-const GOAL_TIMELINES = [
-  { key: "30", label: "Next 30 days" },
-  { key: "60", label: "Next 60 days" },
-  { key: "90", label: "Next 90 days" },
-];
-
 const slideVariants = {
   enter: { opacity: 0, x: 40 },
   center: { opacity: 1, x: 0 },
@@ -110,7 +95,9 @@ const slideVariants = {
 export default function Onboarding() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(1);
+  const [showOptionalProfile, setShowOptionalProfile] = useState(false);
+  const [showOptionalQualifying, setShowOptionalQualifying] = useState(false);
 
   // Step 1: Basics
   const [firstName, setFirstName] = useState("");
@@ -179,45 +166,6 @@ export default function Onboarding() {
     }
   }, [creatorStage, oneSentence, challenges, firstUseCase, hearAbout]);
 
-  // Step 4: Goals & timeline — same TTL pattern as Step 3
-  const STEP4_STORAGE_KEY = "onboarding:step4";
-  const STEP4_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
-  const initialStep4 = (() => {
-    if (typeof window === "undefined") return null;
-    try {
-      const raw = window.localStorage.getItem(STEP4_STORAGE_KEY);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw) as {
-        savedAt?: number;
-        goals?: string[];
-        goalTimeline?: string;
-      };
-      if (!parsed.savedAt || Date.now() - parsed.savedAt > STEP4_TTL_MS) {
-        window.localStorage.removeItem(STEP4_STORAGE_KEY);
-        return null;
-      }
-      return parsed;
-    } catch {
-      return null;
-    }
-  })();
-
-  const [goals, setGoals] = useState<string[]>(initialStep4?.goals ?? []);
-  const [goalTimeline, setGoalTimeline] = useState<string>(initialStep4?.goalTimeline ?? "");
-  const [step4AttemptedSubmit, setStep4AttemptedSubmit] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      window.localStorage.setItem(
-        STEP4_STORAGE_KEY,
-        JSON.stringify({ savedAt: Date.now(), goals, goalTimeline })
-      );
-    } catch {
-      // ignore
-    }
-  }, [goals, goalTimeline]);
-
   // Photo & state
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -275,13 +223,6 @@ export default function Onboarding() {
     if (name) setReferrerName(name);
     if (avatar) setReferrerAvatar(avatar);
   }, [user]);
-
-  useEffect(() => {
-    if (step === 0) {
-      const t = setTimeout(() => setStep(1), 1500);
-      return () => clearTimeout(t);
-    }
-  }, [step]);
 
   const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -377,10 +318,10 @@ export default function Onboarding() {
       has_social: !!socialHandle,
     });
 
-    // Clear persisted Step 3 & Step 4 drafts now that onboarding is submitted
+    // Clear the persisted Step 3 draft now that onboarding is submitted
     try {
       window.localStorage.removeItem(STEP3_STORAGE_KEY);
-      window.localStorage.removeItem(STEP4_STORAGE_KEY);
+      window.localStorage.removeItem("onboarding:step4");
     } catch {
       // ignore
     }
@@ -539,8 +480,8 @@ export default function Onboarding() {
     }
   };
 
-  const totalSteps = 4; // splash, basics, profile, qualifying
-  const progressStep = step > 0 ? step : 0;
+  const totalSteps = 3;
+  const progressStep = step;
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-8 relative overflow-y-auto overflow-x-hidden">
@@ -569,7 +510,7 @@ export default function Onboarding() {
         </motion.div>
       )}
 
-      {step > 0 && <MilestoneProgressPill onboardingStep={step} totalOnboardingSteps={4} />}
+      {step > 0 && <MilestoneProgressPill onboardingStep={step} totalOnboardingSteps={3} />}
 
       {/* Full-screen submission overlay — blocks interaction & shows progress / success / failure */}
       {(saving || submitSucceeded || submitError) && (
@@ -719,26 +660,12 @@ export default function Onboarding() {
       )}
 
       <AnimatePresence mode="wait">
-        {step === 0 && (
-          <motion.div
-            key="splash"
-            initial={{ scale: 0.6, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ opacity: 0, scale: 1.1 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col items-center gap-3"
-          >
-            <img src={logoImg} alt="UPLY" className="w-24 h-24 object-contain" loading="eager" />
-          </motion.div>
-        )}
-
         {/* STEP 1: The Basics */}
         {step === 1 && (
           <motion.div key="basics" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
             <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 1 of 3</p>
-            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">The Basics</h1>
-            <p className="text-muted-foreground text-center text-sm mb-2">Tell us a little about yourself.</p>
-            <p className="text-xs text-primary text-center mb-6 font-medium">⚡ Takes less than 2 minutes</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">Your name</h1>
+            <p className="text-muted-foreground text-center text-sm mb-6">Then two short questions. Approval still happens after you submit.</p>
             <div className="space-y-4 mb-4">
               <Input placeholder="Full name *" value={firstName} onChange={(e) => setFirstName(e.target.value)} autoFocus className="text-center text-lg py-6" />
               <Input placeholder="Email" value={user?.email || ""} disabled className="text-center text-sm py-4 opacity-60" />
@@ -747,7 +674,7 @@ export default function Onboarding() {
 
             {/* Photo upload */}
             <div className="flex flex-col items-center gap-3 mb-6">
-              <button onClick={() => fileRef.current?.click()} className="w-20 h-20 rounded-full border-2 border-dashed border-border hover:border-primary transition-colors flex items-center justify-center overflow-hidden bg-card">
+              <button type="button" aria-label="Add a profile photo" onClick={() => fileRef.current?.click()} className="w-20 h-20 rounded-full border-2 border-dashed border-border hover:border-primary transition-colors flex items-center justify-center overflow-hidden bg-card">
                 {avatarUrl ? <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" loading="lazy" /> : <Camera className="w-6 h-6 text-muted-foreground" />}
               </button>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoSelect} />
@@ -770,14 +697,24 @@ export default function Onboarding() {
         {step === 2 && (
           <motion.div key="profile" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
             <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 2 of 3</p>
-            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">Your Creator Profile</h1>
-            <p className="text-muted-foreground text-center text-sm mb-1">Help us understand your audience.</p>
-            <p className="text-xs text-primary text-center mb-6 font-medium">🎯 This helps us prioritize your application</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">What you make</h1>
+            <p className="text-muted-foreground text-center text-sm mb-6">Category is enough. Audience size can wait.</p>
 
             <div className="space-y-4 mb-6">
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">How will your profile look?</label>
-                <p className="text-xs text-muted-foreground mb-2">Pick the layout that best fits your work. You can change it later.</p>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">What type of creator are you?</label>
+                <Select value={creatorType} onValueChange={setCreatorType}>
+                  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                  <SelectContent>
+                    {CREATOR_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {showOptionalProfile && (<>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">How will your profile look? <span className="text-muted-foreground font-normal">Optional</span></label>
+                <p className="text-xs text-muted-foreground mb-2">You can change this later. Skip it and we use a general layout.</p>
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { value: "musician", emoji: "🎵", label: "Musician" },
@@ -804,19 +741,8 @@ export default function Onboarding() {
                   ))}
                 </div>
               </div>
-
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">What type of creator are you?</label>
-                <Select value={creatorType} onValueChange={setCreatorType}>
-                  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
-                  <SelectContent>
-                    {CREATOR_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Total followers across all platforms?</label>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Total followers across all platforms? <span className="text-muted-foreground font-normal">Optional</span></label>
                 <Select value={followerCount} onValueChange={setFollowerCount}>
                   <SelectTrigger><SelectValue placeholder="Select range" /></SelectTrigger>
                   <SelectContent>
@@ -868,7 +794,18 @@ export default function Onboarding() {
                   </Select>
                 </div>
               )}
+              </>)}
             </div>
+
+            {!showOptionalProfile && (
+              <button
+                type="button"
+                onClick={() => setShowOptionalProfile(true)}
+                className="mb-4 text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+              >
+                Add layout, audience size, and earnings (optional)
+              </button>
+            )}
 
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => setStep(1)} className="gap-1">
@@ -884,10 +821,9 @@ export default function Onboarding() {
         {/* STEP 3: Qualifying Questions */}
         {step === 3 && (
           <motion.div key="qualifying" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
-            <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 3 of 4 — Almost there! 🏁</p>
-            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">One Last Thing</h1>
-            <p className="text-muted-foreground text-center text-sm mb-1">These help us match you with the right tools.</p>
-            <p className="text-xs text-primary text-center mb-6 font-medium">✨ Detailed answers = faster approval</p>
+            <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 3 of 3</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">One last thing</h1>
+            <p className="text-muted-foreground text-center text-sm mb-6">Stage and one sentence. Submit sends your application. Selling stays locked until you’re approved.</p>
 
             <div className="space-y-4 mb-6">
               <div>
@@ -944,8 +880,9 @@ export default function Onboarding() {
                 <p className="text-xs text-muted-foreground text-right mt-1">{oneSentence.length}/120</p>
               </div>
 
+              {showOptionalQualifying && (<>
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Biggest monetization challenges? (select all)</label>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Biggest monetization challenges? <span className="text-muted-foreground font-normal">Optional</span></label>
                 <div className="flex flex-wrap gap-2">
                   {CHALLENGES.map(c => {
                     const selected = challenges.includes(c);
@@ -966,7 +903,7 @@ export default function Onboarding() {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">What would you use UPLY for first?</label>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">What would you use UPLY for first? <span className="text-muted-foreground font-normal">Optional</span></label>
                 <div className="flex flex-wrap gap-2">
                   {USE_CASES.map(uc => (
                     <button
@@ -984,7 +921,7 @@ export default function Onboarding() {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">How did you hear about UPLY?</label>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">How did you hear about UPLY? <span className="text-muted-foreground font-normal">Optional</span></label>
                 <Select value={hearAbout} onValueChange={setHearAbout}>
                   <SelectTrigger><SelectValue placeholder="Select one" /></SelectTrigger>
                   <SelectContent>
@@ -992,7 +929,18 @@ export default function Onboarding() {
                   </SelectContent>
                 </Select>
               </div>
+              </>)}
             </div>
+
+            {!showOptionalQualifying && (
+              <button
+                type="button"
+                onClick={() => setShowOptionalQualifying(true)}
+                className="mb-4 text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+              >
+                Add challenges and how you heard (optional)
+              </button>
+            )}
 
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => setStep(2)} className="gap-1">
@@ -1002,136 +950,16 @@ export default function Onboarding() {
                 variant="hero"
                 size="xl"
                 className="flex-1"
-                disabled={!oneSentence.trim()}
+                disabled={!oneSentence.trim() || saving}
                 onClick={() => {
                   if (!creatorStage) {
                     setAttemptedSubmit(true);
                     return;
                   }
-                  setStep(4);
-                }}
-              >
-                Continue <ArrowRight className="ml-1 w-4 h-4" />
-              </Button>
-            </div>
-          </motion.div>
-        )}
-
-        {/* STEP 4: Goals & Timeline */}
-        {step === 4 && (
-          <motion.div key="goals" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
-            <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 4 of 4 — Final step 🎯</p>
-            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">What are you focused on?</h1>
-            <p className="text-muted-foreground text-center text-sm mb-6">Pick up to 3 goals and a target timeline so we can prioritize your tools.</p>
-
-            <div className="space-y-5 mb-6">
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
-                  Your top goals * <span className="text-xs text-muted-foreground font-normal">(choose 1–3)</span>
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {CREATOR_GOALS.map((g) => {
-                    const selected = goals.includes(g.key);
-                    const atLimit = !selected && goals.length >= 3;
-                    return (
-                      <button
-                        key={g.key}
-                        type="button"
-                        disabled={atLimit}
-                        aria-pressed={selected}
-                        onClick={() => {
-                          setStep4AttemptedSubmit(false);
-                          setGoals((prev) =>
-                            selected ? prev.filter((k) => k !== g.key) : [...prev, g.key]
-                          );
-                        }}
-                        className={`text-left rounded-xl border p-3 transition-all ${
-                          selected
-                            ? "border-primary bg-primary/10 ring-1 ring-primary/40"
-                            : atLimit
-                              ? "border-border bg-card opacity-50 cursor-not-allowed"
-                              : "border-border bg-card hover:border-primary/40"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="text-xl">{g.emoji}</span>
-                          <span className="text-sm font-medium text-foreground">{g.label}</span>
-                          {selected && <Check className="w-4 h-4 text-primary ml-auto shrink-0" />}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-                {step4AttemptedSubmit && goals.length === 0 && (
-                  <p className="text-xs text-destructive mt-2" role="alert" aria-live="polite">
-                    Please pick at least one goal to continue.
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Target timeline *</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {GOAL_TIMELINES.map((t) => {
-                    const selected = goalTimeline === t.key;
-                    return (
-                      <button
-                        key={t.key}
-                        type="button"
-                        aria-pressed={selected}
-                        onClick={() => { setGoalTimeline(t.key); setStep4AttemptedSubmit(false); }}
-                        className={`rounded-xl border p-3 text-center transition-all ${
-                          selected
-                            ? "border-primary bg-primary/10 ring-1 ring-primary/40"
-                            : "border-border bg-card hover:border-primary/40"
-                        }`}
-                      >
-                        <span className="text-sm font-medium text-foreground">{t.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-                {step4AttemptedSubmit && !goalTimeline && (
-                  <p className="text-xs text-destructive mt-2" role="alert" aria-live="polite">
-                    Please choose a timeline to continue.
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="mb-5">
-              <FounderOffersPricing variant="compact" source="onboarding_final_step" />
-            </div>
-
-
-
-            {submitError && (
-              <div
-                role="alert"
-                className="mb-3 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive"
-              >
-                <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
-                <span className="flex-1">{submitError}</span>
-              </div>
-            )}
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setStep(3)} className="gap-1">
-                <ArrowLeft className="w-4 h-4" /> Back
-              </Button>
-              <Button
-                variant="hero"
-                size="xl"
-                className="flex-1"
-                disabled={saving}
-                onClick={() => {
-                  if (goals.length === 0 || !goalTimeline) {
-                    setStep4AttemptedSubmit(true);
-                    return;
-                  }
                   finishOnboarding();
                 }}
               >
-                {saving ? "Submitting..." : "Submit Application"} <ArrowRight className="ml-1 w-4 h-4" />
+                {saving ? "Submitting..." : "Submit application"} <ArrowRight className="ml-1 w-4 h-4" />
               </Button>
             </div>
           </motion.div>

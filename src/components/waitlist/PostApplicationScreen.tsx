@@ -149,8 +149,17 @@ export default function PostApplicationScreen({ position, referralCode, referral
         <h2 className="text-[28px] font-extrabold text-foreground mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
           You're on the list. 🎉
         </h2>
-        <p className="text-sm text-muted-foreground">Your application has been submitted successfully</p>
+        <p className="text-sm text-muted-foreground">Your application is in. Selling unlocks when you’re approved.</p>
       </motion.div>
+
+      <div className="rounded-xl border border-border bg-card p-5 mb-5 text-left">
+        <h3 className="text-sm font-bold text-foreground">What happens next</h3>
+        <ol className="mt-3 space-y-2 text-sm text-muted-foreground">
+          <li><span className="font-semibold text-foreground">1. We review the application.</span> An invite code or Founders access skips the line.</li>
+          <li><span className="font-semibold text-foreground">2. Approval opens your dashboard.</span> The first job there is a paid offer: membership, tickets, pay-per-view, or tips.</li>
+          <li><span className="font-semibold text-foreground">3. You keep 95%.</span> Connect Stripe, set the price, then share the link.</li>
+        </ol>
+      </div>
 
       {/* Referrer card */}
       {referrerName && (

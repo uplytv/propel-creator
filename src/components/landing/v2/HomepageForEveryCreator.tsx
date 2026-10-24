@@ -1,14 +1,15 @@
 import { Music2, Radio, GraduationCap, ShoppingBag, Ticket, Tv, ArrowRight } from "lucide-react";
+import { TRIAL_CARD_PROMISE } from "@/components/pricing/plans";
 
 // One compact section replacing the nine persona sections (Musicians, Streamers,
 // Educators, LiveCommerce, Events, TV, Cultural, B2B, …) — same message, one screen.
 const PERSONAS = [
-  { icon: Music2, title: "Musicians", line: "Drop music, sell tracks and tickets — AI handles the promo." },
-  { icon: Radio, title: "Streamers", line: "Go live in HD with tips, subs and pay-per-view." },
-  { icon: GraduationCap, title: "Educators", line: "Courses, classroom and community in one place." },
-  { icon: ShoppingBag, title: "Sellers", line: "Live shopping, products and instant checkout." },
-  { icon: Ticket, title: "Event creators", line: "Tickets, QR check-in and PPV livestreams." },
-  { icon: Tv, title: "Shows & TV", line: "Put your content on the big screen with UPLY TV." },
+  { icon: Music2, title: "Musicians", line: "Sell tracks and tickets. You keep 95%." },
+  { icon: Radio, title: "Streamers", line: "Tips on every plan. Pay-per-view on Unlimited and Agency Pro." },
+  { icon: GraduationCap, title: "Educators", line: "Courses and community on every plan." },
+  { icon: ShoppingBag, title: "Sellers", line: "Sell a product while you stream." },
+  { icon: Ticket, title: "Event creators", line: "Tickets on every plan. QR check-in on Unlimited and Agency Pro." },
+  { icon: Tv, title: "Shows", line: "A live show fans pay to watch." },
 ];
 
 export default function HomepageForEveryCreator() {
@@ -21,8 +22,8 @@ export default function HomepageForEveryCreator() {
             One platform. Every way you{" "}
             <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-mid))] bg-clip-text text-transparent">create.</span>
           </h2>
-          <p className="text-foreground/70 mt-3 max-w-xl mx-auto">
-            Whatever you make, UPLY runs the business side — AI-powered tools for content, growth, and sales.
+          <p className="text-foreground/80 mt-3 max-w-xl mx-auto">
+            Sell it here. You keep 95% of what fans pay. Stripe fees are separate.
           </p>
         </div>
 
@@ -41,9 +42,9 @@ export default function HomepageForEveryCreator() {
             href="#pricing"
             className="btn-primary-glow inline-flex items-center justify-center gap-1.5 rounded-md px-8 h-12 text-sm font-bold tracking-wide"
           >
-            Start your 14-day trial <ArrowRight className="w-4 h-4" />
+            See plans <ArrowRight className="w-4 h-4" aria-hidden />
           </a>
-          <p className="text-xs text-muted-foreground mt-3">14 days free · cancel anytime.</p>
+          <p className="text-sm text-foreground/80 mt-3 max-w-lg mx-auto">{TRIAL_CARD_PROMISE}</p>
         </div>
       </div>
     </section>

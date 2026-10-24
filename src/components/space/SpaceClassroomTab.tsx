@@ -55,8 +55,8 @@ function SortableModule({ mod, children, isOwner }: { mod: any; children: React.
     <div ref={setNodeRef} style={style} {...attributes}>
       <div className="flex items-center">
         {isOwner && (
-          <div {...listeners} className="px-1.5 cursor-grab active:cursor-grabbing touch-none text-muted-foreground">
-            <GripVertical className="w-3.5 h-3.5" />
+          <div {...listeners} aria-label="Reorder module" className="px-1.5 cursor-grab active:cursor-grabbing touch-none text-muted-foreground">
+            <GripVertical className="w-3.5 h-3.5" aria-hidden />
           </div>
         )}
         <div className="flex-1 min-w-0">{children}</div>
@@ -71,8 +71,8 @@ function SortableLesson({ lesson, children, isOwner }: { lesson: any; children: 
   return (
     <div ref={setNodeRef} style={style} className="flex items-center" {...attributes}>
       {isOwner && (
-        <div {...listeners} className="px-1 cursor-grab active:cursor-grabbing touch-none text-muted-foreground">
-          <GripVertical className="w-3 h-3" />
+        <div {...listeners} aria-label="Reorder lesson" className="px-1 cursor-grab active:cursor-grabbing touch-none text-muted-foreground">
+          <GripVertical className="w-3 h-3" aria-hidden />
         </div>
       )}
       <div className="flex-1 min-w-0">{children}</div>
@@ -705,7 +705,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                           ) : (
                             <Play className="w-4 h-4 shrink-0 text-muted-foreground" />
                           )}
-                          <span className={`text-[15px] font-medium ${isComplete ? "text-muted-foreground" : "text-foreground"}`}>
+                          <span className={`text-[15px] font-medium leading-snug ${isComplete ? "text-muted-foreground" : "text-foreground"}`}>
                             {lesson.title}
                           </span>
                           <TierChip rank={lesson.min_tier_rank} tiers={creatorTiers} />
@@ -713,20 +713,18 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                             const m = mediaFor(lesson);
                             if (m.status === "processing") return <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-yellow-500/15 text-yellow-600"><Loader2 className="w-2.5 h-2.5 animate-spin" /> Processing</span>;
                             if (m.status === "errored" && isOwner) return <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-destructive/10 text-destructive">Error</span>;
-                            if (m.kind === "youtube") return <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-destructive/10 text-destructive">YouTube</span>;
-                            if (m.kind === "vimeo") return <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-sky-500/10 text-sky-600">Vimeo</span>;
                             return null;
                           })()}
                         </span>
                       </button>
                       {isOwner && (
                         <div className="flex items-center pr-3 gap-1">
-                          <button onClick={() => setEditingLesson(lesson)} className="p-1.5 rounded hover:bg-secondary" >
+                          <button type="button" aria-label={`Edit ${lesson.title}`} onClick={() => setEditingLesson(lesson)} className="p-1.5 rounded hover:bg-secondary" >
                             <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                           </button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <button className="p-1.5 rounded hover:bg-secondary"><Trash2 className="w-3.5 h-3.5 text-muted-foreground" /></button>
+                              <button type="button" aria-label={`Delete ${lesson.title}`} className="p-1.5 rounded hover:bg-secondary"><Trash2 className="w-3.5 h-3.5 text-muted-foreground" /></button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
@@ -770,9 +768,9 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
         {modules.length === 0 && dripLockedModules.length === 0 ? (
           <div className="p-8 text-center">
             <BookOpen className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
-            <p className="text-base font-semibold text-foreground mb-1">No courses yet</p>
+            <p className="text-base font-semibold text-foreground mb-1">{isOwner ? "Add your first lesson" : "No lessons yet"}</p>
             <p className="text-sm text-muted-foreground">
-              {isOwner ? "Add your first module to get started." : "No content available yet."}
+              {isOwner ? "Start with a module, then add the lesson inside it." : "Lessons will show up here when the creator publishes them."}
             </p>
           </div>
         ) : (
@@ -858,12 +856,12 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                             </div>
                             {isOwner && (
                               <div className="flex items-center gap-0.5 flex-shrink-0">
-                                <button onClick={(e) => { e.stopPropagation(); setEditingModule(mod); }} className="p-1.5 rounded hover:bg-secondary">
+                                <button type="button" aria-label={`Edit ${mod.title}`} onClick={(e) => { e.stopPropagation(); setEditingModule(mod); }} className="p-1.5 rounded hover:bg-secondary">
                                   <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                                 </button>
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
-                                    <button onClick={(e) => e.stopPropagation()} className="p-1.5 rounded hover:bg-secondary">
+                                    <button type="button" aria-label={`Delete ${mod.title}`} onClick={(e) => e.stopPropagation()} className="p-1.5 rounded hover:bg-secondary">
                                       <Trash2 className="w-3.5 h-3.5 text-muted-foreground" />
                                     </button>
                                   </AlertDialogTrigger>
@@ -911,8 +909,8 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
 
         {isOwner && (
           <div className="px-4 pt-4 space-y-2">
-            <Button onClick={() => setShowAddModule(true)} variant="outline" className="w-full font-semibold">
-              <Plus className="w-4 h-4 mr-2" /> Add Module
+            <Button onClick={() => setShowAddModule(true)} className="w-full font-semibold">
+              <Plus className="w-4 h-4 mr-2" /> {modules.length === 0 ? "Add your first module" : "Add module"}
             </Button>
             <Button onClick={() => setShowInsights(true)} variant="ghost" className="w-full font-semibold">
               <BarChart3 className="w-4 h-4 mr-2 text-primary" /> Course insights
@@ -949,9 +947,9 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
         {modules.length === 0 && dripLockedModules.length === 0 ? (
           <div className="p-8 text-center">
             <BookOpen className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-            <p className="text-sm font-medium text-foreground mb-1">No courses yet</p>
+            <p className="text-sm font-semibold text-foreground mb-1">{isOwner ? "Add your first lesson" : "No lessons yet"}</p>
             <p className="text-xs text-muted-foreground">
-              {isOwner ? "Add your first module to get started." : "No content available yet."}
+              {isOwner ? "Start with a module, then add the lesson inside it." : "Lessons will show up here when the creator publishes them."}
             </p>
           </div>
         ) : (
@@ -982,10 +980,10 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                           </button>
                           {isOwner && (
                             <div className="flex items-center pr-2 gap-0.5">
-                              <button onClick={() => setEditingModule(mod)} className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Pencil className="w-3.5 h-3.5" /></button>
+                              <button type="button" aria-label={`Edit ${mod.title}`} onClick={() => setEditingModule(mod)} className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Pencil className="w-3.5 h-3.5" /></button>
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                  <button className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Trash2 className="w-3.5 h-3.5" /></button>
+                                  <button type="button" aria-label={`Delete ${mod.title}`} className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Trash2 className="w-3.5 h-3.5" /></button>
                                 </AlertDialogTrigger>
                                 <AlertDialogContent className="bg-card border-border">
                                   <AlertDialogHeader>
@@ -1046,10 +1044,10 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                                         </button>
                                         {isOwner && (
                                           <div className="flex items-center pr-2 gap-0.5">
-                                            <button onClick={() => setEditingLesson(lesson)} className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Pencil className="w-3 h-3" /></button>
+                                            <button type="button" aria-label={`Edit ${lesson.title}`} onClick={() => setEditingLesson(lesson)} className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Pencil className="w-3 h-3" /></button>
                                             <AlertDialog>
                                               <AlertDialogTrigger asChild>
-                                                <button className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Trash2 className="w-3 h-3" /></button>
+                                                <button type="button" aria-label={`Delete ${lesson.title}`} className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Trash2 className="w-3 h-3" /></button>
                                               </AlertDialogTrigger>
                                               <AlertDialogContent className="bg-card border-border">
                                                 <AlertDialogHeader>
@@ -1091,7 +1089,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
 
         {isOwner && (
           <button onClick={() => setShowAddModule(true)} className={`w-full flex items-center gap-2 px-4 py-3 text-sm font-semibold hover:bg-secondary/50 transition-colors text-primary ${modules.length > 0 ? "border-t border-border" : ""}`}>
-            <Plus className="w-4 h-4" /> Add Module
+            <Plus className="w-4 h-4" /> {modules.length === 0 ? "Add your first module" : "Add module"}
           </button>
         )}
       </div>
@@ -1107,8 +1105,14 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
               <BookOpen className="w-8 h-8 text-primary" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground mb-2">Course Overview</h2>
-              <p className="text-sm text-muted-foreground">Explore the modules and lessons below to get started.</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">
+                {totalLessons === 0 ? (isOwner ? "Add your first lesson" : "No lessons yet") : "Course overview"}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {totalLessons === 0
+                  ? (isOwner ? "Pick a module on the left, or create one, then add the lesson." : "Lessons will show up here when the creator publishes them.")
+                  : "Pick a lesson on the left to start."}
+              </p>
             </div>
             <div className="flex justify-center gap-6">
               <div className="text-center">

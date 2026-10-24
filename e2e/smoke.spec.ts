@@ -73,7 +73,7 @@ test.describe("public pages", () => {
 // ---------------------------------------------------------------------------
 
 test.describe("trial funnel (money path — boundary only)", () => {
-  test("home CTA -> step 1 (4 fields) -> step 2 -> checkout boundary state", async ({ page, pageErrors }, testInfo) => {
+  test("home CTA -> step 1 (email only) -> step 2 -> checkout boundary state", async ({ page, pageErrors }, testInfo) => {
     await page.goto("/");
     await page
       .getByRole("button", { name: /start your 14-day free trial/i })
@@ -84,22 +84,16 @@ test.describe("trial funnel (money path — boundary only)", () => {
     await expect(dialog).toBeVisible();
     await expect(dialog.getByText(/start your 14-day free trial today/i)).toBeVisible();
 
-    // Step 1 — exactly the four GHL-simple fields; no password asked up front.
-    const company = dialog.getByLabel("Company name");
-    const fullName = dialog.getByLabel("Full name");
+    // Step 1 — email only. Company, name, and phone are deferred.
     const email = dialog.getByLabel("Email address");
-    const phone = dialog.getByLabel("Phone number");
-    await expect(company).toBeVisible();
-    await expect(fullName).toBeVisible();
     await expect(email).toBeVisible();
-    await expect(phone).toBeVisible();
+    await expect(dialog.getByLabel("Company name")).toHaveCount(0);
+    await expect(dialog.getByLabel("Full name")).toHaveCount(0);
+    await expect(dialog.getByLabel("Phone number")).toHaveCount(0);
     await expect(dialog.locator('input[type="password"]')).toHaveCount(0);
 
     const testEmail = disposableEmail("trial");
-    await company.fill("E2E Smoke Co");
-    await fullName.fill("E2E Smoke");
     await email.fill(testEmail);
-    await phone.fill("5555550100");
     testInfo.annotations.push({ type: "disposable-account", description: testEmail });
 
     // Creates the disposable account against the real Supabase, then advances.

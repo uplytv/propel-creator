@@ -2,10 +2,12 @@ import { useState } from "react";
 import SectionShell from "./SectionShell";
 import PlanCard from "@/components/pricing/PlanCard";
 import TrialSignupModal from "@/components/pricing/TrialSignupModal";
+import PlanScan from "@/components/pricing/PlanScan";
 import {
   PLATFORM_PLANS,
   ARIA_PLAN_NOTE,
   FEE_DISCLOSURE,
+  TRIAL_CARD_PROMISE,
   type PlatformPlanKey,
 } from "@/components/pricing/plans";
 
@@ -29,13 +31,15 @@ export default function HomepagePricing() {
       <div className="text-center max-w-3xl mx-auto mb-10">
         <p className="eyebrow-gold mb-4">Pricing</p>
         <h2 className="type-display-lg text-foreground mb-4">
-          Founding Creator Pricing,{" "}
-          <span className="italic text-gold font-normal">honestly priced.</span>
+          Simple pricing.{" "}
+          <span className="italic text-gold font-normal">You keep 95%.</span>
         </h2>
-        <p className="text-foreground/70 text-base sm:text-lg">
-          Every plan starts with a 14-day free trial. Open to new creators today — no waitlist.
-        </p>
-        <p className="text-foreground/60 text-sm mt-3">{ARIA_PLAN_NOTE}</p>
+        <p className="text-foreground/80 text-base sm:text-lg">{TRIAL_CARD_PROMISE}</p>
+        <p className="text-foreground/80 text-sm mt-3">{ARIA_PLAN_NOTE}</p>
+      </div>
+
+      <div className="max-w-5xl mx-auto mb-8">
+        <PlanScan />
       </div>
 
       <div className="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto">
@@ -46,7 +50,7 @@ export default function HomepagePricing() {
         ))}
       </div>
 
-      <p className="mx-auto mt-8 max-w-3xl text-center text-xs sm:text-sm text-foreground/60 leading-relaxed">
+      <p id="fees" className="mx-auto mt-8 max-w-3xl text-center text-sm text-foreground/80 leading-relaxed scroll-mt-24">
         {FEE_DISCLOSURE}
       </p>
 

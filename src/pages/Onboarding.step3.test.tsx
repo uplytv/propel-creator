@@ -149,7 +149,6 @@ import Onboarding from "./Onboarding";
 function renderOnboarding() {
   vi.useFakeTimers();
   const utils = render(<Onboarding />);
-  // Splash auto-advances to Step 1 after 1500ms
   act(() => {
     vi.advanceTimersByTime(1600);
   });

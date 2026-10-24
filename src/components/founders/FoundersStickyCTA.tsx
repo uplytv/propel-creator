@@ -29,9 +29,13 @@ export default function FoundersStickyCTA() {
   }, []);
 
   useEffect(() => {
-    // Delay reveal so it doesn't fight the splash/hero
-    const t = setTimeout(() => setShow(true), 1500);
-    return () => clearTimeout(t);
+    // Never cover the hero. Reveal only after the visitor scrolls past it.
+    const onScroll = () => {
+      if (window.scrollY > window.innerHeight * 0.85) setShow(true);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   // App Store policy: hide paid-access promo inside iOS native shell.

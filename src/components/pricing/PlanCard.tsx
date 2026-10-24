@@ -61,7 +61,7 @@ export default function PlanCard({ plan, onStartTrial, isCurrent = false, trialD
         {isCurrent ? "Current plan" : "Start free trial"}
       </Button>
       <p className="mt-3 text-center text-xs text-muted-foreground">
-        {trialDays} days free · cancel anytime
+        {trialDays}-day trial · card on file · $0 today
       </p>
     </div>
   );
