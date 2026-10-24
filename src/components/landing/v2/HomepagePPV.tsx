@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { DollarSign, Globe, Lock, ArrowRight } from "lucide-react";
+import TrialSignupModal from "@/components/pricing/TrialSignupModal";
 
 const FEATURES = [
   { icon: DollarSign, t: "Keep 95%", b: "Instant payouts on every pass." },
@@ -8,7 +10,9 @@ const FEATURES = [
 ];
 
 export default function HomepagePPV() {
+  const [trialOpen, setTrialOpen] = useState(false);
   return (
+    <>
     <section id="ppv" className="relative px-4 py-20 sm:py-28">
       <div className="max-w-5xl mx-auto">
         <div className="relative overflow-hidden rounded-2xl border border-gold-hairline bg-card/50 backdrop-blur-md p-8 sm:p-12">
@@ -32,9 +36,13 @@ export default function HomepagePPV() {
                 <Link to="/ppv" className="btn-primary-glow inline-flex items-center justify-center gap-1.5 rounded-md px-6 h-11 text-sm font-bold">
                   Explore PPV <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link to="/auth?mode=signup" className="btn-gold-outline inline-flex items-center justify-center gap-1.5 rounded-md px-6 h-11 text-sm font-bold">
-                  Start streaming
-                </Link>
+                <button
+                  type="button"
+                  onClick={() => setTrialOpen(true)}
+                  className="btn-gold-outline inline-flex items-center justify-center gap-1.5 rounded-md px-6 h-11 text-sm font-bold"
+                >
+                  Start selling
+                </button>
               </div>
             </div>
             <div className="grid grid-cols-1 gap-3">
@@ -54,5 +62,7 @@ export default function HomepagePPV() {
         </div>
       </div>
     </section>
+    <TrialSignupModal open={trialOpen} onOpenChange={setTrialOpen} defaultPlan="starter" />
+    </>
   );
 }

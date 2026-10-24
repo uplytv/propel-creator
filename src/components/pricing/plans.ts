@@ -129,6 +129,13 @@ export const FEE_DISCLOSURE =
 export const FEE_DISCLOSURE_SHORT = "Flat 5% UPLY platform fee · Stripe fees separate";
 
 /**
+ * One promise for every creator trial entry (homepage modal, nav, /auth signup).
+ * The trial collects a card. $0 is charged today. Fan payments are a separate 95/5 split.
+ */
+export const TRIAL_CARD_PROMISE =
+  "14-day free trial. A card is required to start — $0 due today, then your plan price. Cancel anytime. You keep 95% of what fans pay you.";
+
+/**
  * AI entitlement positioning. ARIA is listed as part of the Unlimited and
  * Agency Pro plans (see PLATFORM_PLANS features). No entitlement logic is
  * changed by this constant — it is display copy only.

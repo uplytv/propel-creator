@@ -33,7 +33,7 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageFinalCTA m
     <p
       class="text-foreground/60 mb-8"
     >
-      Open to new creators today — no waitlist, no queue.
+      Start selling from this page. Card on file, $0 due today.
     </p>
     <button
       class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display hover:-translate-y-px hover:shadow-[var(--shadow-glow)] rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_60px_hsl(var(--primary)/0.5)] font-bold text-base px-8 py-6 h-auto"
@@ -60,9 +60,9 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageFinalCTA m
       </svg>
     </button>
     <p
-      class="mt-4 text-xs text-foreground/55"
+      class="mt-4 text-xs text-foreground/55 max-w-lg mx-auto"
     >
-      14 days free · No obligation · Cancel at any time
+      14-day free trial. A card is required to start — $0 due today, then your plan price. Cancel anytime. You keep 95% of what fans pay you.
     </p>
     <p
       class="mt-6 text-sm text-foreground/60"
@@ -189,21 +189,21 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageHero match
     <p
       class="eyebrow-gold"
     >
-      For musicians, streamers, educators & sellers
+      For creators who already have an audience
     </p>
     <div
       class="min-h-[140px] sm:min-h-[180px] flex items-center justify-center"
     >
       <h1
-        class="type-display-xl text-foreground animate-fade-in"
+        class="type-display-xl text-foreground"
       >
-        The AI-Powered Operating System for Creators.
+        Turn your audience into income.
       </h1>
     </div>
     <p
       class="type-body-lg text-foreground/75 max-w-xl"
     >
-      Stream, sell courses, and run events from one dashboard — while your AI team handles the content, emails, and growth.
+      Sell memberships, tickets, and pay-per-view. Live tips, courses, and events are included. Pay-per-view is on Unlimited and Agency Pro. You keep 95%.
     </p>
     <div
       class="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto"
@@ -232,39 +232,182 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageHero match
           />
         </svg>
       </button>
-      <a
+      <button
         class="btn-gold-outline w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md px-8 h-12 text-sm font-bold tracking-wide"
-        href="/discover"
+        type="button"
       >
-        Explore creators
+        Start selling
+      </button>
+    </div>
+    <p
+      class="text-xs text-foreground/60 max-w-lg leading-relaxed -mt-2"
+    >
+      14-day free trial. A card is required to start — $0 due today, then your plan price. Cancel anytime. You keep 95% of what fans pay you.
+       
+      <a
+        class="underline underline-offset-4 hover:text-foreground"
+        href="#fees"
+      >
+        See fees
       </a>
-    </div>
-    <p
-      class="text-xs text-foreground/55 -mt-3"
-    >
-      14 days free · No obligation · Cancel at any time
     </p>
-    <p
-      class="text-xs sm:text-sm text-foreground/60 font-medium tracking-wide max-w-2xl leading-relaxed"
+    <ol
+      class="grid w-full max-w-3xl grid-cols-1 sm:grid-cols-3 gap-3 text-left"
     >
-      AI growth team · Live streaming · Courses & community · Music · Events & tickets · Live shopping · Roku TV
-    </p>
-    <div
-      class="flex flex-col items-center gap-2 max-w-xl"
-    >
-      <p
-        class="text-xs sm:text-sm text-foreground/70 leading-relaxed"
+      <li
+        class="rounded-xl border border-border bg-card/80 px-4 py-3"
       >
-        The ARIA AI team is part of Unlimited ($297/mo) and Agency Pro ($497/mo). Starter ($97/mo) includes the core creator platform — profile, streaming, community, courses and events.
-      </p>
-      <p
-        class="text-xs text-foreground/55 leading-relaxed"
+        <div
+          class="flex items-center gap-2 mb-1"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-credit-card w-4 h-4 text-primary"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              height="14"
+              rx="2"
+              width="20"
+              x="2"
+              y="5"
+            />
+            <line
+              x1="2"
+              x2="22"
+              y1="10"
+              y2="10"
+            />
+          </svg>
+          <span
+            class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+          >
+            0
+            1
+          </span>
+        </div>
+        <p
+          class="text-sm font-semibold text-foreground"
+        >
+          Connect Stripe
+        </p>
+        <p
+          class="text-xs text-muted-foreground mt-0.5"
+        >
+          Payouts land in your own account.
+        </p>
+      </li>
+      <li
+        class="rounded-xl border border-border bg-card/80 px-4 py-3"
       >
-        Every plan includes a free setup call with a real person to help you get your pages, community and first offer live. A full done-for-you build is available as a separate paid service. 
-        Flat 5% UPLY platform fee · Stripe fees separate
-        .
-      </p>
-    </div>
+        <div
+          class="flex items-center gap-2 mb-1"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-tag w-4 h-4 text-primary"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"
+            />
+            <circle
+              cx="7.5"
+              cy="7.5"
+              fill="currentColor"
+              r=".5"
+            />
+          </svg>
+          <span
+            class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+          >
+            0
+            2
+          </span>
+        </div>
+        <p
+          class="text-sm font-semibold text-foreground"
+        >
+          Set a price
+        </p>
+        <p
+          class="text-xs text-muted-foreground mt-0.5"
+        >
+          Membership, ticket, or pay-per-view.
+        </p>
+      </li>
+      <li
+        class="rounded-xl border border-border bg-card/80 px-4 py-3"
+      >
+        <div
+          class="flex items-center gap-2 mb-1"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-radio w-4 h-4 text-primary"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"
+            />
+            <path
+              d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"
+            />
+            <circle
+              cx="12"
+              cy="12"
+              r="2"
+            />
+            <path
+              d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"
+            />
+            <path
+              d="M19.1 4.9C23 8.8 23 15.1 19.1 19"
+            />
+          </svg>
+          <span
+            class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+          >
+            0
+            3
+          </span>
+        </div>
+        <p
+          class="text-sm font-semibold text-foreground"
+        >
+          Go live
+        </p>
+        <p
+          class="text-xs text-muted-foreground mt-0.5"
+        >
+          Fans pay to watch. You keep 95%.
+        </p>
+      </li>
+    </ol>
     <button
       class="text-xs text-foreground/55 underline underline-offset-4 hover:text-foreground/80 transition-colors"
     >
@@ -300,13 +443,13 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageNav matche
         class="text-[13px] font-semibold tracking-wide text-foreground/70 hover:text-gold transition-colors"
         href="/discover"
       >
-        Creators
+        Discover
       </a>
       <a
         class="text-[13px] font-semibold tracking-wide text-foreground/70 hover:text-gold transition-colors"
         href="/roster"
       >
-        Sites
+        Artist sites
       </a>
       <a
         class="text-[13px] font-semibold tracking-wide text-foreground/70 hover:text-gold transition-colors"
@@ -330,12 +473,12 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageNav matche
       >
         Sign In
       </a>
-      <a
+      <button
         class="btn-primary-glow inline-flex items-center rounded-md px-4 sm:px-5 h-9 sm:h-10 text-[13px] font-bold tracking-wide"
-        href="/pricing"
+        type="button"
       >
-        Start your 14-day trial
-      </a>
+        Start free trial
+      </button>
     </div>
   </div>
 </header>
@@ -360,18 +503,18 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepagePricing ma
       <h2
         class="type-display-lg text-foreground mb-4"
       >
-        Founding Creator Pricing,
+        Simple pricing.
          
         <span
           class="italic text-gold font-normal"
         >
-          honestly priced.
+          You keep 95%.
         </span>
       </h2>
       <p
         class="text-foreground/70 text-base sm:text-lg"
       >
-        Every plan starts with a 14-day free trial. Open to new creators today — no waitlist.
+        Memberships, tickets, tips, and courses on every plan. Pay-per-view is on Unlimited and Agency Pro. 14-day trial, card on file, $0 due today.
       </p>
       <p
         class="text-foreground/60 text-sm mt-3"
@@ -591,7 +734,7 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepagePricing ma
             class="mt-3 text-center text-xs text-muted-foreground"
           >
             14
-             days free · cancel anytime
+            -day trial · card on file · $0 today
           </p>
         </div>
       </div>
@@ -901,7 +1044,7 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepagePricing ma
             class="mt-3 text-center text-xs text-muted-foreground"
           >
             14
-             days free · cancel anytime
+            -day trial · card on file · $0 today
           </p>
         </div>
       </div>
@@ -1183,13 +1326,14 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepagePricing ma
             class="mt-3 text-center text-xs text-muted-foreground"
           >
             14
-             days free · cancel anytime
+            -day trial · card on file · $0 today
           </p>
         </div>
       </div>
     </div>
     <p
-      class="mx-auto mt-8 max-w-3xl text-center text-xs sm:text-sm text-foreground/60 leading-relaxed"
+      class="mx-auto mt-8 max-w-3xl text-center text-xs sm:text-sm text-foreground/60 leading-relaxed scroll-mt-24"
+      id="fees"
     >
       Flat 5% UPLY platform fee on sales made through UPLY. The remaining 95% of the charge is transferred to your own connected Stripe account. Stripe's payment-processing, payout and any tax charges are set by Stripe and apply separately. Your plan price is billed separately.
     </p>

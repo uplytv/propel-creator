@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -14,6 +14,8 @@ import { getAffiliateCookie, clearAffiliateCookie, getReferralData } from "@/lib
 import { validatePassword } from "@/lib/passwordValidation";
 import { trackEvent } from "@/lib/posthog";
 import { Sentry } from "@/lib/sentry";
+import { TRIAL_CARD_PROMISE } from "@/components/pricing/plans";
+import TrialSignupModal from "@/components/pricing/TrialSignupModal";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -32,6 +34,9 @@ export default function Auth() {
     return getAffiliateCookie("uply_waitlist_ref") || getAffiliateCookie("uply_invite_code") ? "signup" : "signin";
   })();
   const [tab, setTab] = useState<string>(defaultTab);
+  const [trialOpen, setTrialOpen] = useState(false);
+  const [showAccountForm, setShowAccountForm] = useState(false);
+  const trialAutoOpened = useRef(false);
 
   // Post-auth redirect target. Accepts `redirect=` (existing UPLY convention)
   // and `next=` (used by the MCP OAuth consent page at
@@ -50,10 +55,26 @@ export default function Auth() {
   // Members skip creator onboarding + the approval waitlist entirely.
   const asMember = new URLSearchParams(location.search).get("as") === "member";
 
+  // Creator signup and the homepage trial are the same path: email, then a
+  // card on file. The password form stays available for logins that are not
+  // the trial (apply, waitlist, referrals).
+  useEffect(() => {
+    if (asMember) {
+      setTrialOpen(false);
+      return;
+    }
+    if (tab !== "signup" || trialAutoOpened.current) return;
+    trialAutoOpened.current = true;
+    setTrialOpen(true);
+  }, [tab, asMember]);
+
   useEffect(() => {
     if (signUpSuccess) return;
     const checkAndRedirect = async (session: any) => {
       if (!session) return;
+      // Trial modal step 1 creates a session. Redirecting here unmounts the
+      // card step — same guard Landing uses.
+      if (sessionStorage.getItem("uply_trial_in_progress") === "1") return;
       // Check if user needs onboarding
       const { data: profile } = await supabase
         .from("profiles")
@@ -347,13 +368,21 @@ export default function Auth() {
         <Card className="border-border/50 shadow-xl">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">
-              {tab === "signup" ? "Create your free account" : "Welcome back"}
+              {tab === "signup"
+                ? asMember
+                  ? "Create your free account"
+                  : showAccountForm
+                    ? "Create your login"
+                    : "Start your 14-day free trial"
+                : "Welcome back"}
             </CardTitle>
             <CardDescription>
               {tab === "signup"
                 ? asMember
                   ? "Join communities, take free courses, and support creators. No card required."
-                  : "Keep 95% of what you earn. No card required."
+                  : showAccountForm
+                    ? "This creates a login only. It does not start the trial and does not ask for a card."
+                    : TRIAL_CARD_PROMISE
                 : asMember
                   ? "Sign in to your account"
                   : "Sign in to your creator dashboard"}
@@ -379,6 +408,8 @@ export default function Auth() {
               </form>
             ) : (
               <>
+                {(tab === "signin" || asMember || showAccountForm) && (
+                <>
                 <Button variant="outline" className="w-full mb-6" onClick={handleGoogleSignIn} disabled={loading}>
                   <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                     <path fill="hsl(220 90% 56%)" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
@@ -395,6 +426,8 @@ export default function Auth() {
                     <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
                   </div>
                 </div>
+                </>
+                )}
 
                 <Tabs value={tab} onValueChange={setTab}>
                   <TabsList className="grid w-full grid-cols-2 mb-4">
@@ -437,6 +470,33 @@ export default function Auth() {
                   </TabsContent>
 
                   <TabsContent value="signup">
+                    {!asMember && !showAccountForm ? (
+                      <div className="space-y-3">
+                        <Button type="button" className="w-full" onClick={() => setTrialOpen(true)}>
+                          Start your 14-day free trial
+                        </Button>
+                        <button
+                          type="button"
+                          className="w-full text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                          onClick={() => setShowAccountForm(true)}
+                        >
+                          Create a login instead
+                        </button>
+                        <p className="text-center text-xs text-muted-foreground">
+                          Watching as a fan?{" "}
+                          <button
+                            type="button"
+                            className="underline underline-offset-4 hover:text-foreground"
+                            onClick={() => {
+                              setTrialOpen(false);
+                              navigate("/auth?mode=signup&as=member");
+                            }}
+                          >
+                            Free account, no card
+                          </button>
+                        </p>
+                      </div>
+                    ) : (
                     <form onSubmit={handleSignUp} className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="signup-name">Name</Label>
@@ -467,15 +527,31 @@ export default function Auth() {
                         )}
                       </div>
                       <Button type="submit" className="w-full" disabled={loading}>
-                        {loading ? "Creating account..." : "Create Account"}
+                        {loading ? "Creating account..." : asMember ? "Create account" : "Create login"}
                       </Button>
+                      {!asMember && (
+                        <button
+                          type="button"
+                          className="w-full text-center text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                          onClick={() => {
+                            setShowAccountForm(false);
+                            setTrialOpen(true);
+                          }}
+                        >
+                          Start the trial instead — card on file, $0 due today
+                        </button>
+                      )}
                     </form>
+                    )}
                   </TabsContent>
                 </Tabs>
               </>
             )}
           </CardContent>
         </Card>
+        {!asMember && (
+          <TrialSignupModal open={trialOpen} onOpenChange={setTrialOpen} defaultPlan="starter" />
+        )}
       </motion.div>
     </div>
   );

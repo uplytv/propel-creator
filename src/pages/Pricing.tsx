@@ -13,6 +13,7 @@ import {
   PLATFORM_PLANS,
   ARIA_PLAN_NOTE,
   FEE_DISCLOSURE,
+  TRIAL_CARD_PROMISE,
   type PlatformPlanKey,
 } from "@/components/pricing/plans";
 
@@ -59,9 +60,9 @@ export default function Pricing() {
         </button>
 
         <div className="text-center mb-10">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground">Choose Your Plan</h1>
-          <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-            Every plan starts with a 14-day free trial. Open to new creators today — no waitlist. Cancel anytime.
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground">Pricing that leaves you 95%</h1>
+          <p className="text-muted-foreground mt-2 max-w-lg mx-auto">
+            {TRIAL_CARD_PROMISE}
           </p>
         </div>
 
@@ -82,7 +83,7 @@ export default function Pricing() {
           ))}
         </div>
 
-        <p className="text-xs text-center text-muted-foreground mt-8">
+        <p id="fees" className="text-xs text-center text-muted-foreground mt-8 scroll-mt-24">
           All plans include unlimited community members, live streaming, and course creation. Cancel anytime.
           <br />
           <span className="mt-2 block">{ARIA_PLAN_NOTE}</span>
@@ -107,8 +108,8 @@ export default function Pricing() {
         {/* Competitor Comparison */}
         <div className="mt-16">
           <h2 className="text-2xl font-bold text-foreground text-center mb-2">Why creators choose UPLY</h2>
-          <p className="text-sm text-muted-foreground text-center mb-8 max-w-md mx-auto">
-            One platform replaces 6 subscriptions. Here's what you get that others don't.
+          <p className="text-sm text-muted-foreground text-center mb-8 max-w-lg mx-auto">
+            Memberships, live, courses, and tickets in one login. Other platforms’ prices change — confirm on their sites. UPLY’s sales fee is a flat 5%.
           </p>
 
           <div className="rounded-md border border-border overflow-hidden">
@@ -126,7 +127,7 @@ export default function Pricing() {
               { feature: "Live shopping", uply: true, yt: false, pat: false, kaj: false },
               { feature: "Paid DMs", uply: true, yt: false, pat: false, kaj: false },
               { feature: "Community + leaderboards", uply: true, yt: false, pat: true, kaj: true },
-              { feature: "AI growth assistant", uply: true, yt: false, pat: false, kaj: false },
+              { feature: "ARIA AI team (Unlimited & Agency Pro)", uply: true, yt: false, pat: false, kaj: false },
               { feature: "Affiliate system", uply: true, yt: false, pat: false, kaj: true },
               { feature: "Jobs marketplace", uply: true, yt: false, pat: false, kaj: false },
               { feature: "Starting price", uply: "$97/mo · 14 days free", yt: "Free", pat: "$8/mo", kaj: "$149/mo" },

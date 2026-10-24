@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "@/assets/logo.png";
+import TrialSignupModal from "@/components/pricing/TrialSignupModal";
 
 const NAV_LINKS = [
-  { label: "Creators", href: "/discover", internal: true },
-  { label: "Sites", href: "/roster", internal: true },
+  { label: "Discover", href: "/discover", internal: true },
+  { label: "Artist sites", href: "/roster", internal: true },
   { label: "Pricing", href: "#pricing" },
   { label: "Blog", href: "/blog", internal: true },
 ];
 
 export default function HomepageNav() {
   const [scrolled, setScrolled] = useState(false);
+  const [trialOpen, setTrialOpen] = useState(false);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
@@ -60,14 +62,16 @@ export default function HomepageNav() {
           >
             Sign In
           </Link>
-          <Link
-            to="/pricing"
+          <button
+            type="button"
+            onClick={() => setTrialOpen(true)}
             className="btn-primary-glow inline-flex items-center rounded-md px-4 sm:px-5 h-9 sm:h-10 text-[13px] font-bold tracking-wide"
           >
-            Start your 14-day trial
-          </Link>
+            Start free trial
+          </button>
         </div>
       </div>
+      <TrialSignupModal open={trialOpen} onOpenChange={setTrialOpen} defaultPlan="starter" />
     </header>
   );
 }

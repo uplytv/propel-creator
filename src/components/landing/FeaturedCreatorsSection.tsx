@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ARTIST_ROSTER, formatEstablished } from "@/data/artistRoster";
+import { ARTIST_ROSTER } from "@/data/artistRoster";
 import { BadgeCheck, ArrowUpRight } from "lucide-react";
 import { trackEvent } from "@/lib/posthog";
 import { resolveCreatorDestination } from "@/lib/resolveCreatorDestination";
@@ -43,8 +43,7 @@ export default function FeaturedCreatorsSection() {
             Artists building their universe on UPLY
           </h2>
           <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
-            Tap any creator to visit their UPLY profile — bio, links, drops, and
-            community in one place.
+            Open a creator’s page to see what they sell — membership, tickets, or a live show.
           </p>
         </div>
 
@@ -74,6 +73,18 @@ export default function FeaturedCreatorsSection() {
           </div>
         )}
 
+        {visible.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center">
+            <p className="font-semibold text-foreground">No creators in this category yet</p>
+            <button
+              type="button"
+              onClick={() => setTypeFilter("All")}
+              className="mt-3 text-sm font-semibold text-primary underline underline-offset-4"
+            >
+              Show all creators
+            </button>
+          </div>
+        ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
           {visible.map((a, index) => (
             <Link
@@ -148,15 +159,11 @@ export default function FeaturedCreatorsSection() {
                     className="w-3.5 h-3.5 text-white/70 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0"
                   />
                 </div>
-                {formatEstablished(a.joinedAt) && (
-                  <p className="mt-0.5 text-[10px] text-white/60">
-                    {formatEstablished(a.joinedAt)}
-                  </p>
-                )}
               </div>
             </Link>
           ))}
         </div>
+        )}
 
         <div className="mt-10 text-center">
           <Link

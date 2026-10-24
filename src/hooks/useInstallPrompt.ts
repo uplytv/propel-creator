@@ -12,6 +12,7 @@ const SESSION_KEY = 'uply_session_count';
 export function useInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
+  const [eligible, setEligible] = useState(false);
 
   useEffect(() => {
     // Don't show in native app or if already installed
@@ -25,19 +26,29 @@ export function useInstallPrompt() {
     // Check dismissal count
     const dismissed = Number(localStorage.getItem(STORAGE_KEY) || '0');
     if (dismissed >= 2) return;
+    if (sessions < 3) return;
+    setEligible(true);
 
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      // Show after 3rd session
-      if (sessions >= 3) {
-        setShowPrompt(true);
-      }
     };
 
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
+
+  // Keep the install card off the first viewport. Show it only after the
+  // visitor scrolls past the hero (or an equivalent fold on other pages).
+  useEffect(() => {
+    if (!eligible || !deferredPrompt) return;
+    const reveal = () => {
+      if (window.scrollY > window.innerHeight * 0.85) setShowPrompt(true);
+    };
+    reveal();
+    window.addEventListener('scroll', reveal, { passive: true });
+    return () => window.removeEventListener('scroll', reveal);
+  }, [eligible, deferredPrompt]);
 
   const install = useCallback(async () => {
     if (!deferredPrompt) return;

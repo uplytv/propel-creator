@@ -29,11 +29,12 @@ export default function HomepagePricing() {
       <div className="text-center max-w-3xl mx-auto mb-10">
         <p className="eyebrow-gold mb-4">Pricing</p>
         <h2 className="type-display-lg text-foreground mb-4">
-          Founding Creator Pricing,{" "}
-          <span className="italic text-gold font-normal">honestly priced.</span>
+          Simple pricing.{" "}
+          <span className="italic text-gold font-normal">You keep 95%.</span>
         </h2>
         <p className="text-foreground/70 text-base sm:text-lg">
-          Every plan starts with a 14-day free trial. Open to new creators today — no waitlist.
+          Memberships, tickets, tips, and courses on every plan. Pay-per-view is on Unlimited and Agency Pro.
+          14-day trial, card on file, $0 due today.
         </p>
         <p className="text-foreground/60 text-sm mt-3">{ARIA_PLAN_NOTE}</p>
       </div>
@@ -46,7 +47,7 @@ export default function HomepagePricing() {
         ))}
       </div>
 
-      <p className="mx-auto mt-8 max-w-3xl text-center text-xs sm:text-sm text-foreground/60 leading-relaxed">
+      <p id="fees" className="mx-auto mt-8 max-w-3xl text-center text-xs sm:text-sm text-foreground/60 leading-relaxed scroll-mt-24">
         {FEE_DISCLOSURE}
       </p>
 

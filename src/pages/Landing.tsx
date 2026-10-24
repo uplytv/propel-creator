@@ -85,8 +85,8 @@ export default function Landing() {
   return (
     <div className="relative min-h-screen bg-background text-foreground antialiased scroll-smooth">
       <SEOHead
-        title="UPLY — The Creator Operating System"
-        description="Stream, teach, sell, and build community. Keep 95% of everything. The first creator platform on Roku TV."
+        title="UPLY — Turn your audience into income"
+        description="Sell memberships, tickets, and pay-per-view. Keep 95%. 14-day free trial, card on file, $0 due today."
         canonicalUrl="https://uply.tv/"
         image={LANDING_OG_IMAGE_URL}
         type="website"

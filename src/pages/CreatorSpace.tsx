@@ -25,13 +25,16 @@ import { PricingTab } from "@/components/space/PricingTab";
 import { useSubscriptionTiers } from "@/hooks/useStripeAccount";
 import TierSelectionModal from "@/components/TierSelectionModal";
 import { Button } from "@/components/ui/button";
-import { Users, Loader2, Sparkles, Lock, Check } from "lucide-react";
+import { Users, Loader2, Sparkles, Lock, Check, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { usePaymentReturn, useMemberSubscriptionStatus } from "@/hooks/usePaymentReturn";
 import PaymentProcessingOverlay from "@/components/PaymentProcessingOverlay";
 
 const VALID_TABS = ["community", "classroom", "calendar", "events", "store", "members", "leaderboard", "pricing", "earn", "blasts", "about"] as const;
 type TabSlug = typeof VALID_TABS[number];
+
+/** Skool-style primary nav. Everything else stays one tap away under More. */
+const PRIMARY_TABS: TabSlug[] = ["community", "classroom", "members"];
 
 const TAB_LABELS: Record<TabSlug, string> = {
   community: "Community",
@@ -54,6 +57,100 @@ function resolveTabFromUrl(tabParam?: string): TabSlug {
   const slug = tabParam?.toLowerCase();
   if (slug && VALID_TABS.includes(slug as TabSlug)) return slug as TabSlug;
   return "community";
+}
+
+function SpaceTabBar({
+  activeTab,
+  isOwner,
+  memberCount,
+  canAccessTab,
+  onSelect,
+}: {
+  activeTab: TabSlug;
+  isOwner: boolean;
+  memberCount: number;
+  canAccessTab: (tab: TabSlug) => boolean;
+  onSelect: (slug: TabSlug) => void;
+}) {
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreTabs = VALID_TABS.filter((slug) => {
+    if (PRIMARY_TABS.includes(slug)) return false;
+    if (slug === "blasts" && !isOwner) return false;
+    return true;
+  });
+  const activeIsMore = moreTabs.includes(activeTab);
+
+  const labelFor = (slug: TabSlug) =>
+    slug === "members" ? `Members (${memberCount})` : TAB_LABELS[slug];
+
+  const tabButton = (slug: TabSlug) => {
+    const locked = !canAccessTab(slug);
+    const active = activeTab === slug;
+    return (
+      <button
+        key={slug}
+        type="button"
+        onClick={() => {
+          setMoreOpen(false);
+          onSelect(slug);
+        }}
+        className={`relative px-4 py-3 text-sm font-semibold whitespace-nowrap transition-colors flex-shrink-0 flex items-center gap-1 ${
+          active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+        }`}
+      >
+        {labelFor(slug)}
+        {locked && <Lock className="w-3 h-3 opacity-70" aria-hidden />}
+        {active && <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-primary" />}
+      </button>
+    );
+  };
+
+  return (
+    <div className="sticky top-0 z-40 bg-surface border-b border-surface-border">
+      <div className="flex items-center overflow-x-auto scrollbar-none">
+        {PRIMARY_TABS.map(tabButton)}
+        {activeIsMore && tabButton(activeTab)}
+        <div className="relative flex-shrink-0">
+          <button
+            type="button"
+            aria-expanded={moreOpen}
+            aria-haspopup="menu"
+            onClick={() => setMoreOpen((open) => !open)}
+            className={`px-4 py-3 text-sm font-semibold whitespace-nowrap flex items-center gap-1 ${
+              activeIsMore ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            More
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${moreOpen ? "rotate-180" : ""}`} aria-hidden />
+          </button>
+          {moreOpen && (
+            <div
+              role="menu"
+              className="absolute right-0 top-full z-50 mt-1 min-w-[180px] rounded-md border border-border bg-card p-1 shadow-lg"
+            >
+              {moreTabs.map((slug) => (
+                <button
+                  key={slug}
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setMoreOpen(false);
+                    onSelect(slug);
+                  }}
+                  className={`flex w-full items-center justify-between gap-2 rounded-sm px-3 py-2 text-left text-sm ${
+                    activeTab === slug ? "bg-muted font-semibold text-foreground" : "text-foreground/80 hover:bg-muted"
+                  }`}
+                >
+                  {TAB_LABELS[slug]}
+                  {!canAccessTab(slug) && <Lock className="w-3 h-3 opacity-70" aria-hidden />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function CreatorSpace() {
@@ -274,33 +371,14 @@ export default function CreatorSpace() {
         )}
       </div>
 
-      {/* Sticky Tab Bar */}
-      <div className="sticky top-0 z-40 bg-surface border-b border-surface-border">
-        <div className="flex overflow-x-auto scrollbar-none">
-          {VALID_TABS.filter((slug) => {
-            // Only show "blasts" tab to the space owner
-            if (slug === "blasts" && !isOwner) return false;
-            return true;
-          }).map((slug) => {
-            const locked = !canAccessTab(slug);
-            return (
-              <button
-                key={slug}
-                onClick={() => switchTab(slug)}
-                className={`relative px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 flex items-center gap-1 ${
-                  activeTab === slug ? "text-foreground" : "text-text-dim"
-                }`}
-              >
-                {slug === "members" ? `Members (${memberCount})` : TAB_LABELS[slug]}
-                {locked && <Lock className="w-3 h-3 opacity-70" />}
-                {activeTab === slug && (
-                  <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-accent-green" />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      {/* Sticky Tab Bar — Community, Classroom, Members up front. */}
+      <SpaceTabBar
+        activeTab={activeTab}
+        isOwner={isOwner}
+        memberCount={memberCount}
+        canAccessTab={canAccessTab}
+        onSelect={switchTab}
+      />
 
       {/* Tab Content */}
       <div className="pb-20">

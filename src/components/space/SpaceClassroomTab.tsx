@@ -55,8 +55,8 @@ function SortableModule({ mod, children, isOwner }: { mod: any; children: React.
     <div ref={setNodeRef} style={style} {...attributes}>
       <div className="flex items-center">
         {isOwner && (
-          <div {...listeners} className="px-1.5 cursor-grab active:cursor-grabbing touch-none text-muted-foreground">
-            <GripVertical className="w-3.5 h-3.5" />
+          <div {...listeners} aria-label="Reorder module" className="px-1.5 cursor-grab active:cursor-grabbing touch-none text-muted-foreground">
+            <GripVertical className="w-3.5 h-3.5" aria-hidden />
           </div>
         )}
         <div className="flex-1 min-w-0">{children}</div>
@@ -71,8 +71,8 @@ function SortableLesson({ lesson, children, isOwner }: { lesson: any; children: 
   return (
     <div ref={setNodeRef} style={style} className="flex items-center" {...attributes}>
       {isOwner && (
-        <div {...listeners} className="px-1 cursor-grab active:cursor-grabbing touch-none text-muted-foreground">
-          <GripVertical className="w-3 h-3" />
+        <div {...listeners} aria-label="Reorder lesson" className="px-1 cursor-grab active:cursor-grabbing touch-none text-muted-foreground">
+          <GripVertical className="w-3 h-3" aria-hidden />
         </div>
       )}
       <div className="flex-1 min-w-0">{children}</div>
@@ -770,9 +770,9 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
         {modules.length === 0 && dripLockedModules.length === 0 ? (
           <div className="p-8 text-center">
             <BookOpen className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
-            <p className="text-base font-semibold text-foreground mb-1">No courses yet</p>
+            <p className="text-base font-semibold text-foreground mb-1">Add your first lesson</p>
             <p className="text-sm text-muted-foreground">
-              {isOwner ? "Add your first module to get started." : "No content available yet."}
+              {isOwner ? "Start with a module, then add the lesson inside it." : "Lessons will show up here when the creator publishes them."}
             </p>
           </div>
         ) : (
@@ -911,8 +911,8 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
 
         {isOwner && (
           <div className="px-4 pt-4 space-y-2">
-            <Button onClick={() => setShowAddModule(true)} variant="outline" className="w-full font-semibold">
-              <Plus className="w-4 h-4 mr-2" /> Add Module
+            <Button onClick={() => setShowAddModule(true)} className="w-full font-semibold">
+              <Plus className="w-4 h-4 mr-2" /> {modules.length === 0 ? "Add your first module" : "Add module"}
             </Button>
             <Button onClick={() => setShowInsights(true)} variant="ghost" className="w-full font-semibold">
               <BarChart3 className="w-4 h-4 mr-2 text-primary" /> Course insights
@@ -949,9 +949,9 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
         {modules.length === 0 && dripLockedModules.length === 0 ? (
           <div className="p-8 text-center">
             <BookOpen className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-            <p className="text-sm font-medium text-foreground mb-1">No courses yet</p>
+            <p className="text-sm font-semibold text-foreground mb-1">Add your first lesson</p>
             <p className="text-xs text-muted-foreground">
-              {isOwner ? "Add your first module to get started." : "No content available yet."}
+              {isOwner ? "Start with a module, then add the lesson inside it." : "Lessons will show up here when the creator publishes them."}
             </p>
           </div>
         ) : (
@@ -1091,7 +1091,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
 
         {isOwner && (
           <button onClick={() => setShowAddModule(true)} className={`w-full flex items-center gap-2 px-4 py-3 text-sm font-semibold hover:bg-secondary/50 transition-colors text-primary ${modules.length > 0 ? "border-t border-border" : ""}`}>
-            <Plus className="w-4 h-4" /> Add Module
+            <Plus className="w-4 h-4" /> {modules.length === 0 ? "Add your first module" : "Add module"}
           </button>
         )}
       </div>
@@ -1107,8 +1107,14 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
               <BookOpen className="w-8 h-8 text-primary" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground mb-2">Course Overview</h2>
-              <p className="text-sm text-muted-foreground">Explore the modules and lessons below to get started.</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">
+                {totalLessons === 0 ? "Add your first lesson" : "Course overview"}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {totalLessons === 0
+                  ? "Pick a module on the left, or create one, then add the lesson."
+                  : "Pick a lesson on the left to start."}
+              </p>
             </div>
             <div className="flex justify-center gap-6">
               <div className="text-center">

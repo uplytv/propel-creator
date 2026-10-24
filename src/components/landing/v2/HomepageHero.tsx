@@ -1,49 +1,25 @@
-import { useEffect, useState, FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, CreditCard, Radio, Tag } from "lucide-react";
 import TrialSignupModal from "@/components/pricing/TrialSignupModal";
-import { ARIA_PLAN_NOTE, FEE_DISCLOSURE_SHORT } from "@/components/pricing/plans";
+import { TRIAL_CARD_PROMISE } from "@/components/pricing/plans";
 
-const ROTATING = [
-  "If you're a musician, ToneDen is dead. We replaced it.",
-  "If you stream, Twitch is taking half your money. We take 5%.",
-  "If you teach, Kajabi charges $199/mo. We charge less and pay you more.",
-  "If you sell, your products deserve a platform that keeps your margin.",
-  "If you promote events, your fans are already here.",
+const HEADLINE = "Turn your audience into income.";
+
+/** Real surfaces on the published plans — not a feature wishlist. */
+const SELL_STEPS = [
+  { icon: CreditCard, title: "Connect Stripe", body: "Payouts land in your own account." },
+  { icon: Tag, title: "Set a price", body: "Membership, ticket, or pay-per-view." },
+  { icon: Radio, title: "Go live", body: "Fans pay to watch. You keep 95%." },
 ];
-const FINAL = "The AI-Powered Operating System for Creators.";
 
 export default function HomepageHero() {
-  const [idx, setIdx] = useState(0);
-  const [settled, setSettled] = useState(true); // static headline — AI-OS positioning
-  const [cycles, setCycles] = useState(0);
   const [betaCode, setBetaCode] = useState("");
   const [showBeta, setShowBeta] = useState(false);
   const [trialOpen, setTrialOpen] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (settled) return;
-    const t = setTimeout(() => {
-      const next = idx + 1;
-      if (next >= ROTATING.length) {
-        const c = cycles + 1;
-        setCycles(c);
-        if (c >= 3) {
-          setSettled(true);
-          return;
-        }
-        setIdx(0);
-      } else {
-        setIdx(next);
-      }
-    }, 3000);
-    return () => clearTimeout(t);
-  }, [idx, cycles, settled]);
-
-  const headline = settled ? FINAL : ROTATING[idx];
 
   const handleBetaSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -65,20 +41,17 @@ export default function HomepageHero() {
       </div>
 
       <div className="relative z-10 w-full max-w-5xl mx-auto text-center flex flex-col items-center gap-6 sm:gap-8">
-        <p className="eyebrow-gold">For musicians, streamers, educators &amp; sellers</p>
+        <p className="eyebrow-gold">For creators who already have an audience</p>
 
         <div className="min-h-[140px] sm:min-h-[180px] flex items-center justify-center">
-          <h1
-            key={headline}
-            className="type-display-xl text-foreground animate-fade-in"
-          >
-            {headline}
+          <h1 className="type-display-xl text-foreground">
+            {HEADLINE}
           </h1>
         </div>
 
         <p className="type-body-lg text-foreground/75 max-w-xl">
-          Stream, sell courses, and run events from one dashboard — while your AI team
-          handles the content, emails, and growth.
+          Sell memberships, tickets, and pay-per-view. Live tips, courses, and events are included.
+          Pay-per-view is on Unlimited and Agency Pro. You keep 95%.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto">
@@ -88,35 +61,34 @@ export default function HomepageHero() {
           >
             Start your 14-day free trial <ArrowRight className="w-4 h-4" />
           </button>
-          <Link
-            to="/discover"
+          <button
+            type="button"
+            onClick={() => setTrialOpen(true)}
             className="btn-gold-outline w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md px-8 h-12 text-sm font-bold tracking-wide"
           >
-            Explore creators
-          </Link>
+            Start selling
+          </button>
         </div>
 
-        {/* Risk reversal — the conversion line */}
-        <p className="text-xs text-foreground/55 -mt-3">
-          14 days free · No obligation · Cancel at any time
+        <p className="text-xs text-foreground/60 max-w-lg leading-relaxed -mt-2">
+          {TRIAL_CARD_PROMISE}{" "}
+          <a href="#fees" className="underline underline-offset-4 hover:text-foreground">
+            See fees
+          </a>
         </p>
 
-        {/* Feature strip — plain text, informative without buttons */}
-        <p className="text-xs sm:text-sm text-foreground/60 font-medium tracking-wide max-w-2xl leading-relaxed">
-          AI growth team · Live streaming · Courses &amp; community · Music · Events &amp; tickets · Live shopping · Roku TV
-        </p>
-
-        {/* Plan clarity + onboarding — no scarcity claims */}
-        <div className="flex flex-col items-center gap-2 max-w-xl">
-          <p className="text-xs sm:text-sm text-foreground/70 leading-relaxed">
-            {ARIA_PLAN_NOTE}
-          </p>
-          <p className="text-xs text-foreground/55 leading-relaxed">
-            Every plan includes a free setup call with a real person to help you get your pages,
-            community and first offer live. A full done-for-you build is available as a separate paid
-            service. {FEE_DISCLOSURE_SHORT}.
-          </p>
-        </div>
+        <ol className="grid w-full max-w-3xl grid-cols-1 sm:grid-cols-3 gap-3 text-left">
+          {SELL_STEPS.map((step, i) => (
+            <li key={step.title} className="rounded-xl border border-border bg-card/80 px-4 py-3">
+              <div className="flex items-center gap-2 mb-1">
+                <step.icon className="w-4 h-4 text-primary" aria-hidden />
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">0{i + 1}</span>
+              </div>
+              <p className="text-sm font-semibold text-foreground">{step.title}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{step.body}</p>
+            </li>
+          ))}
+        </ol>
 
         {/* Beta code — folded behind one small link */}
         {!showBeta ? (

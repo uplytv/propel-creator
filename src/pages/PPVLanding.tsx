@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Radio, DollarSign, Users, Globe, Lock, Play, ArrowRight, Ticket, BarChart3 } from "lucide-react";
 import HomepageNav from "@/components/landing/v2/HomepageNav";
 import HomepageFooter from "@/components/landing/v2/HomepageFooter";
 import SEOHead from "@/components/SEOHead";
+import TrialSignupModal from "@/components/pricing/TrialSignupModal";
+import { TRIAL_CARD_PROMISE } from "@/components/pricing/plans";
 
 const STEPS = [
   { icon: Radio, title: "Go live or schedule", body: "Start a stream or attach a pay-per-view pass to any event. RTMP from OBS, or go live from your phone." },
@@ -27,6 +30,7 @@ function Glows() {
 }
 
 export default function PPVLanding() {
+  const [trialOpen, setTrialOpen] = useState(false);
   return (
     <div className="relative min-h-screen bg-background text-foreground antialiased">
       <SEOHead
@@ -53,9 +57,13 @@ export default function PPVLanding() {
             stream in HD to any screen, and keep <span className="text-gold font-semibold">95%</span> of every ticket.
           </p>
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-            <Link to="/auth" className="btn-primary-glow w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md px-6 h-12 text-sm font-bold tracking-wide">
-              Start streaming <ArrowRight className="w-4 h-4" />
-            </Link>
+            <button
+              type="button"
+              onClick={() => setTrialOpen(true)}
+              className="btn-primary-glow w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md px-6 h-12 text-sm font-bold tracking-wide"
+            >
+              Start your 14-day free trial <ArrowRight className="w-4 h-4" />
+            </button>
             <Link to="/discover" className="btn-gold-outline w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md px-6 h-12 text-sm font-bold tracking-wide">
               <Play className="w-4 h-4" /> See live now
             </Link>
@@ -138,14 +146,19 @@ export default function PPVLanding() {
       <section className="relative px-4 py-20 border-t border-border text-center">
         <div className="max-w-2xl mx-auto flex flex-col items-center gap-5">
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">Your next stream should pay you.</h2>
-          <p className="text-foreground/70">Set it up in minutes. Free to start — you only share when you earn.</p>
-          <Link to="/auth" className="btn-primary-glow inline-flex items-center justify-center gap-1.5 rounded-md px-8 h-12 text-sm font-bold tracking-wide">
-            Get Up. Get UPLY <ArrowRight className="w-4 h-4" />
-          </Link>
+          <p className="text-foreground/70 max-w-lg">{TRIAL_CARD_PROMISE}</p>
+          <button
+            type="button"
+            onClick={() => setTrialOpen(true)}
+            className="btn-primary-glow inline-flex items-center justify-center gap-1.5 rounded-md px-8 h-12 text-sm font-bold tracking-wide"
+          >
+            Start your 14-day free trial <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
       </section>
 
       <HomepageFooter />
+      <TrialSignupModal open={trialOpen} onOpenChange={setTrialOpen} defaultPlan="starter" />
     </div>
   );
 }

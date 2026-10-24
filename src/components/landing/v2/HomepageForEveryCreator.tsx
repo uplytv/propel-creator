@@ -1,4 +1,5 @@
 import { Music2, Radio, GraduationCap, ShoppingBag, Ticket, Tv, ArrowRight } from "lucide-react";
+import { TRIAL_CARD_PROMISE } from "@/components/pricing/plans";
 
 // One compact section replacing the nine persona sections (Musicians, Streamers,
 // Educators, LiveCommerce, Events, TV, Cultural, B2B, …) — same message, one screen.
@@ -43,7 +44,7 @@ export default function HomepageForEveryCreator() {
           >
             Start your 14-day trial <ArrowRight className="w-4 h-4" />
           </a>
-          <p className="text-xs text-muted-foreground mt-3">14 days free · cancel anytime.</p>
+          <p className="text-xs text-muted-foreground mt-3 max-w-lg mx-auto">{TRIAL_CARD_PROMISE}</p>
         </div>
       </div>
     </section>
