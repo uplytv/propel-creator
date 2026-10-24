@@ -705,7 +705,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                           ) : (
                             <Play className="w-4 h-4 shrink-0 text-muted-foreground" />
                           )}
-                          <span className={`text-[15px] font-medium ${isComplete ? "text-muted-foreground" : "text-foreground"}`}>
+                          <span className={`text-[15px] font-medium leading-snug ${isComplete ? "text-muted-foreground" : "text-foreground"}`}>
                             {lesson.title}
                           </span>
                           <TierChip rank={lesson.min_tier_rank} tiers={creatorTiers} />
@@ -721,12 +721,12 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                       </button>
                       {isOwner && (
                         <div className="flex items-center pr-3 gap-1">
-                          <button onClick={() => setEditingLesson(lesson)} className="p-1.5 rounded hover:bg-secondary" >
+                          <button type="button" aria-label={`Edit ${lesson.title}`} onClick={() => setEditingLesson(lesson)} className="p-1.5 rounded hover:bg-secondary" >
                             <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                           </button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <button className="p-1.5 rounded hover:bg-secondary"><Trash2 className="w-3.5 h-3.5 text-muted-foreground" /></button>
+                              <button type="button" aria-label={`Delete ${lesson.title}`} className="p-1.5 rounded hover:bg-secondary"><Trash2 className="w-3.5 h-3.5 text-muted-foreground" /></button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
@@ -1046,10 +1046,10 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                                         </button>
                                         {isOwner && (
                                           <div className="flex items-center pr-2 gap-0.5">
-                                            <button onClick={() => setEditingLesson(lesson)} className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Pencil className="w-3 h-3" /></button>
+                                            <button type="button" aria-label={`Edit ${lesson.title}`} onClick={() => setEditingLesson(lesson)} className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Pencil className="w-3 h-3" /></button>
                                             <AlertDialog>
                                               <AlertDialogTrigger asChild>
-                                                <button className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Trash2 className="w-3 h-3" /></button>
+                                                <button type="button" aria-label={`Delete ${lesson.title}`} className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Trash2 className="w-3 h-3" /></button>
                                               </AlertDialogTrigger>
                                               <AlertDialogContent className="bg-card border-border">
                                                 <AlertDialogHeader>

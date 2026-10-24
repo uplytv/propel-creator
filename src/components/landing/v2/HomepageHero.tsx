@@ -32,7 +32,7 @@ export default function HomepageHero() {
   };
 
   return (
-    <section className="relative min-h-[100svh] w-full flex flex-col items-center justify-center overflow-hidden px-4 sm:px-6 pt-24 pb-16">
+    <section className="relative w-full flex flex-col items-center justify-center overflow-hidden px-4 sm:px-6 pt-24 pb-12 sm:min-h-[100svh] sm:pb-16">
       {/* Ambient purple + gold glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] max-w-[900px] max-h-[900px] rounded-full bg-primary/20 blur-[120px] animate-pulse" />
@@ -43,7 +43,7 @@ export default function HomepageHero() {
       <div className="relative z-10 w-full max-w-5xl mx-auto text-center flex flex-col items-center gap-6 sm:gap-8">
         <p className="eyebrow-gold">For creators who already have an audience</p>
 
-        <div className="min-h-[140px] sm:min-h-[180px] flex items-center justify-center">
+        <div className="sm:min-h-[140px] md:min-h-[180px] flex items-center justify-center">
           <h1 className="type-display-xl text-foreground">
             {HEADLINE}
           </h1>
@@ -54,7 +54,7 @@ export default function HomepageHero() {
           Pay-per-view is on Unlimited and Agency Pro. You keep 95%.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
           <button
             onClick={() => setTrialOpen(true)}
             className="btn-primary-glow w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md px-8 h-12 text-sm font-bold tracking-wide"

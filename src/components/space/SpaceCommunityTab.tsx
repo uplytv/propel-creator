@@ -353,7 +353,7 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
         <button
           type="button"
           onClick={() => setShowComposer(true)}
-          className="flex w-full items-center gap-3 p-4 rounded-lg mb-4 cursor-pointer bg-card border border-border text-left hover:border-primary/40 transition-colors"
+          className="sticky top-12 z-30 flex w-full items-center gap-3 p-4 rounded-lg mb-4 cursor-pointer bg-card border border-primary/30 text-left shadow-sm hover:border-primary/50 transition-colors"
         >
           <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 bg-primary/10 text-primary">
             {user.email?.charAt(0).toUpperCase() || "U"}
@@ -536,16 +536,24 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
         </div>
       ) : (
         <div className="space-y-3">
-          {displayPosts.map((post: any, i: number) => (
+          {displayPosts.map((post: any) => (
             <ContentGate key={post.id} creatorId={creatorId} type="post" onJoinClick={() => {}}>
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
+                role="button"
+                tabIndex={0}
+                aria-label={post.title ? `Open post: ${post.title}` : `Open post by ${post.author_name || "a member"}`}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.03 }}
-                className={`p-4 rounded-lg cursor-pointer bg-card border border-border ${
+                className={`p-4 rounded-lg cursor-pointer bg-card border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                   post.is_pinned ? "border-l-[3px] border-l-primary" : ""
                 }`}
                 onClick={() => setSelectedPost(post)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSelectedPost(post);
+                  }
+                }}
               >
                 {/* Pin label */}
                 <div className="flex items-start justify-between mb-2">
@@ -637,7 +645,7 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
 
                 {/* Content */}
                 {post.title && <p className="text-foreground font-semibold text-base mb-1">{post.title}</p>}
-                <p className="text-sm line-clamp-2 text-muted-foreground">{post.body}</p>
+                <p className="text-sm line-clamp-6 text-foreground/80 whitespace-pre-wrap">{post.body}</p>
 
                 {/* Image attachment */}
                 {post.image_url && (
@@ -660,8 +668,10 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
                 {/* Actions */}
                 <div className="flex items-center gap-4 mt-3">
                   <button
+                    type="button"
+                    aria-label={(likedSet as Set<string>).has(post.id) ? `Unlike post, ${post.like_count} likes` : `Like post, ${post.like_count} likes`}
                     onClick={(e) => { e.stopPropagation(); handleLike(post.id); }}
-                    className={`flex items-center gap-1 text-xs transition-colors ${
+                    className={`flex items-center gap-1 text-xs transition-colors min-h-[44px] ${
                       (likedSet as Set<string>).has(post.id) ? "text-primary" : "text-muted-foreground"
                     }`}
                   >

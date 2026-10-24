@@ -8,7 +8,7 @@ import {
   TrendingUp, Users, DollarSign, Brain, Radio, Sparkles,
   BarChart3, ChevronRight, Film, Play, Loader2, Clock,
   LayoutGrid, Package, Search, ArrowRight, Zap, GraduationCap,
-  Plus, Eye, CreditCard, MessageCircle, Crown, Upload, Gift
+  Plus, Eye, CreditCard, MessageCircle, Crown, Upload, Gift, Ticket
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
@@ -202,7 +202,7 @@ export default function Dashboard() {
         eyebrow="Creator Studio"
         title="Welcome back"
         gradientWord={creatorUsername ? `@${creatorUsername}` : undefined}
-        subtitle="Your platform at a glance — track growth, earnings, and what to do next."
+        subtitle="Create a paid offer, then share the link. You keep 95% of what fans pay."
       />
 
       {/* Floating overlays — fixed-position, not part of the page flow */}
@@ -269,6 +269,33 @@ export default function Dashboard() {
             );
           })}
         </motion.div>
+
+        {/* Paid-offer shortcuts — same destinations as the wizard, always one tap away. */}
+        <div className="px-4 md:px-8 pt-3">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Create a paid offer</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {[
+              { label: "Membership", hint: "Monthly", icon: Users, path: user ? `/community/${user.id}/pricing` : "/auth" },
+              { label: "Tickets", hint: "A show", icon: Ticket, path: "/events/create" },
+              { label: "Pay-per-view", hint: "A live", icon: Radio, path: "/go-live" },
+              { label: "Tips", hint: "On stream", icon: Zap, path: "/go-live" },
+            ].map((offer) => {
+              const Icon = offer.icon;
+              return (
+                <button
+                  key={offer.label}
+                  type="button"
+                  onClick={() => navigate(offer.path)}
+                  className="rounded-xl border border-border bg-card p-3 text-left hover:border-primary/40 transition-colors min-h-[72px]"
+                >
+                  <Icon className="w-4 h-4 text-primary mb-2" aria-hidden />
+                  <p className="text-sm font-semibold text-foreground">{offer.label}</p>
+                  <p className="text-[11px] text-muted-foreground">{offer.hint}</p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* ── 2. Key stats ── */}
         <motion.div

@@ -168,7 +168,7 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageFooter mat
 
 exports[`Landing page — visual regression (DOM snapshots) > HomepageHero matches snapshot (initial rotating headline) 1`] = `
 <section
-  class="relative min-h-[100svh] w-full flex flex-col items-center justify-center overflow-hidden px-4 sm:px-6 pt-24 pb-16"
+  class="relative w-full flex flex-col items-center justify-center overflow-hidden px-4 sm:px-6 pt-24 pb-12 sm:min-h-[100svh] sm:pb-16"
 >
   <div
     class="absolute inset-0 pointer-events-none"
@@ -192,7 +192,7 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageHero match
       For creators who already have an audience
     </p>
     <div
-      class="min-h-[140px] sm:min-h-[180px] flex items-center justify-center"
+      class="sm:min-h-[140px] md:min-h-[180px] flex items-center justify-center"
     >
       <h1
         class="type-display-xl text-foreground"
@@ -206,7 +206,7 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageHero match
       Sell memberships, tickets, and pay-per-view. Live tips, courses, and events are included. Pay-per-view is on Unlimited and Agency Pro. You keep 95%.
     </p>
     <div
-      class="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto"
+      class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full sm:w-auto"
     >
       <button
         class="btn-primary-glow w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md px-8 h-12 text-sm font-bold tracking-wide"

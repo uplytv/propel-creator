@@ -271,8 +271,8 @@ export default function WaitlistPage() {
     return (
       <div className="min-h-[100dvh] bg-background text-foreground">
         <div className="px-6 pt-6 pb-2 flex items-center justify-between">
-          <button onClick={() => navigate("/")} className="flex items-center gap-2">
-            <img src={logoImg} alt="UPLY" className="w-8 h-8 object-contain" />
+          <button type="button" onClick={() => navigate("/")} aria-label="UPLY home" className="flex items-center gap-2">
+            <img src={logoImg} alt="" className="w-8 h-8 object-contain" />
           </button>
           <div className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground">{totalWaitlist} on waitlist</span>
@@ -301,8 +301,8 @@ export default function WaitlistPage() {
     <div className="min-h-[100dvh] bg-background text-foreground">
       {/* Header */}
       <div className="px-6 pt-6 pb-2 flex items-center justify-between">
-        <button onClick={() => navigate("/")} className="flex items-center gap-2">
-          <img src={logoImg} alt="UPLY" className="w-8 h-8 object-contain" />
+        <button type="button" onClick={() => navigate("/")} aria-label="UPLY home" className="flex items-center gap-2">
+          <img src={logoImg} alt="" className="w-8 h-8 object-contain" />
         </button>
         <div className="flex items-center gap-3">
           <span className="text-xs text-muted-foreground">{totalWaitlist} on waitlist</span>
@@ -316,6 +316,27 @@ export default function WaitlistPage() {
       </div>
 
       <div className="max-w-lg mx-auto px-6 pb-16">
+        <div className="rounded-xl border border-border bg-card p-5 mb-6">
+          <h2 className="text-base font-bold text-foreground">What happens next</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Your account is saved. Selling stays locked until you’re approved — that gate does not change.
+          </p>
+          <ol className="mt-4 space-y-3 text-sm">
+            <li className="flex gap-3">
+              <span className="font-bold text-primary">1</span>
+              <span><span className="font-semibold text-foreground">Get in.</span> Use an invite code, apply for beta, or Founders access. Approval opens the dashboard.</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="font-bold text-primary">2</span>
+              <span><span className="font-semibold text-foreground">Connect Stripe and set a price.</span> Membership, tickets, or pay-per-view. You keep 95%.</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="font-bold text-primary">3</span>
+              <span><span className="font-semibold text-foreground">Go live.</span> Share your link. Fans pay you, not a middleman.</span>
+            </li>
+          </ol>
+        </div>
+
         {/* Position card (if has position) */}
         {waitlistPosition > 0 && (
           <motion.div
