@@ -2,10 +2,12 @@ import { useState } from "react";
 import SectionShell from "./SectionShell";
 import PlanCard from "@/components/pricing/PlanCard";
 import TrialSignupModal from "@/components/pricing/TrialSignupModal";
+import PlanScan from "@/components/pricing/PlanScan";
 import {
   PLATFORM_PLANS,
   ARIA_PLAN_NOTE,
   FEE_DISCLOSURE,
+  TRIAL_CARD_PROMISE,
   type PlatformPlanKey,
 } from "@/components/pricing/plans";
 
@@ -32,11 +34,12 @@ export default function HomepagePricing() {
           Simple pricing.{" "}
           <span className="italic text-gold font-normal">You keep 95%.</span>
         </h2>
-        <p className="text-foreground/70 text-base sm:text-lg">
-          Memberships, tickets, tips, and courses on every plan. Pay-per-view is on Unlimited and Agency Pro.
-          14-day trial, card on file, $0 due today.
-        </p>
-        <p className="text-foreground/60 text-sm mt-3">{ARIA_PLAN_NOTE}</p>
+        <p className="text-foreground/80 text-base sm:text-lg">{TRIAL_CARD_PROMISE}</p>
+        <p className="text-foreground/80 text-sm mt-3">{ARIA_PLAN_NOTE}</p>
+      </div>
+
+      <div className="max-w-5xl mx-auto mb-8">
+        <PlanScan />
       </div>
 
       <div className="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto">
@@ -47,7 +50,7 @@ export default function HomepagePricing() {
         ))}
       </div>
 
-      <p id="fees" className="mx-auto mt-8 max-w-3xl text-center text-xs sm:text-sm text-foreground/60 leading-relaxed scroll-mt-24">
+      <p id="fees" className="mx-auto mt-8 max-w-3xl text-center text-sm text-foreground/80 leading-relaxed scroll-mt-24">
         {FEE_DISCLOSURE}
       </p>
 

@@ -33,8 +33,8 @@ export default function HomepageFinalCTA() {
           Start your 14-day free trial <ArrowRight className="w-5 h-5 ml-2" />
         </Button>
 
-        <p className="mt-4 text-xs text-foreground/55 max-w-lg mx-auto">{TRIAL_CARD_PROMISE}</p>
-        <p className="mt-6 text-sm text-foreground/60">
+        <p className="mt-4 text-sm text-foreground/80 max-w-lg mx-auto">{TRIAL_CARD_PROMISE}</p>
+        <p className="mt-6 text-sm text-foreground/80">
           Flat 5% UPLY platform fee on sales · Stripe's own processing and payout fees apply separately.
         </p>
       </div>

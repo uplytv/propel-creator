@@ -15,7 +15,6 @@ import HomepagePPV from "@/components/landing/v2/HomepagePPV";
 import HomepagePricing from "@/components/landing/v2/HomepagePricing";
 import HomepageFinalCTA from "@/components/landing/v2/HomepageFinalCTA";
 import HomepageFooter from "@/components/landing/v2/HomepageFooter";
-import FeaturedCreatorsSection from "@/components/landing/FeaturedCreatorsSection";
 
 const JSON_LD = {
   "@context": "https://schema.org",
@@ -111,27 +110,22 @@ export default function Landing() {
         <div className="absolute inset-0 opacity-[0.025] [background-image:linear-gradient(to_right,hsl(var(--foreground))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--foreground))_1px,transparent_1px)] [background-size:64px_64px]" />
       </div>
 
-      <div className="relative z-10">
+      <div className="relative z-10 pb-20 md:pb-0">
         <HomepageNav />
 
         <main>
           <HomepageHero />
 
-          {/* Show the actual product immediately below the hero, then proof →
-              what it is → PPV highlight → comparison → price → CTA. */}
-          <HomepageProductPreview />
-
           <SectionSeam />
-          <FeaturedCreatorsSection />
+          <HomepageComparison />
+
+          <HomepageProductPreview />
 
           <SectionSeam />
           <HomepageForEveryCreator />
 
           <SectionSeam />
           <HomepagePPV />
-
-          <SectionSeam />
-          <HomepageComparison />
 
           <SectionSeam />
           <HomepagePricing />

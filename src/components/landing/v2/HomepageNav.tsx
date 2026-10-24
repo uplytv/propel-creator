@@ -4,10 +4,11 @@ import logo from "@/assets/logo.png";
 import TrialSignupModal from "@/components/pricing/TrialSignupModal";
 
 const NAV_LINKS = [
-  { label: "Discover", href: "/discover", internal: true },
-  { label: "Artist sites", href: "/roster", internal: true },
-  { label: "Pricing", href: "#pricing" },
-  { label: "Blog", href: "/blog", internal: true },
+  { label: "Discover", href: "/discover" },
+  { label: "Artist sites", href: "/roster" },
+  { label: "Pricing", href: "/#pricing" },
+  { label: "Compare", href: "/#comparison" },
+  { label: "Blog", href: "/blog" },
 ];
 
 export default function HomepageNav() {
@@ -34,33 +35,45 @@ export default function HomepageNav() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-7" aria-label="Primary">
-          {NAV_LINKS.map((l) =>
-            l.internal ? (
-              <Link
-                key={l.label}
-                to={l.href}
-                className="text-[13px] font-semibold tracking-wide text-foreground/70 hover:text-gold transition-colors"
-              >
-                {l.label}
-              </Link>
-            ) : (
-              <a
-                key={l.label}
-                href={l.href}
-                className="text-[13px] font-semibold tracking-wide text-foreground/70 hover:text-gold transition-colors"
-              >
-                {l.label}
-              </a>
-            ),
-          )}
+          {NAV_LINKS.map((l) => (
+            <Link
+              key={l.label}
+              to={l.href}
+              className="text-[13px] font-semibold tracking-wide text-foreground/80 hover:text-gold transition-colors"
+            >
+              {l.label}
+            </Link>
+          ))}
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
+          <details className="relative md:hidden">
+            <summary className="flex h-9 cursor-pointer list-none items-center rounded-md px-3 text-[13px] font-semibold text-foreground [&::-webkit-details-marker]:hidden">
+              Menu
+            </summary>
+            <nav
+              aria-label="Mobile"
+              className="absolute right-0 top-11 z-50 w-48 rounded-md border border-border bg-background p-2 shadow-lg"
+            >
+              {NAV_LINKS.map((l) => (
+                <Link
+                  key={l.label}
+                  to={l.href}
+                  className="block rounded-md px-3 py-2 text-sm font-semibold text-foreground hover:bg-muted"
+                >
+                  {l.label}
+                </Link>
+              ))}
+              <Link to="/auth" className="block rounded-md px-3 py-2 text-sm font-semibold text-foreground hover:bg-muted">
+                Sign in
+              </Link>
+            </nav>
+          </details>
           <Link
             to="/auth"
-            className="hidden sm:inline-flex items-center text-[13px] font-semibold text-foreground/80 hover:text-gold transition-colors px-3 py-2 rounded-md"
+            className="hidden md:inline-flex items-center text-[13px] font-semibold text-foreground hover:text-gold transition-colors px-3 py-2 rounded-md"
           >
-            Sign In
+            Sign in
           </Link>
           <button
             type="button"

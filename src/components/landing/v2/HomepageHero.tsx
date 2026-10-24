@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowRight, CreditCard, Radio, Tag } from "lucide-react";
 import TrialSignupModal from "@/components/pricing/TrialSignupModal";
+import StickyTrialBar from "@/components/landing/v2/StickyTrialBar";
 import { TRIAL_CARD_PROMISE } from "@/components/pricing/plans";
 
 const HEADLINE = "Turn your audience into income.";
@@ -35,7 +36,7 @@ export default function HomepageHero() {
     <section className="relative w-full flex flex-col items-center justify-center overflow-hidden px-4 sm:px-6 pt-24 pb-12 sm:min-h-[100svh] sm:pb-16">
       {/* Ambient purple + gold glow */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] max-w-[900px] max-h-[900px] rounded-full bg-primary/20 blur-[120px] animate-pulse" />
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] max-w-[900px] max-h-[900px] rounded-full bg-primary/20 blur-[120px] animate-pulse motion-reduce:animate-none" />
         <div className="absolute right-[10%] top-[18%] w-[40vw] h-[40vw] max-w-[420px] max-h-[420px] rounded-full bg-[hsl(var(--gold)/0.10)] blur-[120px]" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/60 to-background" />
       </div>
@@ -56,10 +57,11 @@ export default function HomepageHero() {
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
           <button
+            type="button"
             onClick={() => setTrialOpen(true)}
             className="btn-primary-glow w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md px-8 h-12 text-sm font-bold tracking-wide"
           >
-            Start your 14-day free trial <ArrowRight className="w-4 h-4" />
+            Start your 14-day free trial <ArrowRight className="w-4 h-4" aria-hidden />
           </button>
           <button
             type="button"
@@ -70,9 +72,9 @@ export default function HomepageHero() {
           </button>
         </div>
 
-        <p className="text-xs text-foreground/60 max-w-lg leading-relaxed -mt-2">
+        <p className="text-sm text-foreground/80 max-w-lg leading-relaxed -mt-2">
           {TRIAL_CARD_PROMISE}{" "}
-          <a href="#fees" className="underline underline-offset-4 hover:text-foreground">
+          <a href="#fees" className="underline underline-offset-4 font-medium text-foreground">
             See fees
           </a>
         </p>
@@ -93,8 +95,9 @@ export default function HomepageHero() {
         {/* Beta code — folded behind one small link */}
         {!showBeta ? (
           <button
+            type="button"
             onClick={() => setShowBeta(true)}
-            className="text-xs text-foreground/55 underline underline-offset-4 hover:text-foreground/80 transition-colors"
+            className="text-sm text-foreground/80 underline underline-offset-4 hover:text-foreground transition-colors"
           >
             Have a beta code?
           </button>
@@ -104,7 +107,8 @@ export default function HomepageHero() {
               value={betaCode}
               onChange={(e) => setBetaCode(e.target.value)}
               placeholder="Enter beta code"
-              className="flex-1 bg-background/60 border-border/60 text-foreground placeholder:text-foreground/40 h-11 text-base"
+              aria-label="Beta code"
+              className="flex-1 bg-background/60 border-border/60 text-foreground placeholder:text-foreground/70 h-11 text-base"
               autoComplete="off"
               spellCheck={false}
               autoFocus
@@ -117,6 +121,7 @@ export default function HomepageHero() {
       </div>
 
       <TrialSignupModal open={trialOpen} onOpenChange={setTrialOpen} defaultPlan="starter" />
+      <StickyTrialBar onStart={() => setTrialOpen(true)} />
     </section>
   );
 }

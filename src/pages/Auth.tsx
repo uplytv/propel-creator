@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Mail, Lock, User, ArrowLeft, CheckCircle2, RefreshCw, AlertCircle } from "lucide-react";
 import { getAffiliateCookie, clearAffiliateCookie, getReferralData } from "@/lib/affiliateCookies";
 import { validatePassword } from "@/lib/passwordValidation";
@@ -54,6 +54,8 @@ export default function Auth() {
   // Member (free-account) entry: /auth?mode=signup&as=member&redirect=...
   // Members skip creator onboarding + the approval waitlist entirely.
   const asMember = new URLSearchParams(location.search).get("as") === "member";
+  const reduceMotion = useReducedMotion();
+  const enter = reduceMotion ? undefined : { opacity: 0, y: 20 };
 
   // Creator signup and the homepage trial are the same path: email, then a
   // card on file. The password form stays available for logins that are not
@@ -328,7 +330,7 @@ export default function Auth() {
   if (signUpSuccess) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
+        <motion.div initial={enter} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
           <Card className="border-border/50 shadow-xl">
             <CardHeader className="text-center">
               <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
@@ -360,7 +362,7 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="w-full max-w-md">
+      <motion.div initial={enter} animate={{ opacity: 1, y: 0 }} transition={reduceMotion ? { duration: 0 } : { duration: 0.5 }} className="w-full max-w-md">
         <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate("/")}>
           <ArrowLeft className="w-4 h-4 mr-2" /> Back
         </Button>
@@ -482,7 +484,7 @@ export default function Auth() {
                         >
                           Create a login instead
                         </button>
-                        <p className="text-center text-xs text-muted-foreground">
+                        <p className="text-center text-sm text-foreground/80">
                           Watching as a fan?{" "}
                           <button
                             type="button"
