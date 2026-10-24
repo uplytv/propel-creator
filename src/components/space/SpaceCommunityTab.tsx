@@ -276,8 +276,8 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
     <div className="px-4 pt-4">
       {/* Owner tools stay available, out of the way of the compose box. */}
       {isOwner && (
-        <details className="mb-3 rounded-lg border border-border bg-card px-3 py-2">
-          <summary className="cursor-pointer text-sm font-semibold text-foreground">Manage community</summary>
+        <details className="mb-2 px-1 py-1">
+          <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">Owner tools</summary>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <MinPostLevelSelect creatorId={creatorId} value={minPostLevel} />
             <Button
@@ -645,7 +645,7 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
 
                 {/* Content */}
                 {post.title && <p className="text-foreground font-semibold text-base mb-1">{post.title}</p>}
-                <p className="text-sm line-clamp-6 text-foreground/80 whitespace-pre-wrap">{post.body}</p>
+                <p className="text-sm line-clamp-3 text-foreground/80 whitespace-pre-wrap">{post.body}</p>
 
                 {/* Image attachment */}
                 {post.image_url && (

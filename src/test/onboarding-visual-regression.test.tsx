@@ -3,7 +3,7 @@
  *
  * Reuses the same mocking strategy as Onboarding.step3.test.tsx (auth, supabase,
  * sonner, framer-motion, Radix Select replaced with a native <select>). We
- * snapshot the splash screen and each interactive step's DOM so any drift in
+ * snapshot the name step and each interactive step's DOM so any drift in
  * layout, copy, classes, or step ordering shows up as a snapshot diff.
  */
 import { describe, it, expect, vi, beforeEach, beforeAll, afterAll } from "vitest";
@@ -158,11 +158,10 @@ function clickContinue() {
 }
 
 describe("Onboarding — visual regression (DOM snapshots)", () => {
-  it("Splash screen matches snapshot", () => {
+  it("Opens on the name step (no splash)", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
     const { container } = render(<Onboarding />);
-    // Don't advance past splash.
     expect(container.firstChild).toMatchSnapshot();
     vi.useRealTimers();
   });

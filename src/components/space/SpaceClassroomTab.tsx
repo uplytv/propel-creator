@@ -713,8 +713,6 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                             const m = mediaFor(lesson);
                             if (m.status === "processing") return <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-yellow-500/15 text-yellow-600"><Loader2 className="w-2.5 h-2.5 animate-spin" /> Processing</span>;
                             if (m.status === "errored" && isOwner) return <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-destructive/10 text-destructive">Error</span>;
-                            if (m.kind === "youtube") return <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-destructive/10 text-destructive">YouTube</span>;
-                            if (m.kind === "vimeo") return <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-sky-500/10 text-sky-600">Vimeo</span>;
                             return null;
                           })()}
                         </span>
@@ -770,7 +768,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
         {modules.length === 0 && dripLockedModules.length === 0 ? (
           <div className="p-8 text-center">
             <BookOpen className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
-            <p className="text-base font-semibold text-foreground mb-1">Add your first lesson</p>
+            <p className="text-base font-semibold text-foreground mb-1">{isOwner ? "Add your first lesson" : "No lessons yet"}</p>
             <p className="text-sm text-muted-foreground">
               {isOwner ? "Start with a module, then add the lesson inside it." : "Lessons will show up here when the creator publishes them."}
             </p>
@@ -858,12 +856,12 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                             </div>
                             {isOwner && (
                               <div className="flex items-center gap-0.5 flex-shrink-0">
-                                <button onClick={(e) => { e.stopPropagation(); setEditingModule(mod); }} className="p-1.5 rounded hover:bg-secondary">
+                                <button type="button" aria-label={`Edit ${mod.title}`} onClick={(e) => { e.stopPropagation(); setEditingModule(mod); }} className="p-1.5 rounded hover:bg-secondary">
                                   <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                                 </button>
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
-                                    <button onClick={(e) => e.stopPropagation()} className="p-1.5 rounded hover:bg-secondary">
+                                    <button type="button" aria-label={`Delete ${mod.title}`} onClick={(e) => e.stopPropagation()} className="p-1.5 rounded hover:bg-secondary">
                                       <Trash2 className="w-3.5 h-3.5 text-muted-foreground" />
                                     </button>
                                   </AlertDialogTrigger>
@@ -949,7 +947,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
         {modules.length === 0 && dripLockedModules.length === 0 ? (
           <div className="p-8 text-center">
             <BookOpen className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-            <p className="text-sm font-semibold text-foreground mb-1">Add your first lesson</p>
+            <p className="text-sm font-semibold text-foreground mb-1">{isOwner ? "Add your first lesson" : "No lessons yet"}</p>
             <p className="text-xs text-muted-foreground">
               {isOwner ? "Start with a module, then add the lesson inside it." : "Lessons will show up here when the creator publishes them."}
             </p>
@@ -982,10 +980,10 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                           </button>
                           {isOwner && (
                             <div className="flex items-center pr-2 gap-0.5">
-                              <button onClick={() => setEditingModule(mod)} className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Pencil className="w-3.5 h-3.5" /></button>
+                              <button type="button" aria-label={`Edit ${mod.title}`} onClick={() => setEditingModule(mod)} className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Pencil className="w-3.5 h-3.5" /></button>
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                  <button className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Trash2 className="w-3.5 h-3.5" /></button>
+                                  <button type="button" aria-label={`Delete ${mod.title}`} className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Trash2 className="w-3.5 h-3.5" /></button>
                                 </AlertDialogTrigger>
                                 <AlertDialogContent className="bg-card border-border">
                                   <AlertDialogHeader>
@@ -1108,11 +1106,11 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
             </div>
             <div>
               <h2 className="text-xl font-bold text-foreground mb-2">
-                {totalLessons === 0 ? "Add your first lesson" : "Course overview"}
+                {totalLessons === 0 ? (isOwner ? "Add your first lesson" : "No lessons yet") : "Course overview"}
               </h2>
               <p className="text-sm text-muted-foreground">
                 {totalLessons === 0
-                  ? "Pick a module on the left, or create one, then add the lesson."
+                  ? (isOwner ? "Pick a module on the left, or create one, then add the lesson." : "Lessons will show up here when the creator publishes them.")
                   : "Pick a lesson on the left to start."}
               </p>
             </div>

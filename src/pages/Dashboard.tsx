@@ -270,8 +270,8 @@ export default function Dashboard() {
           })}
         </motion.div>
 
-        {/* Paid-offer shortcuts — same destinations as the wizard, always one tap away. */}
-        <div className="px-4 md:px-8 pt-3">
+        {/* Same destinations as the wizard, shown once the wizard is dismissed. */}
+        {!(showWizard && !wizardDone) && <div className="px-4 md:px-8 pt-3">
           <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Create a paid offer</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {[
@@ -295,7 +295,7 @@ export default function Dashboard() {
               );
             })}
           </div>
-        </div>
+        </div>}
 
         {/* ── 2. Key stats ── */}
         <motion.div
