@@ -266,6 +266,7 @@ const AnoushaCircle = lazy(() => import("./pages/anousha/AnoushaCircle"));
 const AnoushaBlueprint = lazy(() => import("./pages/anousha/AnoushaBlueprint"));
 const AnoushaBlog = lazy(() => import("./pages/anousha/AnoushaBlog"));
 const AnoushaBlogPost = lazy(() => import("./pages/anousha/AnoushaBlogPost"));
+const TajSite = lazy(() => import("./pages/taj/TajSite"));
 const FounderOfferSuccess = lazy(() => import("./pages/FounderOfferSuccess"));
 const FounderOfferCanceled = lazy(() => import("./pages/FounderOfferCanceled"));
 const BusinessAnalytics = lazy(() => import("./pages/BusinessAnalytics"));
@@ -539,6 +540,13 @@ const App = () => (
                     <Route path="/blake-the-great/join" element={<BlakeTheGreatSite />} />
                     <Route path="/blake-the-great/blog" element={<BlakeTheGreatBlog />} />
                     <Route path="/blake-the-great/members" element={<BlakeTheGreatMembers />} />
+                    {/* TAJ Fencing Club — meeting demo. Must stay above /:username. */}
+                    <Route path="/taj" element={<TajSite />} />
+                    <Route path="/taj/*" element={<TajSite />} />
+                    <Route path="/taj-fencing" element={<TajSite />} />
+                    <Route path="/taj-fencing/*" element={<TajSite />} />
+                    <Route path="/tajfencing" element={<TajSite />} />
+                    <Route path="/tajfencing/*" element={<TajSite />} />
                     {/* Anousha Nikjouian — "Defined Real Estate" flagship brand site.
                         These MUST stay above the /:slug/* roster routes and the
                         /:username catch-all (which remains last). */}

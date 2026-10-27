@@ -195,6 +195,15 @@ export const KNOWN_PATTERNS: string[] = [
   "/aria-command",
   "/aria/growth-assistant",
   "/developer",
+
+  // TAJ Fencing Club
+  "/taj",
+  "/taj/join",
+  "/taj/classroom",
+  "/taj/classroom/:moduleSlug",
+  "/taj/classroom/:moduleSlug/:lessonSlug",
+  "/taj-fencing",
+  "/tajfencing",
 ];
 
 const ROUTE_OBJECTS: RouteObject[] = KNOWN_PATTERNS.map((path) => ({ path }));
