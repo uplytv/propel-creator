@@ -49,6 +49,11 @@ export default function Auth() {
     if (signUpSuccess) return;
     const checkAndRedirect = async (session: any) => {
       if (!session) return;
+      const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: session.user.id, _role: "admin" });
+      if (isAdmin) {
+        navigate(redirectParam || "/admin", { replace: true });
+        return;
+      }
       // Check if user needs onboarding
       const { data: profile } = await (supabase as any)
         .from("profiles")
@@ -82,7 +87,7 @@ export default function Auth() {
       }
     };
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session && !signUpSuccess) checkAndRedirect(session);
+      if (session && !signUpSuccess) setTimeout(() => { void checkAndRedirect(session); }, 0);
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session && !signUpSuccess) checkAndRedirect(session);

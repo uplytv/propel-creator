@@ -7,5 +7,6 @@
 - URL imports isolate DNS, redirect and bounded-fetch validation in the function's own `urlGuard.ts`.
 - Creator sale rates use `_shared/platformFees.ts`; the server-only flag defaults off and disabled paths do no plan lookup, preserving historical fees and rounding.
 - New creator checkout uses configured Stripe price IDs only; legacy identifiers remain unchanged and are mapped only for presentation.
+- Production trial cards use the active plan catalog and hosted Stripe Checkout; signup and checkout waits are bounded, and auth callback database work is deferred to avoid auth-lock stalls.
 - Verified new creator subscription events synchronize a service-role-only billing cache with event ordering; missing schema blocks enabled fee calculations instead of granting unverified zero fees.
 - Competitor cost inputs and official citations live in one pricing config; bundled processing is marked non-comparable instead of inventing platform-only rates.

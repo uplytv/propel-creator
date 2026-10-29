@@ -3,6 +3,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { TRIAL_INTENT_STORAGE_KEY, CREATOR_PRICING_CHECKOUT_ENABLED } from "@/components/pricing/plans";
+import { withTrialTimeout, hostedCheckoutUrl } from "@/lib/trialCheckout";
 
 /**
  * Resumes a 14-day-trial signup that was interrupted by account creation.
@@ -46,7 +47,7 @@ export default function TrialIntentResume() {
     (async () => {
       toast.loading("Resuming your free trial…", { id: "trial-resume" });
       try {
-        const { data, error } = await supabase.functions.invoke("create-platform-checkout", {
+        const { data, error } = await withTrialTimeout(supabase.functions.invoke("create-platform-checkout", {
           body: {
             plan: intent.plan,
             billing_interval: intent.billing_interval ?? "monthly",
@@ -55,11 +56,11 @@ export default function TrialIntentResume() {
             full_name: intent.full_name,
             phone: intent.phone,
           },
-        });
+        }), "Checkout is taking too long. Please try again from Pricing.");
         if (error || !data?.url) throw error || new Error("No checkout URL returned");
         localStorage.removeItem(TRIAL_INTENT_STORAGE_KEY);
         toast.dismiss("trial-resume");
-        window.location.href = data.url;
+        window.location.href = hostedCheckoutUrl(data.url);
       } catch {
         toast.dismiss("trial-resume");
         toast.error("Couldn't resume your free trial", {
