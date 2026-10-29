@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CalendarCheck, Loader2, MailCheck, PartyPopper, ShieldCheck } from "lucide-react";
-import { loadStripe } from "@stripe/stripe-js";
-import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import {
   Dialog,
   DialogContent,
@@ -19,16 +17,16 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { trackEvent } from "@/lib/posthog";
-import { validatePassword } from "@/lib/passwordValidation";
+import { withTrialTimeout, hostedCheckoutUrl } from "@/lib/trialCheckout";
 import {
-  PLATFORM_PLANS,
+  ACTIVE_PLATFORM_PLANS,
+  canCheckoutPlan,
   SETUP_CALL_URL,
   TRIAL_DAYS,
   TRIAL_INTENT_STORAGE_KEY,
   TRIAL_RISK_REVERSAL,
   type PlatformPlanKey,
   type BillingInterval,
-  CREATOR_PRICING_CHECKOUT_ENABLED,
 } from "./plans";
 
 interface TrialSignupModalProps {
@@ -40,11 +38,6 @@ interface TrialSignupModalProps {
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-// Same PCI-safe pattern as PurchaseOverlay: card entry happens inside
-// Stripe's embedded-checkout iframe , no card data ever touches our code.
-const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 
 /** Shared wizard header: centered title + two-step tab indicator with active underline. */
 function WizardHeader({ active }: { active: 1 | 2 }) {
@@ -103,7 +96,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan, bill
   const [sessionReady, setSessionReady] = useState(false);
 
   // Embedded checkout state (step 2)
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [checkoutAttempt, setCheckoutAttempt] = useState(0);
@@ -120,7 +113,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan, bill
       setErrors({});
       setAgreed(false);
       setAwaitingEmailConfirm(false);
-      setClientSecret(null);
+      setCheckoutUrl(null);
       setCheckoutError(null);
       setTrialLive(false);
       if (user) {
@@ -133,7 +126,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan, bill
     wasOpen.current = open;
   }, [open, defaultPlan, user]);
 
-  const plan = PLATFORM_PLANS.find((p) => p.key === selectedPlan) ?? PLATFORM_PLANS[0];
+  const plan = ACTIVE_PLATFORM_PLANS.find((p) => p.key === selectedPlan) ?? ACTIVE_PLATFORM_PLANS[0];
   const billedPrice = billingInterval === "annual" ? plan.annualPrice : plan.price;
   const billedUnit = billingInterval === "annual" ? "year" : "month";
   const isAuthed = !!user || sessionReady;
@@ -203,10 +196,10 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan, bill
       return;
     }
     trackEvent("platform_trial_signin_inline", { plan: selectedPlan, price: plan.price, reason: "existing_account" });
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await withTrialTimeout(supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
-    });
+    }), "Sign-in is taking too long. Please try again.");
     if (error || !data.session) {
       setErrors((prev) => ({ ...prev, password: "That password doesn't match this account" }));
       return;
@@ -223,7 +216,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan, bill
 
   const handleContinue = async () => {
     if (!validateStep1() || creatingAccount) return;
-    if (!CREATOR_PRICING_CHECKOUT_ENABLED) {
+    if (!canCheckoutPlan(selectedPlan)) {
       toast.info("New creator pricing is not activated yet. No account or payment was changed.");
       return;
     }
@@ -236,8 +229,9 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan, bill
     // Existing account with the inline password revealed → sign in, don't re-signup.
     if (existingAccount) {
       setCreatingAccount(true);
-      await redirectExistingAccount();
-      setCreatingAccount(false);
+      try { await redirectExistingAccount(); }
+      catch (err) { toast.error(err instanceof Error ? err.message : "Could not sign in. Please try again."); }
+      finally { setCreatingAccount(false); }
       return;
     }
 
@@ -257,14 +251,14 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan, bill
       const generatedPassword =
         Array.from(crypto.getRandomValues(new Uint8Array(18)), (b) => b.toString(16).padStart(2, "0")).join("") + "Aa1!";
 
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error } = await withTrialTimeout(supabase.auth.signUp({
         email: email.trim(),
         password: generatedPassword,
         options: {
           emailRedirectTo: window.location.origin,
           data: { full_name: fullName.trim() },
         },
-      });
+      }), "Account creation is taking too long. Please check your email or try signing in before retrying.");
 
       if (error) {
         if (/already|registered|exists/i.test(error.message)) {
@@ -317,27 +311,27 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan, bill
   // Step 2: create the embedded checkout session (14-day trial, card on file,
   // billed after) as soon as we're authed. Re-runs when the plan radio changes.
   useEffect(() => {
-    if (!CREATOR_PRICING_CHECKOUT_ENABLED || selectedPlan === "free") return;
-    if (!open || step !== 2 || awaitingEmailConfirm || !(isAuthed || guestCheckout) || trialLive) return;
+    if (!canCheckoutPlan(selectedPlan) || selectedPlan === "free") return;
+    if (!open || step !== 2 || !agreed || awaitingEmailConfirm || !(isAuthed || guestCheckout) || trialLive) return;
 
     let cancelled = false;
-    setClientSecret(null);
+    setCheckoutUrl(null);
     setCheckoutError(null);
     setCheckoutLoading(true);
 
-    supabase.functions
+    withTrialTimeout(supabase.functions
       .invoke("create-platform-checkout", {
         body: {
           plan: selectedPlan,
           billing_interval: billingInterval,
           trial: true,
-          embedded: true,
+          embedded: false,
           company: company.trim(),
           full_name: fullName.trim(),
           phone: phone.trim(),
           email: email.trim(),
         },
-      })
+      }), "Checkout is taking too long. Please try again.")
       .then(({ data, error }) => {
         if (cancelled) return;
         if (error) throw error;
@@ -351,8 +345,10 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan, bill
           });
           return;
         }
-        if (!data?.client_secret) throw new Error("No checkout session returned");
-        setClientSecret(data.client_secret);
+        if (data?.error) throw new Error(data.error);
+        const url = hostedCheckoutUrl(data?.url);
+        setCheckoutUrl(url);
+        window.location.assign(url);
       })
       .catch((err: any) => {
         if (!cancelled) setCheckoutError(err?.message || "Could not load secure checkout");
@@ -366,7 +362,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan, bill
     };
     // company/fullName/phone/email are frozen once step 2 renders , plan is the only live input.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, step, awaitingEmailConfirm, isAuthed, guestCheckout, selectedPlan, billingInterval, checkoutAttempt, trialLive]);
+  }, [open, step, agreed, awaitingEmailConfirm, isAuthed, guestCheckout, selectedPlan, billingInterval, checkoutAttempt, trialLive]);
 
   // Card accepted inside the iframe → trial subscription is live. The session
   // is created with redirect_on_completion "never", so no page reload happens:
@@ -534,7 +530,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan, bill
                 {creatingAccount ? "Creating your account…" : "Go to step 2"}
               </Button>
               <p className="text-center text-xs text-muted-foreground">
-                New pricing is pending activation. This preview does not create an account or charge a card.
+                Your card is collected securely by Stripe. Your selected plan starts with 14 days free.
               </p>
             </div>
           </>
@@ -556,7 +552,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan, bill
                 onValueChange={(v) => setSelectedPlan(v as PlatformPlanKey)}
                 className="gap-0 divide-y divide-border border border-border rounded-md"
               >
-                {PLATFORM_PLANS.filter(p => p.key !== "free").map((p) => (
+                {ACTIVE_PLATFORM_PLANS.filter(p => p.key !== "free").map((p) => (
                   <label
                     key={p.key}
                     htmlFor={`trial-plan-${p.key}`}
@@ -635,28 +631,12 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan, bill
                     Try again
                   </Button>
                 </div>
-              ) : clientSecret ? (
-                <div className="space-y-2">
-                  {/* Card entry is always visible and required; it becomes
-                      interactive once the terms box above is ticked. */}
-                  <div
-                    aria-disabled={!agreed}
-                    className={`rounded-sm border border-border bg-card transition-opacity ${agreed ? "" : "pointer-events-none opacity-50"}`}
-                  >
-                    <EmbeddedCheckoutProvider
-                      key={clientSecret}
-                      stripe={stripePromise}
-                      options={{ clientSecret, onComplete: handleCheckoutComplete }}
-                    >
-                      <EmbeddedCheckout />
-                    </EmbeddedCheckoutProvider>
-                  </div>
-                  {!agreed && (
-                    <p className="text-center text-xs font-medium text-muted-foreground">
-                      Card details are required to start your trial , tick the box above to enable payment.
-                    </p>
-                  )}
-                </div>
+              ) : checkoutUrl ? (
+                <Button className="w-full" onClick={() => window.location.assign(checkoutUrl)}>
+                  Continue to Stripe Checkout
+                </Button>
+              ) : !agreed ? (
+                <p className="text-center text-xs text-muted-foreground">Agree to the terms to continue to Stripe Checkout.</p>
               ) : (
                 <div className="flex flex-col items-center gap-2 rounded-sm border border-border bg-muted/30 py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
