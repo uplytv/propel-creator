@@ -5,7 +5,7 @@ const FEATURES = [
   { emoji: "⚡", label: "Flash Sales", desc: "Drop a product live with a 60-second countdown overlay." },
   { emoji: "🛒", label: "Live Commerce Overlay", desc: "Viewers buy without leaving the stream." },
   { emoji: "📦", label: "Digital Products", desc: "Sell PDFs, templates, downloads with instant delivery." },
-  { emoji: "💳", label: "Stripe Connect", desc: "Free: 3% UPLY fee. Pro/Studio: 0%. Stripe processing extra." },
+  { emoji: "💳", label: "Stripe Connect", desc: "5% UPLY sale fee plus Stripe processing." },
   { emoji: "🎯", label: "Membership Gating", desc: "Exclusive drops for paying members only." },
 ];
 
@@ -13,7 +13,7 @@ const TAKES = [
   { name: "TikTok Shop", rate: "8%" },
   { name: "Amazon Live", rate: "Cut" },
   { name: "Whatnot", rate: "8%" },
-  { name: "UPLY", rate: "0% paid", highlight: true },
+  { name: "UPLY", rate: "5%", highlight: true },
 ];
 
 export default function HomepageLiveCommerce() {
