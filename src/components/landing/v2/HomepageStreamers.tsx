@@ -2,7 +2,7 @@ import SectionShell from "./SectionShell";
 import { Check, X, Tv } from "lucide-react";
 
 const ROWS: { label: string; twitch: string; kick: string; uply: string }[] = [
-  { label: "Revenue split", twitch: "50% theirs", kick: "5% theirs", uply: "Free 3%; Pro/Studio 0%" },
+  { label: "Revenue split", twitch: "50% theirs", kick: "5% theirs", uply: "5% plus processing" },
   { label: "Simulcast", twitch: "❌ Banned", kick: "✅", uply: "✅ 8 platforms" },
   { label: "Roku / Fire TV", twitch: "View only", kick: "❌", uply: "✅ Full platform" },
   { label: "Courses", twitch: "❌", kick: "❌", uply: "✅" },
@@ -18,7 +18,7 @@ export default function HomepageStreamers() {
           Streamers
         </div>
         <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">
-          Free: 3%. Pro and Studio: 0% UPLY fees. <span className="text-primary">And we put you on TV.</span>
+          5% UPLY sale fee plus processing. <span className="text-primary">And we put you on TV.</span>
         </h2>
       </div>
 

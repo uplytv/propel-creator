@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowRight } from "lucide-react";
+import { DEFAULT_TRIAL_PLAN } from "@/components/pricing/plans";
 import TrialSignupModal from "@/components/pricing/TrialSignupModal";
 
 const ROTATING = [
@@ -76,16 +77,16 @@ export default function HomepageHero() {
         </div>
 
         <p className="type-body-lg text-foreground/75 max-w-xl">
-          Community, courses and events on Free. Ticketing, PPV, ARIA AI and custom domain
-          on Pro for $99/month, with 0% UPLY fees. Stripe processing extra.
+          Community, courses and events on Starter for $97/month.
+          The ARIA AI team is included on Unlimited for $297/month and Agency Pro.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto">
           <button
-            onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}
+            onClick={() => setTrialOpen(true)}
             className="btn-primary-glow w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md px-8 h-12 text-sm font-bold tracking-wide"
           >
-            Compare creator plans <ArrowRight className="w-4 h-4" />
+            Start your 14-day free trial <ArrowRight className="w-4 h-4" />
           </button>
           <Link
             to="/discover"
@@ -97,7 +98,7 @@ export default function HomepageHero() {
 
         {/* Risk reversal , the conversion line */}
         <p className="text-xs text-foreground/55 -mt-3">
-          Free $0/month · Pro $99/month · Studio $249/month
+          Starter $97/month · Unlimited $297/month · 14 days free
         </p>
 
         {/* Feature strip , plain text, informative without buttons */}
@@ -111,7 +112,7 @@ export default function HomepageHero() {
             Founding 100
           </span>
           <p className="text-xs sm:text-sm font-semibold text-foreground/85">
-            Price locked for life. UPLY Build included with annual Studio billing.
+            Start with 14 days free, then your selected monthly plan applies.
           </p>
         </div>
 
@@ -141,7 +142,7 @@ export default function HomepageHero() {
         )}
       </div>
 
-      <TrialSignupModal open={trialOpen} onOpenChange={setTrialOpen} defaultPlan="pro" />
+      <TrialSignupModal open={trialOpen} onOpenChange={setTrialOpen} defaultPlan={DEFAULT_TRIAL_PLAN} />
     </section>
   );
 }

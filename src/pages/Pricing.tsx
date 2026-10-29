@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import PlanCard from "@/components/pricing/PlanCard";
 import TrialSignupModal from "@/components/pricing/TrialSignupModal";
 import CancelSubscriptionModal from "@/components/pricing/CancelSubscriptionModal";
-import { PLATFORM_PLANS, type PlatformPlanKey, type BillingInterval, CREATOR_FEE_COPY, FEE_ROLLOUT_NOTE, planDisplayName } from "@/components/pricing/plans";
+import { ACTIVE_PLATFORM_PLANS, DEFAULT_TRIAL_PLAN, CREATOR_PRICING_CHECKOUT_ENABLED, type PlatformPlanKey, type BillingInterval, CREATOR_FEE_COPY, FEE_ROLLOUT_NOTE, planDisplayName } from "@/components/pricing/plans";
 
 export default function Pricing() {
   const { user } = useAuth();
@@ -20,7 +20,7 @@ export default function Pricing() {
   const [modalOpen, setModalOpen] = useState(false);
   const [interval, setInterval] = useState<BillingInterval>("monthly");
   const [cancelOpen, setCancelOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<PlatformPlanKey>("pro");
+  const [selectedPlan, setSelectedPlan] = useState<PlatformPlanKey>(DEFAULT_TRIAL_PLAN);
 
   const { data: currentPlan = "free", refetch } = useQuery({
     queryKey: ["platform-subscription", user?.id],
@@ -61,14 +61,14 @@ export default function Pricing() {
         <div className="text-center mb-10">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground">Choose Your Plan</h1>
           <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-            Start free. Pro $99/month. Studio $249/month. Annual billing gives 2 months free.
+            {CREATOR_PRICING_CHECKOUT_ENABLED ? "Start free. Pro $99/month. Studio $249/month. Annual billing gives 2 months free." : "Start with 14 days free. Starter $97/month or Unlimited $297/month."}
           </p>
         </div>
 
-        <BillingToggle value={interval} onChange={setInterval} />
-        <PricingOffers />
+        {CREATOR_PRICING_CHECKOUT_ENABLED && <BillingToggle value={interval} onChange={setInterval} />}
+        {CREATOR_PRICING_CHECKOUT_ENABLED && <PricingOffers />}
         <div className="grid md:grid-cols-3 gap-5">
-          {PLATFORM_PLANS.map((plan, idx) => (
+          {ACTIVE_PLATFORM_PLANS.map((plan, idx) => (
             <motion.div
               key={plan.key}
               initial={{ opacity: 0, y: 20 }}
@@ -86,7 +86,7 @@ export default function Pricing() {
         </div>
 
         <p className="text-xs text-center text-muted-foreground mt-8">
-          {CREATOR_FEE_COPY}<br />{FEE_ROLLOUT_NOTE}
+          {CREATOR_PRICING_CHECKOUT_ENABLED ? CREATOR_FEE_COPY : "Starter $97/month. Unlimited $297/month. Agency Pro $497/month."}<br />{CREATOR_PRICING_CHECKOUT_ENABLED ? FEE_ROLLOUT_NOTE : "14-day free trial. Then your selected monthly plan applies. 5% UPLY sale fee plus Stripe processing."}
         </p>
 
         {/* Manage current plan (paid/trialing holders only) */}
@@ -104,7 +104,7 @@ export default function Pricing() {
           </div>
         )}
 
-        <FeeCalculator interval={interval} />
+        {CREATOR_PRICING_CHECKOUT_ENABLED && <FeeCalculator interval={interval} />}
       </div>
 
       <TrialSignupModal open={modalOpen} onOpenChange={setModalOpen} defaultPlan={selectedPlan} billingInterval={interval} />

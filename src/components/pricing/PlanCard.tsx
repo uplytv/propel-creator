@@ -57,10 +57,10 @@ export default function PlanCard({ plan, onStartTrial, isCurrent = false, interv
         variant={plan.popular ? "default" : "outline"}
         className="w-full rounded-sm font-bold"
       >
-        {isCurrent ? "Current plan" : plan.key === "free" ? "Get started free" : `Choose ${plan.name}`}
+        {isCurrent ? "Current plan" : plan.key === "free" ? "Get started free" : ["starter", "unlimited", "agency_pro"].includes(plan.key) ? "Start free trial" : `Choose ${plan.name}`}
       </Button>
       <p className="mt-3 text-center text-xs text-muted-foreground">
-        Stripe processing extra · {interval === "annual" && plan.key !== "free" ? "2 months free" : "No monthly fee on Free"}
+        Stripe processing extra · {interval === "annual" && plan.key !== "free" ? "2 months free" : plan.key === "free" ? "No monthly fee on Free" : "14-day free trial"}
       </p>
     </div>
   );

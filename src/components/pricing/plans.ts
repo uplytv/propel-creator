@@ -2,7 +2,7 @@
 // and the signup modal. Free needs no subscription checkout.
 export const CREATOR_PRICING_CHECKOUT_ENABLED = import.meta.env.VITE_CREATOR_PRICING_CHECKOUT_ENABLED === "true";
 
-export type PlatformPlanKey = "free" | "pro" | "studio";
+export type PlatformPlanKey = "free" | "pro" | "studio" | "starter" | "unlimited" | "agency_pro";
 export type BillingInterval = "monthly" | "annual";
 export interface PlatformPlan {
   key: PlatformPlanKey;
@@ -25,6 +25,20 @@ export const PLATFORM_PLANS: PlatformPlan[] = [
     audience: "For teams building a branded experience",
     features: ["Everything in Pro", "Branded iOS and Android apps", "Multiple communities", "Team seats", "Priority support", "Free white-glove migration", "UPLY Build included with annual billing", "0% UPLY fee per sale"] },
 ];
+
+export const LEGACY_PLATFORM_PLANS: PlatformPlan[] = [
+  { key: "starter", name: "Starter", price: 97, annualPrice: 1164, feeRate: 0.05,
+    audience: "For creators starting their business", features: ["Community", "Courses", "Events", "Core creator platform"] },
+  { key: "unlimited", name: "Unlimited", price: 297, annualPrice: 3564, feeRate: 0.05, popular: true,
+    audience: "For growing creator businesses", features: ["Everything in Starter", "ARIA AI team", "Unlimited creator tools"] },
+  { key: "agency_pro", name: "Agency Pro", price: 497, annualPrice: 5964, feeRate: 0.05,
+    audience: "For agencies and teams", features: ["Everything in Unlimited", "Agency tools"] },
+];
+export const ACTIVE_PLATFORM_PLANS = CREATOR_PRICING_CHECKOUT_ENABLED ? PLATFORM_PLANS : LEGACY_PLATFORM_PLANS;
+export const DEFAULT_TRIAL_PLAN: PlatformPlanKey = CREATOR_PRICING_CHECKOUT_ENABLED ? "pro" : "starter";
+export function canCheckoutPlan(plan: PlatformPlanKey): boolean {
+  return !["free", "pro", "studio"].includes(plan) || CREATOR_PRICING_CHECKOUT_ENABLED;
+}
 
 export const TRIAL_DAYS = 14;
 
