@@ -1,3 +1,8 @@
+# Production trial and admin recovery
+- [ ] Grant and verify protected admin role for Ari's requested account.
+- [ ] Restore Starter $97 and Unlimited $297 hosted trial checkout with bounded signup and recoverable errors.
+- [ ] Verify trial inputs, checkout redirect and admin access, then publish to uply.tv.
+
 # Creator pricing update
 - [ ] Replace creator pricing with Free, Pro and Studio plus annual billing and sourced calculator.
 - [ ] Centralize creator fees behind a default-off flag, preserving refunds and existing subscribers.
