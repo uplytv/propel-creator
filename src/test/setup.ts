@@ -42,7 +42,5 @@ class MockIntersectionObserver {
   rootMargin = "";
   thresholds = [] as ReadonlyArray<number>;
 }
-// @ts-expect-error – assigning test stub
 window.IntersectionObserver = MockIntersectionObserver;
-// @ts-expect-error – assigning test stub
 globalThis.IntersectionObserver = MockIntersectionObserver;

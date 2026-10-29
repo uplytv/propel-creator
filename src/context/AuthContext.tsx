@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data } = await supabase
           .from('profiles')
           .select('tier, role_type, creator_type, onboarding_complete')
-          .eq('id', userId)
+          .eq('user_id', userId)
           .maybeSingle();
         identifyUser(userId, {
           tier: data?.tier ?? null,
