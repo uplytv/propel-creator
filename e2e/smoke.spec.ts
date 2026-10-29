@@ -1,10 +1,10 @@
 // UPLY Tier-1 smoke suite — protects the money path without ever spending money.
 //
 // HARD SAFETY RULES (Stripe may be LIVE-mode):
-//   - Never submit card details; never interact with the Stripe iframe at all.
-//   - The trial funnel is exercised only to the checkout BOUNDARY: we assert the
-//     embedded-checkout container/iframe (or its explicit error card) renders,
-//     then stop. A checkout session with no card entered completes nothing.
+//   - Never submit card details; never interact with a Stripe iframe at all.
+//   - The trial funnel is exercised only to the checkout BOUNDARY: Step 2 shows
+//     plan radios, ToS, and an enabled "Continue to checkout" button. We do not
+//     click it — that would open hosted Checkout (checkout.stripe.com).
 //   - Only disposable accounts (e2e+<ts>@uply-test.dev) are created.
 //
 // Selector philosophy: roles, accessible names, and user-visible text — no
@@ -73,7 +73,7 @@ test.describe("public pages", () => {
 // ---------------------------------------------------------------------------
 
 test.describe("trial funnel (money path — boundary only)", () => {
-  test("home CTA -> step 1 (4 fields) -> step 2 -> checkout boundary state", async ({ page, pageErrors }, testInfo) => {
+  test("home CTA -> step 1 (4 fields) -> step 2 -> checkout boundary state", async ({ page }, testInfo) => {
     await page.goto("/");
     await page
       .getByRole("button", { name: /start your 14-day free trial/i })
@@ -105,12 +105,9 @@ test.describe("trial funnel (money path — boundary only)", () => {
     // Creates the disposable account against the real Supabase, then advances.
     await dialog.getByRole("button", { name: /go to step 2/i }).click();
 
-    // KNOWN BUG (found by this test, 2026-07-06, still unfixed): when the modal
-    // is opened from the Landing page, step 1's signUp gives the user a session,
-    // and Landing's authed-user redirect (src/pages/Landing.tsx ~line 56) then
-    // navigates to /apply — unmounting the modal BEFORE the payment step. The
-    // check below turns that into an explicit failure instead of a timeout.
-    // This test asserts the INTENDED behavior and stays red until the app fix.
+    // Landing must stay put while the trial modal is open. Step 1 creates a
+    // session; uply_trial_in_progress tells Landing not to redirect to /apply
+    // and unmount the modal before Step 2.
     await Promise.race([
       dialog.getByRole("radio").first().waitFor({ state: "visible", timeout: 30_000 }).catch(() => {}),
       page.waitForURL((url) => url.pathname !== "/", { timeout: 30_000 }).catch(() => {}),
@@ -128,28 +125,20 @@ test.describe("trial funnel (money path — boundary only)", () => {
     const terms = dialog.getByRole("checkbox");
     await expect(terms).toBeVisible();
     await expect(dialog.getByText(/i agree to the/i)).toBeVisible();
-    await terms.click();
-    await expect(terms).toBeChecked();
 
-    // Boundary assertion: one of the explicit end states must appear.
-    //   iframe          — Stripe embedded checkout attached (full happy path)
-    //   error-card      — edge function stale/unreachable ("Try again")
-    //   email-confirm   — Supabase requires email confirmation before payment
-    //   stripe-pk-missing — local env has no VITE_STRIPE_PUBLISHABLE_KEY; the
-    //                       checkout session was created but Stripe.js can't boot
-    // We assert the state and STOP — no card entry, ever.
-    const iframe = dialog.locator("iframe");
-    const errorCard = dialog.getByRole("button", { name: /try again/i });
+    const continueCheckout = dialog.getByRole("button", { name: /continue to checkout/i });
     const emailConfirm = dialog.getByText(/check your email to confirm your account/i);
 
-    const deadline = Date.now() + 60_000;
-    let outcome: string | null = null;
+    // Two legitimate boundaries. We never click Continue — that leaves the
+    // site for hosted Checkout and would mint a live Checkout Session.
+    //   continue-button — plan confirmed path; button enables once ToS is ticked
+    //   email-confirm   — Supabase requires email confirmation before payment
+    const deadline = Date.now() + 30_000;
+    let outcome: "continue-button" | "email-confirm" | null = null;
     while (!outcome && Date.now() < deadline) {
-      if ((await iframe.count()) > 0) outcome = "iframe";
-      else if ((await errorCard.count()) > 0) outcome = "error-card";
-      else if ((await emailConfirm.count()) > 0) outcome = "email-confirm";
-      else if (pageErrors.some((e) => /publishable key/i.test(e))) outcome = "stripe-pk-missing";
-      else await page.waitForTimeout(1_000);
+      if ((await emailConfirm.count()) > 0) outcome = "email-confirm";
+      else if ((await continueCheckout.count()) > 0) outcome = "continue-button";
+      else await page.waitForTimeout(500);
     }
     testInfo.annotations.push({
       type: "checkout-boundary",
@@ -157,8 +146,17 @@ test.describe("trial funnel (money path — boundary only)", () => {
     });
     expect(
       outcome,
-      "Step 2 must reach an explicit checkout boundary state (iframe / error card / email-confirm / missing local Stripe key)"
+      "Step 2 must show Continue to checkout, or the email-confirm card"
     ).not.toBeNull();
+
+    if (outcome === "continue-button") {
+      await expect(continueCheckout).toBeDisabled();
+      await terms.click();
+      await expect(terms).toBeChecked();
+      await expect(continueCheckout).toBeEnabled();
+      // No embedded Payment Element. Hosted Checkout opens only after the click.
+      await expect(dialog.locator("iframe")).toHaveCount(0);
+    }
 
     // Paranoia: the success state must never appear — that would mean a live
     // trial subscription was actually created past the boundary.

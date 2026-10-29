@@ -179,7 +179,12 @@ serve(async (req) => {
       customer_email: customerId ? undefined : checkoutEmail,
       line_items: lineItems,
       mode: "subscription",
-      success_url: `${origin}/dashboard?upgraded=true`,
+      // Hosted trial checkout returns to the dashboard trial toast. Non-trial
+      // hosted sessions (legacy price_id included) keep the upgrade return.
+      // Embedded mode deletes both URLs below.
+      success_url: planPricing && trial
+        ? `${origin}/dashboard?trial=started`
+        : `${origin}/dashboard?upgraded=true`,
       cancel_url: `${origin}/pricing`,
       metadata,
     };

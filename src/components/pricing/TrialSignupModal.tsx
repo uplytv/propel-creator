@@ -1,8 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { CalendarCheck, Loader2, MailCheck, PartyPopper, ShieldCheck } from "lucide-react";
-import { getStripe } from "@/lib/stripeClient";
-import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { Loader2, MailCheck, ShieldCheck } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,11 +17,9 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { trackEvent } from "@/lib/posthog";
-import { validatePassword } from "@/lib/passwordValidation";
 import { getAffiliateCookie } from "@/lib/affiliateCookies";
 import {
   PLATFORM_PLANS,
-  SETUP_CALL_URL,
   TRIAL_DAYS,
   TRIAL_INTENT_STORAGE_KEY,
   TRIAL_PROFILE_STORAGE_KEY,
@@ -45,9 +41,16 @@ interface TrialSignupModalProps {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Same PCI-safe pattern as PurchaseOverlay: card entry happens inside
-// Stripe's embedded-checkout iframe — no card data ever touches our code.
-const stripePromise = getStripe();
+/** Hosted Checkout only. Reject anything else so a bad payload can't navigate off-site. */
+function isStripeCheckoutUrl(value: unknown): value is string {
+  if (typeof value !== "string" || !value) return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname === "checkout.stripe.com";
+  } catch {
+    return false;
+  }
+}
 
 /** Shared wizard header: centered title + two-step tab indicator with active underline. */
 function WizardHeader({ active, days }: { active: 1 | 2; days: number }) {
@@ -84,7 +87,6 @@ export default function TrialSignupModal({
   trialDays = TRIAL_DAYS,
 }: TrialSignupModalProps) {
   const { user } = useAuth();
-  const navigate = useNavigate();
   // Server clamps to {14, 30}; mirror it so the UI never promises otherwise.
   const effectiveTrialDays = trialDays === 30 ? 30 : TRIAL_DAYS;
 
@@ -114,13 +116,9 @@ export default function TrialSignupModal({
   // updates async, but the supabase client can already call edge functions).
   const [sessionReady, setSessionReady] = useState(false);
 
-  // Embedded checkout state (step 2)
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  // Step 2 confirms the plan, then redirects to hosted Stripe Checkout.
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
-  const [checkoutAttempt, setCheckoutAttempt] = useState(0);
-  // Card accepted, trial subscription live → in-modal success/onboarding step.
-  const [trialLive, setTrialLive] = useState(false);
 
   // Reset + prefill only on the closed→open transition, so an auth-state
   // change mid-flow (signUp inside the modal) can't yank the user back to step 1.
@@ -133,9 +131,8 @@ export default function TrialSignupModal({
       setAgreed(false);
       setSmsConsent(false);
       setAwaitingEmailConfirm(false);
-      setClientSecret(null);
+      setCheckoutLoading(false);
       setCheckoutError(null);
-      setTrialLive(false);
       if (user) {
         setEmail((prev) => prev || user.email || "");
         setFullName(
@@ -211,7 +208,8 @@ export default function TrialSignupModal({
 
   /** Persist Step-1 answers onto the signed-in user's own profiles row.
    *  Fire-and-forget: the trial flow must never block or fail on this.
-   *  phone/company_name are additive columns not yet in generated types. */
+   *  phone/company_name ship in 20261029040000 and are not in generated types
+   *  yet — a missing column 400s this update and the stash is kept for retry. */
   const persistStep1Profile = async (userId: string) => {
     try {
       const patch: Record<string, string> = {};
@@ -387,13 +385,13 @@ export default function TrialSignupModal({
     }
   };
 
-  // Step 2: create the embedded checkout session (14-day trial, card on file,
-  // billed after) as soon as we're authed. Re-runs when the plan radio changes.
-  useEffect(() => {
-    if (!open || step !== 2 || awaitingEmailConfirm || !(isAuthed || guestCheckout) || trialLive) return;
+  // Step 2 does not mount Embedded Checkout. After the plan + ToS are
+  // confirmed, create-platform-checkout (hosted mode) returns session.url
+  // and the browser goes to checkout.stripe.com. Card entry stays on Stripe.
+  const startHostedCheckout = async () => {
+    if (!agreed || checkoutLoading || awaitingEmailConfirm) return;
+    if (!(isAuthed || guestCheckout)) return;
 
-    let cancelled = false;
-    setClientSecret(null);
     setCheckoutError(null);
     setCheckoutLoading(true);
 
@@ -403,12 +401,11 @@ export default function TrialSignupModal({
     // pricing, and commission amounts are always computed server-side.
     const affiliateCode = getAffiliateCookie("uply_ref");
 
-    supabase.functions
-      .invoke("create-platform-checkout", {
+    try {
+      const { data, error } = await supabase.functions.invoke("create-platform-checkout", {
         body: {
           plan: selectedPlan,
           trial: true,
-          embedded: true,
           // Optional fields are omitted entirely when blank.
           ...(company.trim() ? { company: company.trim() } : {}),
           full_name: fullName.trim(),
@@ -418,126 +415,42 @@ export default function TrialSignupModal({
           trial_days: effectiveTrialDays,
           ...(affiliateCode ? { affiliate_code: affiliateCode } : {}),
         },
-      })
-      .then(({ data, error }) => {
-        if (cancelled) return;
-        if (error) throw error;
-        if (data?.error === "already_subscribed") {
-          // The email already carries a live paid plan — require sign-in.
-          setGuestCheckout(false);
-          setExistingAccount(true);
-          setStep(1);
-          toast.info("This email already has an active UPLY plan", {
-            description: "Enter your password to sign in and manage your subscription.",
-          });
-          return;
-        }
-        if (!data?.client_secret) throw new Error("No checkout session returned");
-        setClientSecret(data.client_secret);
-      })
-      .catch((err: any) => {
-        if (!cancelled) setCheckoutError(err?.message || "Could not load secure checkout");
-      })
-      .finally(() => {
-        if (!cancelled) setCheckoutLoading(false);
       });
-
-    return () => {
-      cancelled = true;
-    };
-    // company/fullName/phone/email are frozen once step 2 renders — plan is the only live input.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, step, awaitingEmailConfirm, isAuthed, guestCheckout, selectedPlan, checkoutAttempt, trialLive]);
-
-  // Card accepted inside the iframe → trial subscription is live. The session
-  // is created with redirect_on_completion "never", so no page reload happens:
-  // we swap the modal to the success/onboarding step right here.
-  const handleCheckoutComplete = useCallback(() => {
-    try {
-      localStorage.removeItem(TRIAL_INTENT_STORAGE_KEY);
-    } catch {
-      /* noop */
+      if (error) throw error;
+      if (data?.error === "already_subscribed") {
+        // The email already carries a live paid plan — require sign-in.
+        setGuestCheckout(false);
+        setExistingAccount(true);
+        setStep(1);
+        toast.info("This email already has an active UPLY plan", {
+          description: "Enter your password to sign in and manage your subscription.",
+        });
+        setCheckoutLoading(false);
+        return;
+      }
+      if (!isStripeCheckoutUrl(data?.url)) throw new Error("No checkout URL returned");
+      trackEvent("platform_trial_checkout_redirect", { plan: selectedPlan, price: plan.price });
+      try {
+        localStorage.removeItem(TRIAL_INTENT_STORAGE_KEY);
+      } catch {
+        /* noop */
+      }
+      window.location.assign(data.url);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not start secure checkout";
+      setCheckoutError(message);
+      setCheckoutLoading(false);
     }
-    trackEvent("platform_trial_started", { plan: selectedPlan, price: plan.price });
-    setTrialLive(true);
-  }, [selectedPlan, plan.price]);
-
-  const goToDashboard = () => {
-    onOpenChange(false);
-    if (guestCheckout && !user) {
-      // Guest trial on an existing account — they need to sign in for access.
-      toast.info("Sign in to access your trial", {
-        description: "Your trial is active on this email — sign in with your UPLY password.",
-      });
-      navigate(`/auth?redirect=${encodeURIComponent("/dashboard?trial=started")}`);
-      return;
-    }
-    navigate("/dashboard?trial=started");
   };
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(nextOpen) => {
-        // Once the trial is live, any dismissal should land them in the app.
-        if (!nextOpen && trialLive) {
-          goToDashboard();
-          return;
-        }
-        onOpenChange(nextOpen);
-      }}
-    >
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={`rounded-md ${
-          step === 2 && !trialLive ? "sm:max-w-lg max-h-[92vh] overflow-y-auto" : "sm:max-w-md"
+          step === 2 ? "sm:max-w-lg max-h-[92vh] overflow-y-auto" : "sm:max-w-md"
         }`}
       >
-        {trialLive ? (
-          <>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <PartyPopper className="h-5 w-5 text-primary" />
-                You're in — your {effectiveTrialDays}-day trial is live
-              </DialogTitle>
-              <DialogDescription>
-                Your card is on file and UPLY {plan.name} is unlocked. One last thing before you dive in.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4 py-1">
-              {/* Free human setup call — the onboarding offer */}
-              <div className="rounded-md border border-primary/40 bg-primary/5 p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-primary/15">
-                    <CalendarCheck className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-foreground">Book your free setup call</p>
-                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                      We'll build your website funnel, SEO blog post, and community &amp; course
-                      setup with you — a real human rep, free with your trial.
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  className="mt-3 w-full rounded-sm font-bold"
-                  onClick={() => window.open(SETUP_CALL_URL, "_blank", "noopener,noreferrer")}
-                >
-                  Book my setup call
-                </Button>
-                <p className="mt-2 text-center text-xs text-muted-foreground">{trialRiskReversal(effectiveTrialDays)}</p>
-              </div>
-
-              <button
-                type="button"
-                onClick={goToDashboard}
-                className="w-full text-center text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-              >
-                Skip for now — go to my dashboard
-              </button>
-            </div>
-          </>
-        ) : step === 1 ? (
+        {step === 1 ? (
           <>
             <WizardHeader active={1} days={effectiveTrialDays} />
 
@@ -705,7 +618,7 @@ export default function TrialSignupModal({
                 </Label>
               </div>
 
-              {/* Payment — Stripe embedded checkout (PCI-safe iframe) */}
+              {/* Card entry is hosted Stripe Checkout — not an embedded Element. */}
               {awaitingEmailConfirm ? (
                 <div className="flex items-start gap-3 rounded-sm border border-border bg-muted/50 p-3.5">
                   <MailCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
@@ -717,46 +630,25 @@ export default function TrialSignupModal({
                     </p>
                   </div>
                 </div>
-              ) : checkoutError ? (
-                <div className="rounded-sm border border-border bg-muted/30 p-4 text-center">
-                  <p className="mb-3 text-xs text-destructive">{checkoutError}</p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-sm"
-                    onClick={() => setCheckoutAttempt((n) => n + 1)}
-                  >
-                    Try again
-                  </Button>
-                </div>
-              ) : clientSecret ? (
+              ) : (
                 <div className="space-y-2">
-                  {/* Card entry is always visible and required; it becomes
-                      interactive once the terms box above is ticked. */}
-                  <div
-                    aria-disabled={!agreed}
-                    className={`rounded-sm border border-border bg-card transition-opacity ${agreed ? "" : "pointer-events-none opacity-50"}`}
+                  {checkoutError && (
+                    <p className="text-center text-xs text-destructive">{checkoutError}</p>
+                  )}
+                  <Button
+                    type="button"
+                    onClick={startHostedCheckout}
+                    disabled={!agreed || checkoutLoading}
+                    className="w-full rounded-sm font-bold h-11"
                   >
-                    <EmbeddedCheckoutProvider
-                      key={clientSecret}
-                      stripe={stripePromise}
-                      options={{ clientSecret, onComplete: handleCheckoutComplete }}
-                    >
-                      <EmbeddedCheckout />
-                    </EmbeddedCheckoutProvider>
-                  </div>
+                    {checkoutLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {checkoutLoading ? "Opening secure checkout…" : "Continue to checkout"}
+                  </Button>
                   {!agreed && (
                     <p className="text-center text-xs font-medium text-muted-foreground">
-                      Card details are required to start your trial — tick the box above to enable payment.
+                      Tick the box above to continue. Your card is entered on Stripe's secure page.
                     </p>
                   )}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-2 rounded-sm border border-border bg-muted/30 py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                  <p className="text-xs text-muted-foreground">
-                    {checkoutLoading ? "Loading secure checkout…" : "Preparing checkout…"}
-                  </p>
                 </div>
               )}
             </div>
