@@ -1,8 +1,10 @@
-import { useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import { findArtistBySlug } from "@/data/artistRoster";
 import { normalizeProfileSlugInput } from "@/lib/profileSlug";
 import RosterSocialProfilePage from "./RosterSocialProfilePage";
 import SocialCreatorPage from "./SocialCreatorPage";
+
+const TAJ_HANDLES = new Set(["taj", "taj-fencing", "tajfencing", "taj_fencing", "taj.fencing"]);
 
 /**
  * Resolves /@<handle>:
@@ -13,6 +15,7 @@ import SocialCreatorPage from "./SocialCreatorPage";
 export default function SocialHandleRouter() {
   const { slug: rawSlug } = useParams<{ slug?: string }>();
   const slug = normalizeProfileSlugInput(rawSlug);
+  if (TAJ_HANDLES.has(slug.toLowerCase())) return <Navigate to="/taj" replace />;
   const artist = findArtistBySlug(slug);
   if (artist) return <RosterSocialProfilePage artist={artist} />;
   return <SocialCreatorPage />;
